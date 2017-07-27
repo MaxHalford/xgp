@@ -1,4 +1,4 @@
-package gp
+package main
 
 import (
 	"math/rand"
@@ -57,7 +57,7 @@ func TestGrowNodeInitializer(t *testing.T) {
 		}
 		rng       = rand.New(rand.NewSource(time.Now().UnixNano()))
 		testCases = []struct {
-			pLeaf    float64
+			pLeaf     float64
 			maxHeight int
 			nnodes    int
 		}{

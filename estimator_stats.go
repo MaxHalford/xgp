@@ -1,4 +1,4 @@
-package gp
+package main
 
 import "github.com/MaxHalford/tiago/tree"
 

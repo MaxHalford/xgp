@@ -6,7 +6,6 @@ import (
 
 	"github.com/MaxHalford/gago"
 	"github.com/MaxHalford/tiago/dataframe"
-	"github.com/MaxHalford/tiago/gp"
 	"github.com/MaxHalford/tiago/metric"
 )
 
@@ -18,23 +17,26 @@ func check(err error) {
 
 func main() {
 
-	// Open the training dataframe
-	var df, err = dataframe.ReadCSV("examples/gplearn_regression/train.csv", "y", false)
+	// Open the training set
+	train, err := dataframe.ReadCSV("examples/iris/train.csv", "target", false)
+	check(err)
+	// Open the test set
+	test, err := dataframe.ReadCSV("examples/iris/test.csv", "target", false)
 	check(err)
 
 	// Instantiate an Estimator
-	var estimator = gp.Estimator{
-		DataFrame:       df,
-		Metric:          metric.MinkowskiDistance{2},
-		Activation:      gp.Identity,
+	var estimator = Estimator{
+		DataFrame:       train,
+		Metric:          metric.NegativeBinaryF1Score{1},
+		Activation:      Sigmoid,
 		PVariable:       0.5,
-		NodeInitializer: gp.FullNodeInitializer{Height: 3},
-		FunctionSet: map[int][]gp.Operator{
-			2: []gp.Operator{
-				gp.Sum{},
-				gp.Difference{},
-				gp.Product{},
-				gp.Division{},
+		NodeInitializer: FullNodeInitializer{Height: 3},
+		FunctionSet: map[int][]Operator{
+			2: []Operator{
+				Sum{},
+				Difference{},
+				Product{},
+				Division{},
 			},
 		},
 	}
@@ -55,23 +57,23 @@ func main() {
 	// Initialize the Estimator
 	estimator.Initialize()
 
-	var generations = 20
+	var generations = 10
 	for i := 0; i < generations; i++ {
 		estimator.GA.Enhance()
 		fmt.Printf("Score: %.3f | %d / %d \n", estimator.GA.Best.Fitness, i+1, generations)
 		//for _, pop := range estimator.GA.Populations {
 		//	for _, indi := range pop.Individuals {
-		//fmt.Println(indi.Genome.(*gp.Program))
-		//fmt.Println(indi.Genome.(*gp.Program).PredictDataFrame(df, false))
-		//fmt.Println(indi.Genome.(*gp.Program).PredictDataFrame(df, true))
+		//fmt.Println(indi.Genome.(*Program))
+		//fmt.Println(indi.Genome.(*Program).PredictDataFrame(train, false))
+		//fmt.Println(indi.Genome.(*Program).PredictDataFrame(train, true))
 		//fmt.Println(strings.Repeat("-", 30))
-		//fmt.Printf("%p\n", indi.Genome.(*gp.Program).Root)
+		//fmt.Printf("%p\n", indi.Genome.(*Program).Root)
 		//}
 		//}
 		//fmt.Println(strings.Repeat("=", 30))
 	}
 
-	fmt.Println(estimator.GA.Best.Genome.(*gp.Program))
-	fmt.Println(estimator.GA.Best.Genome.(*gp.Program).PredictDataFrame(df, false))
-	fmt.Println(df.Y)
+	yPred := estimator.GA.Best.Genome.(*Program).PredictDataFrame(test, false)
+	score, _ := estimator.Metric.Apply(test.Y, yPred)
+	fmt.Println(score)
 }

@@ -3,8 +3,9 @@ is a machine learning tool based on [genetic programming](https://www.wikiwand.c
 ## To do
 
 - Create lookup tables for operators that time to evaluate at runtime
-http://www.genetic-programming.com/gpquadraticexample.html
-http://www.genetic-programming.com/gpflowchart.html
+- http://www.genetic-programming.com/gpquadraticexample.html
+- http://www.genetic-programming.com/gpflowchart.html
+- Organize code after reading [this](https://dave.cheney.net/2014/12/01/five-suggestions-for-setting-up-a-go-project)
 
 ## Architecture
 

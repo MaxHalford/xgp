@@ -7,7 +7,14 @@ import (
 	"text/tabwriter"
 )
 
+// A ConfusionMatrix stores true positives (TP), true negatives (TN), false
+// positives (FP) and false negatives (FN).
 type ConfusionMatrix map[float64]map[float64]float64
+
+// NClasses returns the number of classes in a ConfusionMatrix.
+func (cm ConfusionMatrix) NClasses() int {
+	return len(cm)
+}
 
 // Classes returns a slice of classes included in a ConfusionMatrix. The
 // resulting slice of classes is ordered increasingly.
@@ -66,7 +73,7 @@ func (cm ConfusionMatrix) FalseNegatives(class float64) (float64, error) {
 	return FN, nil
 }
 
-// FalseNegatives returns the number of times a class was correctly not
+// TrueNegatives returns the number of times a class was correctly not
 // predicted.
 func (cm ConfusionMatrix) TrueNegatives(class float64) (float64, error) {
 
@@ -120,6 +127,8 @@ func (cm ConfusionMatrix) String() string {
 	return buffer.String()
 }
 
+// MakeConfusionMatrix returns a ConfusionMatrix from a slice of true classes
+// and another slice of predicted classes.
 func MakeConfusionMatrix(yTrue, yPred []float64) (ConfusionMatrix, error) {
 
 	if len(yTrue) != len(yPred) {

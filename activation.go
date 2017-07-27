@@ -1,4 +1,4 @@
-package gp
+package main
 
 import "math"
 

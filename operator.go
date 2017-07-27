@@ -1,4 +1,4 @@
-package gp
+package main
 
 type Operator interface {
 	Apply(X []float64) float64
