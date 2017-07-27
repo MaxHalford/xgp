@@ -7,6 +7,9 @@ is a machine learning tool based on [genetic programming](https://www.wikiwand.c
 - http://www.genetic-programming.com/gpflowchart.html
 - Organize code after reading [this](https://dave.cheney.net/2014/12/01/five-suggestions-for-setting-up-a-go-project)
 - https://github.com/gonum/blas
+- [Classification Strategies for Image Classification in Genetic Programming](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.475.3010&rep=rep1&type=pdf)
+- [Multi-class overview](http://dynamics.org/~altenber/UH_ICS/EC_REFS/GP_REFS/IEEE/CEC2001/395.pdf)
+- [Sampling data for fitness evaluation](http://eplex.cs.ucf.edu/papers/morse_gecco16.pdf)
 
 ## Architecture
 
@@ -22,8 +25,3 @@ go run cmd/xgp/*.go fit examples/iris/train.csv
 
 - [MaxHalford/gago](https://github.com/MaxHalford/gago)
 - [urfave/cli](https://github.com/urfave/cli)
-
-## Related papers
-
-- [Multi-class overview](http://dynamics.org/~altenber/UH_ICS/EC_REFS/GP_REFS/IEEE/CEC2001/395.pdf)
-- [Sampling data for fitness evaluation](http://eplex.cs.ucf.edu/papers/morse_gecco16.pdf)
