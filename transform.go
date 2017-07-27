@@ -1,8 +1,6 @@
-package main
+package xgp
 
 import "math"
-
-type Activation func(x float64) float64
 
 func Identity(x float64) float64 {
 	return x

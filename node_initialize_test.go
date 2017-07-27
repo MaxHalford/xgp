@@ -1,11 +1,11 @@
-package main
+package xgp
 
 import (
 	"math/rand"
 	"testing"
 	"time"
 
-	"github.com/MaxHalford/tiago/tree"
+	"github.com/MaxHalford/xgp/tree"
 )
 
 func TestFullNodeInitializer(t *testing.T) {

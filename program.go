@@ -1,11 +1,11 @@
-package main
+package xgp
 
 import (
 	"math/rand"
 
 	"github.com/MaxHalford/gago"
-	"github.com/MaxHalford/tiago/dataframe"
-	"github.com/MaxHalford/tiago/tree"
+	"github.com/MaxHalford/xgp/dataframe"
+	"github.com/MaxHalford/xgp/tree"
 )
 
 // A Program
@@ -20,22 +20,22 @@ func (prog Program) String() string {
 }
 
 // PredictRow predicts the target of a row in a DataFrame.
-func (prog Program) PredictRow(row []float64, useActivation bool) float64 {
+func (prog Program) PredictRow(row []float64, useTransform bool) float64 {
 	var y = prog.Root.evaluate(row)
-	if useActivation {
-		return prog.Estimator.Activation(y)
+	if useTransform {
+		return prog.Estimator.Transform(y)
 	}
 	return y
 }
 
 // PredictDataFrame predicts the target of each row in a DataFrame.
-func (prog Program) PredictDataFrame(df *dataframe.DataFrame, useActivation bool) []float64 {
+func (prog Program) PredictDataFrame(df *dataframe.DataFrame, useTransform bool) []float64 {
 	var (
 		n, _  = df.Shape()
 		yPred = make([]float64, n)
 	)
 	for i, row := range df.X {
-		yPred[i] = prog.PredictRow(row, useActivation)
+		yPred[i] = prog.PredictRow(row, useTransform)
 	}
 	return yPred
 }

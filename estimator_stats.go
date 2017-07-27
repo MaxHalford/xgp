@@ -1,6 +1,6 @@
-package main
+package xgp
 
-import "github.com/MaxHalford/tiago/tree"
+import "github.com/MaxHalford/xgp/tree"
 
 func (est Estimator) AvgProgramHeight() float64 {
 	var (

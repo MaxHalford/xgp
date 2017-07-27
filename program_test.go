@@ -1,9 +1,9 @@
-package main
+package xgp
 
 import (
 	"testing"
 
-	"github.com/MaxHalford/tiago/dataframe"
+	"github.com/MaxHalford/xgp/dataframe"
 )
 
 func TestPredictRow(t *testing.T) {

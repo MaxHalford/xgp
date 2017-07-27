@@ -1,18 +1,18 @@
-package main
+package xgp
 
 import (
 	"math"
 	"math/rand"
 
 	"github.com/MaxHalford/gago"
-	"github.com/MaxHalford/tiago/dataframe"
-	"github.com/MaxHalford/tiago/metric"
+	"github.com/MaxHalford/xgp/dataframe"
+	"github.com/MaxHalford/xgp/metric"
 )
 
 type Estimator struct {
 	DataFrame       *dataframe.DataFrame
 	Metric          metric.Metric
-	Activation      func(float64) float64
+	Transform       func(float64) float64
 	PVariable       float64         // Probability of producing a Variable when creating a terminal Node
 	NodeInitializer NodeInitializer // Method for producing new Program trees
 	FunctionSet     map[int][]Operator

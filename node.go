@@ -1,9 +1,9 @@
-package main
+package xgp
 
 import (
 	"math/rand"
 
-	"github.com/MaxHalford/tiago/tree"
+	"github.com/MaxHalford/xgp/tree"
 )
 
 type Node struct {
