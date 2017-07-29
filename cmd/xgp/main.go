@@ -9,6 +9,7 @@ import (
 	"github.com/MaxHalford/xgp"
 	"github.com/MaxHalford/xgp/dataframe"
 	"github.com/MaxHalford/xgp/metric"
+	"github.com/MaxHalford/xgp/tree"
 	"github.com/urfave/cli"
 )
 
@@ -53,7 +54,7 @@ func main() {
 				var file = c.Args().First()
 				// Check if the file exists
 				if err := fileExists(file); err != nil {
-					return err
+					return cli.NewExitError(err.Error(), 1)
 				}
 				// Determine the task to perform
 				isClassification := c.String("task") == "classification"
@@ -128,7 +129,7 @@ func main() {
 					return err
 				}
 				// Load the test set in memory
-				test, err := dataframe.ReadCSV(file, c.String("target_col"), true)
+				test, err := dataframe.ReadCSV(file, c.String("target_col"), false)
 				if err != nil {
 					return cli.NewExitError(err.Error(), 1)
 				}
@@ -150,6 +151,40 @@ func main() {
 				var score, _ = prog.Estimator.Metric.Apply(test.Y, yPred)
 				fmt.Printf("Test score: %.3f\n", score)
 
+				return nil
+			},
+		},
+		{
+			Name:  "todot",
+			Usage: "Creates a .dot file from a model",
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "model, m",
+					Value: "model.json",
+					Usage: "Filename of the trained model",
+				},
+				cli.StringFlag{
+					Name:  "output, o",
+					Value: "model.dot",
+					Usage: "Path for the output file",
+				},
+			},
+			Action: func(c *cli.Context) error {
+				// Load the model
+				node, err := xgp.LoadNodeFromJSON(c.String("model"))
+				if err != nil {
+					return cli.NewExitError(err.Error(), 1)
+				}
+				// Create the output file
+				file, err := os.Create(c.String("output"))
+				if err != nil {
+					return cli.NewExitError(err.Error(), 1)
+				}
+				defer file.Close()
+				// Make the Graphviz representation
+				var graphviz = tree.GraphvizDisplay{}
+				file.WriteString(graphviz.Apply(node))
+				file.Sync()
 				return nil
 			},
 		},

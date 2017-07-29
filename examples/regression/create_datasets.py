@@ -7,7 +7,7 @@ if __name__ == '__main__':
     rng = check_random_state(0)
 
     # Training samples
-    X_train = rng.uniform(-1, 1, 100).reshape(50, 2)
+    X_train = rng.uniform(-1, 1, 1000).reshape(500, 2)
     y_train = X_train[:, 0]**2 - X_train[:, 1]**2 + X_train[:, 1] - 1
     pd.DataFrame({
         'x0': X_train[:, 0],
