@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"time"
 
@@ -31,7 +30,7 @@ func main() {
 				},
 				cli.IntFlag{
 					Name:  "generations, g",
-					Value: 30,
+					Value: 10,
 					Usage: "Number of generations",
 				},
 				cli.StringFlag{
@@ -46,13 +45,12 @@ func main() {
 				},
 				cli.StringFlag{
 					Name:  "output, o",
-					Value: "model.xgp",
-					Usage: "Name of the output model",
+					Value: "model.json",
+					Usage: "Path for the output model",
 				},
 			},
 			Action: func(c *cli.Context) error {
-				file := c.Args().First()
-				fmt.Println(file)
+				var file = c.Args().First()
 				// Check if the file exists
 				if err := fileExists(file); err != nil {
 					return err
@@ -65,11 +63,10 @@ func main() {
 					return cli.NewExitError(err.Error(), 1)
 				}
 				// Instantiate an Estimator
-				log.Println(c.String("metric"))
 				estimator := xgp.Estimator{
 					DataFrame:       train,
-					Metric:          metric.NegativeBinaryF1Score{},
-					Transform:       xgp.Sigmoid,
+					Metric:          metric.MeanSquaredError{},
+					Transform:       xgp.Identity,
 					PVariable:       0.5,
 					NodeInitializer: xgp.FullNodeInitializer{Height: 3},
 					FunctionSet: map[int][]xgp.Operator{
@@ -101,6 +98,10 @@ func main() {
 					fmt.Printf("Score: %.3f | %d / %d \n", estimator.GA.Best.Fitness, i+1, c.Int("generations"))
 				}
 
+				// Save the best Program's root Node
+				var bestProg = estimator.GA.Best.Genome.(*xgp.Program)
+				xgp.SaveNodeToJSON(bestProg.Root, c.String("output"))
+
 				return nil
 
 			},
@@ -108,10 +109,47 @@ func main() {
 		{
 			Name:  "predict",
 			Usage: "Predicts a dataset with a trained model",
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "model, m",
+					Value: "model.json",
+					Usage: "Filename of the trained model",
+				},
+				cli.StringFlag{
+					Name:  "target_col, tc",
+					Value: "target",
+					Usage: "Name of the target column",
+				},
+			},
 			Action: func(c *cli.Context) error {
-				// yPred := estimator.GA.Best.Genome.(*xgp.Program).PredictDataFrame(test, false)
-				// score, _ := estimator.Metric.Apply(test.Y, yPred)
-				// fmt.Println(score)
+				var file = c.Args().First()
+				// Check if the file exists
+				if err := fileExists(file); err != nil {
+					return err
+				}
+				// Load the test set in memory
+				test, err := dataframe.ReadCSV(file, c.String("target_col"), true)
+				if err != nil {
+					return cli.NewExitError(err.Error(), 1)
+				}
+				// Load the model
+				node, err := xgp.LoadNodeFromJSON(c.String("model"))
+				if err != nil {
+					return cli.NewExitError(err.Error(), 1)
+				}
+
+				var prog = xgp.Program{
+					Root: node,
+					Estimator: &xgp.Estimator{
+						Metric:    metric.MeanSquaredError{},
+						Transform: xgp.Identity,
+					},
+				}
+
+				var yPred = prog.PredictDataFrame(test, prog.Estimator.Transform)
+				var score, _ = prog.Estimator.Metric.Apply(test.Y, yPred)
+				fmt.Printf("Test score: %.3f\n", score)
+
 				return nil
 			},
 		},

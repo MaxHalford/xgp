@@ -19,7 +19,7 @@ is a machine learning tool based on [genetic programming](https://www.wikiwand.c
 ## Development
 
 ```sh
-go run cmd/xgp/*.go fit examples/iris/train.csv
+go run cmd/xgp/*.go fit examples/regression/train.csv -tc y && go run cmd/xgp/*.go predict examples/regression/test.csv -tc y
 ```
 
 ## Dependencies
