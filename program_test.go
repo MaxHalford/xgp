@@ -28,7 +28,7 @@ func TestPredictRow(t *testing.T) {
 	}
 
 	for i, tc := range testCases {
-		var output = tc.program.PredictRow(tc.row, false)
+		var output = tc.program.PredictRow(tc.row, nil)
 		if output != tc.output {
 			t.Errorf("Error in test case number %d: got %.2f instead of %.2f", i, output, tc.output)
 		}
@@ -63,7 +63,7 @@ func TestPredictDataFrame(t *testing.T) {
 	}
 
 	for i, tc := range testCases {
-		var y = tc.program.PredictDataFrame(tc.dataframe, false)
+		var y = tc.program.PredictDataFrame(tc.dataframe, nil)
 		for j := range y {
 			if y[j] != tc.y[j] {
 				t.Errorf("Error in test case number %d: got %.2f instead of %.2f", i, y[j], tc.y[j])

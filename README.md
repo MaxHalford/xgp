@@ -10,6 +10,7 @@ is a machine learning tool based on [genetic programming](https://www.wikiwand.c
 - [Classification Strategies for Image Classification in Genetic Programming](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.475.3010&rep=rep1&type=pdf)
 - [Multi-class overview](http://dynamics.org/~altenber/UH_ICS/EC_REFS/GP_REFS/IEEE/CEC2001/395.pdf)
 - [Sampling data for fitness evaluation](http://eplex.cs.ucf.edu/papers/morse_gecco16.pdf)
+- Integrate [golearn](https://github.com/sjwhitworth/golearn)
 
 ## Architecture
 

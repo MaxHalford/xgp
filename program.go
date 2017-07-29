@@ -20,22 +20,22 @@ func (prog Program) String() string {
 }
 
 // PredictRow predicts the target of a row in a DataFrame.
-func (prog Program) PredictRow(row []float64, useTransform bool) float64 {
+func (prog Program) PredictRow(row []float64, transform func(float64) float64) float64 {
 	var y = prog.Root.evaluate(row)
-	if useTransform {
-		return prog.Estimator.Transform(y)
+	if transform != nil {
+		return transform(y)
 	}
 	return y
 }
 
 // PredictDataFrame predicts the target of each row in a DataFrame.
-func (prog Program) PredictDataFrame(df *dataframe.DataFrame, useTransform bool) []float64 {
+func (prog Program) PredictDataFrame(df *dataframe.DataFrame, transform func(float64) float64) []float64 {
 	var (
 		n, _  = df.Shape()
 		yPred = make([]float64, n)
 	)
 	for i, row := range df.X {
-		yPred[i] = prog.PredictRow(row, useTransform)
+		yPred[i] = prog.PredictRow(row, transform)
 	}
 	return yPred
 }
@@ -46,7 +46,7 @@ func (prog Program) PredictDataFrame(df *dataframe.DataFrame, useTransform bool)
 // package.
 func (prog Program) Evaluate() float64 {
 	var (
-		yPred      = prog.PredictDataFrame(prog.Estimator.DataFrame, true)
+		yPred      = prog.PredictDataFrame(prog.Estimator.DataFrame, prog.Estimator.Transform)
 		fitness, _ = prog.Estimator.Metric.Apply(prog.Estimator.DataFrame.Y, yPred)
 	)
 	return fitness
