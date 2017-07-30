@@ -27,19 +27,22 @@ type DirDisplay struct {
 // Apply directory-style display.
 func (displayer DirDisplay) Apply(tree Tree) string {
 	var (
-		disp       func(tree Tree, str string, depth int) string
+		disp       func(tree Tree, str string, depth int, carriage bool) string
 		whitespace = strings.Repeat(" ", displayer.TabSize)
 	)
 
-	disp = func(tree Tree, str string, depth int) string {
-		str += strings.Repeat(whitespace, depth) + tree.ToString() + "\n"
+	disp = func(tree Tree, str string, depth int, carriage bool) string {
+		str += strings.Repeat(whitespace, depth) + tree.ToString()
+		if carriage {
+			str += "\n"
+		}
 		for i := tree.NBranches() - 1; i >= 0; i-- {
-			str = disp(tree.GetBranch(i), str, depth+1)
+			str = disp(tree.GetBranch(i), str, depth+1, i > 0)
 		}
 		return str
 	}
 
-	return disp(tree, "", 0)
+	return disp(tree, "", 0, tree.NBranches() >= 0)
 }
 
 // GraphvizDisplay outputs a Graphviz representation of a Tree. Each branch is
