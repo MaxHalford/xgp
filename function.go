@@ -4,6 +4,22 @@ import (
 	"math"
 )
 
+var FUNCTIONS = map[string]Operator{
+	"cos": Cos{},
+	"sin": Sin{},
+	"log": Log{},
+	"exp": Exp{},
+	"max": Max{},
+	"min": Min{},
+	"+":   Sum{},
+	"-":   Difference{},
+	"/":   Division{},
+	"*":   Product{},
+	"^":   Power{},
+	">":   GreaterThan{},
+	"<":   LesserThan{},
+}
+
 // 1D functions
 
 // Cos computes the cosine of an operand.

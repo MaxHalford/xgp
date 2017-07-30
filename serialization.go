@@ -3,6 +3,7 @@ package xgp
 import (
 	"encoding/gob"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 )
@@ -17,7 +18,7 @@ type SerialNode struct {
 	Children      []SerialNode `json:"children"`
 }
 
-// SerializeNode transforms a *Node into a SerialNode.
+// SerializeNode recursively transforms a *Node into a SerialNode.
 func SerializeNode(node *Node) (SerialNode, error) {
 	var serial = SerialNode{
 		Children: make([]SerialNode, node.NBranches()),
@@ -43,7 +44,7 @@ func SerializeNode(node *Node) (SerialNode, error) {
 	return serial, nil
 }
 
-// ParseSerialNode transforms a SerialNode into a *Node.
+// ParseSerialNode recursively transforms a SerialNode into a *Node.
 func ParseSerialNode(serial SerialNode) (*Node, error) {
 	var node = &Node{
 		Children: make([]*Node, len(serial.Children)),
@@ -54,7 +55,11 @@ func ParseSerialNode(serial SerialNode) (*Node, error) {
 	case "variable":
 		node.Operator = Variable{serial.VariableIndex}
 	default:
-		node.Operator = Sum{}
+		var function, ok = FUNCTIONS[serial.FunctionName]
+		if !ok {
+			return nil, fmt.Errorf("Unknown function name '%s'", serial.FunctionName)
+		}
+		node.Operator = function
 	}
 	for i, child := range serial.Children {
 		var nodeChild, err = ParseSerialNode(child)
