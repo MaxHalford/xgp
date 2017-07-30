@@ -42,7 +42,7 @@ func (displayer DirDisplay) Apply(tree Tree) string {
 		return str
 	}
 
-	return disp(tree, "", 0, tree.NBranches() >= 0)
+	return disp(tree, "", 0, tree.NBranches() > 0)
 }
 
 // GraphvizDisplay outputs a Graphviz representation of a Tree. Each branch is

@@ -49,6 +49,33 @@ func (node *Node) String() string {
 	return displayer.Apply(node)
 }
 
+// Prune a Node by removing unnecessary children. The algorithm starts at the
+// bottom of the tree from left to right.
+func (node *Node) Prune() {
+	// Call the function recursively first so as to start from the bottom
+	for i := range node.Children {
+		node.Children[i].Prune()
+	}
+	// Stop if the Node has no children because this means it can't be pruned
+	if node.NBranches() == 0 {
+		return
+	}
+	// Check if the Node has children that contain Variable Operators
+	var varChildren bool
+	for _, child := range node.Children {
+		if _, ok := child.Operator.(Variable); ok {
+			varChildren = true
+			break
+		}
+	}
+	// If there are no children with Variable Operators then the Node's Operator
+	// can be replaced with a Constant.
+	if !varChildren {
+		node.Operator = Constant{Value: node.evaluate([]float64{})}
+		node.Children = nil
+	}
+}
+
 // Implementation of the Tree interface from the tree package
 
 // NBranches method is required to implement the Tree interface from the tree
