@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestNodePrune(t *testing.T) {
+func TestNodeSimplify(t *testing.T) {
 	var testCases = []struct {
 		node       *Node
 		prunedNode *Node
@@ -40,7 +40,7 @@ func TestNodePrune(t *testing.T) {
 		},
 	}
 	for i, tc := range testCases {
-		tc.node.Prune()
+		tc.node.Simplify()
 		if !reflect.DeepEqual(tc.node, tc.prunedNode) {
 			t.Errorf("Error in test case %d", i)
 		}

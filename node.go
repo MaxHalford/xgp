@@ -49,13 +49,13 @@ func (node *Node) String() string {
 	return displayer.Apply(node)
 }
 
-// Prune a Node by removing unnecessary children. The algorithm starts at the
+// Simplify a Node by removing unnecessary children. The algorithm starts at the
 // bottom of the tree from left to right.
-func (node *Node) Prune() {
+func (node *Node) Simplify() {
 	var varChildren bool
 	// Call the function recursively first so as to start from the bottom
 	for i, child := range node.Children {
-		node.Children[i].Prune()
+		node.Children[i].Simplify()
 		// Check if the Node has children that contain Variable Operators
 		if _, ok := child.Operator.(Variable); ok {
 			varChildren = true
