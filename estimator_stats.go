@@ -2,6 +2,7 @@ package xgp
 
 import "github.com/MaxHalford/xgp/tree"
 
+// AvgProgramHeight returns the average Program height.
 func (est Estimator) AvgProgramHeight() float64 {
 	var (
 		total int

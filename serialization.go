@@ -71,7 +71,7 @@ func ParseSerialNode(serial SerialNode) (*Node, error) {
 	return node, nil
 }
 
-// UnmarshalJSON serializes a *Node into JSON bytes. A SerialNode is used as an
+// MarshalJSON serializes a *Node into JSON bytes. A SerialNode is used as an
 // intermediary.
 func (node *Node) MarshalJSON() ([]byte, error) {
 	var serial, err = SerializeNode(node)
@@ -109,7 +109,7 @@ func SaveNodeToJSON(node *Node, path string) error {
 	return nil
 }
 
-// SaveNodeToJSON loads a Node from a JSON file.
+// LoadNodeFromJSON loads a Node from a JSON file.
 func LoadNodeFromJSON(path string) (*Node, error) {
 	var bytes, err = ioutil.ReadFile(path)
 	if err != nil {
@@ -128,7 +128,7 @@ func (node *Node) GobEncode() ([]byte, error) {
 	return node.MarshalJSON()
 }
 
-// GobEncode makes the *Node type implement gob.GobDecoder.
+// GobDecode makes the *Node type implement gob.GobDecoder.
 func (node *Node) GobDecode(bytes []byte) error {
 	return node.UnmarshalJSON(bytes)
 }

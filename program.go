@@ -8,7 +8,9 @@ import (
 	"github.com/MaxHalford/xgp/tree"
 )
 
-// A Program
+// A Program holds a tree composed of Nodes and also holds references to
+// necessary information. A Program is simply an abstraction of top of a Node
+// in order to not store the references in each Node of the tree.
 type Program struct {
 	Root      *Node
 	Estimator *Estimator
@@ -95,6 +97,8 @@ func (prog Program) Crossover(prog2 gago.Genome, rng *rand.Rand) (gago.Genome, g
 	return offspring1, offspring2
 }
 
+// Clone method required to implement the Genome interface from the gago
+// package.
 func (prog Program) Clone() gago.Genome {
 	return &Program{
 		Root:      prog.Root.clone(),

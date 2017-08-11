@@ -14,6 +14,7 @@ type FullNodeInitializer struct {
 	Height int
 }
 
+// Apply FullNodeInitializer.
 func (init FullNodeInitializer) Apply(newNode newNode, rng *rand.Rand) *Node {
 	if init.Height == 0 {
 		return newNode(true, rng)
@@ -32,6 +33,7 @@ type GrowNodeInitializer struct {
 	PLeaf     float64 // Probability of producing a leaf
 }
 
+// Apply GrowNodeInitializer.
 func (init GrowNodeInitializer) Apply(newNode newNode, rng *rand.Rand) *Node {
 	if init.MaxHeight == 0 || rng.Float64() < init.PLeaf {
 		return newNode(true, rng)

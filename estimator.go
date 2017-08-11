@@ -9,6 +9,8 @@ import (
 	"github.com/MaxHalford/xgp/metric"
 )
 
+// An Estimator links all the different components together and can be used to
+// train Programs on a DataFrame.
 type Estimator struct {
 	DataFrame       *dataframe.DataFrame
 	Metric          metric.Metric
@@ -25,6 +27,7 @@ type Estimator struct {
 	generationsSinceImprovement int     // Used for determining early stopping
 }
 
+// Initialize an Estimator.
 func (est *Estimator) Initialize() {
 	// Compute the target average and standard deviation to help produce
 	// meaningful Constants
@@ -65,12 +68,11 @@ func (est Estimator) newNode(terminal bool, rng *rand.Rand) *Node {
 			operator = est.newConstant(rng)
 		}
 		return &Node{Operator: operator}
-	} else {
-		operator = est.newFunctionOfArity(2, rng)
-		return &Node{
-			Operator: operator,
-			Children: make([]*Node, operator.Arity()),
-		}
+	}
+	operator = est.newFunctionOfArity(2, rng)
+	return &Node{
+		Operator: operator,
+		Children: make([]*Node, operator.Arity()),
 	}
 }
 

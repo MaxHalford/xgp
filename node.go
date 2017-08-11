@@ -6,6 +6,9 @@ import (
 	"github.com/MaxHalford/xgp/tree"
 )
 
+// A Node holds an Operator and leaf Nodes called children. A Node is said to be
+// terminal if it has no children. The Operator's arity and the number of
+// children should always be the same.
 type Node struct {
 	Operator Operator
 	Children []*Node
@@ -89,7 +92,7 @@ func (node *Node) Swap(otherTree tree.Tree) {
 	*node, *otherTree.(*Node) = *otherTree.(*Node), *node
 }
 
-// String method is required to implement the Tree interface from the tree
+// ToString method is required to implement the Tree interface from the tree
 // package.
 func (node *Node) ToString() string {
 	return node.Operator.String()
