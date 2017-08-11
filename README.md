@@ -36,7 +36,7 @@ export PATH="$PATH:$GOPATH/bin"
 go get -u github.com/MaxHalford/xgp/...
 ```
 
-This will the xgp package together with the CLI. The following Go dependencies will be installed:
+This will the xgp package together with the CLI. The following Go dependencies will be installed alongside:
 
 - [MaxHalford/gago](https://github.com/MaxHalford/gago)
 - [urfave/cli](https://github.com/urfave/cli)
