@@ -4,22 +4,6 @@ import (
 	"math"
 )
 
-// FUNCTIONS maps Function string representation to Functions for serialization
-// purposes.
-var FUNCTIONS = map[string]Operator{
-	Cos{}.String():        Cos{},
-	Sin{}.String():        Sin{},
-	Log{}.String():        Log{},
-	Exp{}.String():        Exp{},
-	Max{}.String():        Max{},
-	Min{}.String():        Min{},
-	Sum{}.String():        Sum{},
-	Difference{}.String(): Difference{},
-	Division{}.String():   Division{},
-	Product{}.String():    Product{},
-	Power{}.String():      Power{},
-}
-
 // 1D functions
 
 // Cos computes the cosine of an operand.

@@ -8,9 +8,9 @@ import (
 	"github.com/MaxHalford/xgp/tree"
 )
 
-// A Program holds a tree composed of Nodes and also holds references to
-// necessary information. A Program is simply an abstraction of top of a Node
-// in order to not store the references in each Node of the tree.
+// A Program holds a tree composed of Nodes and also holds a reference to an
+// Estimator. A Program is simply an abstraction of top of a Node that allows
+// not having to store the Estimator reference in each Node.
 type Program struct {
 	Root      *Node
 	Estimator *Estimator
@@ -22,16 +22,16 @@ func (prog Program) String() string {
 }
 
 // PredictRow predicts the target of a row in a DataFrame.
-func (prog Program) PredictRow(row []float64, transform func(float64) float64) float64 {
+func (prog Program) PredictRow(row []float64, transform Transform) float64 {
 	var y = prog.Root.evaluate(row)
 	if transform != nil {
-		return transform(y)
+		return transform.Apply(y)
 	}
 	return y
 }
 
 // PredictDataFrame predicts the target of each row in a DataFrame.
-func (prog Program) PredictDataFrame(df *dataframe.DataFrame, transform func(float64) float64) []float64 {
+func (prog Program) PredictDataFrame(df *dataframe.DataFrame, transform Transform) []float64 {
 	var (
 		n, _  = df.Shape()
 		yPred = make([]float64, n)

@@ -1,15 +1,37 @@
 package xgp
 
 import (
-	"encoding/gob"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"os"
 )
 
-// A SerialNode can be serialized. The SerialNode's information can be used to
-// reconstruct a Node.
+// FUNCTIONS maps string representations of Functions to their respective
+// Function for serialization purposes.
+var FUNCTIONS = map[string]Operator{
+	Cos{}.String():        Cos{},
+	Sin{}.String():        Sin{},
+	Log{}.String():        Log{},
+	Exp{}.String():        Exp{},
+	Max{}.String():        Max{},
+	Min{}.String():        Min{},
+	Sum{}.String():        Sum{},
+	Difference{}.String(): Difference{},
+	Division{}.String():   Division{},
+	Product{}.String():    Product{},
+	Power{}.String():      Power{},
+}
+
+// TRANSFORMS maps string representations of Transforms to their respective
+// Transform for serialization purposes.
+var TRANSFORMS = map[string]Transform{
+	Identity{}.String(): Identity{},
+	Binary{}.String():   Binary{},
+	Sigmoid{}.String():  Sigmoid{},
+}
+
+// A SerialNode can be serialized and holds information that can be used to
+// initialize a Node.
 type SerialNode struct {
 	OperatorType  string       `json:"operator_type"`
 	FunctionName  string       `json:"function_name"`
@@ -96,9 +118,69 @@ func (node *Node) UnmarshalJSON(bytes []byte) error {
 	return nil
 }
 
-// SaveNodeToJSON saves a Node into a JSON file.
-func SaveNodeToJSON(node *Node, path string) error {
-	var bytes, err = json.Marshal(node)
+// A SerialProgram can be serialized and holds information that can be used to
+// initialize a Program.
+type SerialProgram struct {
+	Root          SerialNode `json:"root"`
+	TransformName string     `json:"transform"`
+}
+
+// SerializeProgram transforms a SerialProgram into a Program.
+func SerializeProgram(prog Program) (SerialProgram, error) {
+	var root, err = SerializeNode(prog.Root)
+	if err != nil {
+		return SerialProgram{}, err
+	}
+	return SerialProgram{
+		Root:          root,
+		TransformName: prog.Estimator.Transform.String(),
+	}, nil
+}
+
+// ParseSerialProgram recursively transforms a SerialProgram into a Program.
+func ParseSerialProgram(serial SerialProgram) (Program, error) {
+	var root, err = ParseSerialNode(serial.Root)
+	if err != nil {
+		return Program{}, err
+	}
+	var transform, ok = TRANSFORMS[serial.TransformName]
+	if !ok {
+		return Program{}, fmt.Errorf("Unknown transform name '%s'", serial.TransformName)
+	}
+	return Program{
+		Root:      root,
+		Estimator: &Estimator{Transform: transform},
+	}, nil
+}
+
+// MarshalJSON serializes a Program into JSON bytes. A SerialProgram is used as
+// an intermediary.
+func (prog *Program) MarshalJSON() ([]byte, error) {
+	var serial, err = SerializeProgram(*prog)
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(&serial)
+}
+
+// UnmarshalJSON parses JSON bytes into a Program. A SerialProgram is used as an
+// intermediary.
+func (prog *Program) UnmarshalJSON(bytes []byte) error {
+	var serial SerialProgram
+	if err := json.Unmarshal(bytes, &serial); err != nil {
+		return err
+	}
+	var parsedProg, err = ParseSerialProgram(serial)
+	if err != nil {
+		return err
+	}
+	*prog = parsedProg
+	return nil
+}
+
+// SaveProgramToJSON saves a Program to a JSON file.
+func SaveProgramToJSON(program Program, path string) error {
+	var bytes, err = json.Marshal(&program)
 	if err != nil {
 		return err
 	}
@@ -109,57 +191,16 @@ func SaveNodeToJSON(node *Node, path string) error {
 	return nil
 }
 
-// LoadNodeFromJSON loads a Node from a JSON file.
-func LoadNodeFromJSON(path string) (*Node, error) {
+// LoadProgramFromJSON loads a Program from a JSON file.
+func LoadProgramFromJSON(path string) (Program, error) {
 	var bytes, err = ioutil.ReadFile(path)
 	if err != nil {
-		return nil, err
+		return Program{}, err
 	}
-	var node *Node
-	err = json.Unmarshal(bytes, &node)
+	var program Program
+	err = json.Unmarshal(bytes, &program)
 	if err != nil {
-		return nil, err
+		return Program{}, err
 	}
-	return node, nil
-}
-
-// GobEncode makes the *Node type implement gob.GobEncoder.
-func (node *Node) GobEncode() ([]byte, error) {
-	return node.MarshalJSON()
-}
-
-// GobDecode makes the *Node type implement gob.GobDecoder.
-func (node *Node) GobDecode(bytes []byte) error {
-	return node.UnmarshalJSON(bytes)
-}
-
-// SaveNodeToGob saves a Node into a gob file.
-func SaveNodeToGob(node *Node, path string) error {
-	var file, err = os.Create(path)
-	if err != nil {
-		return err
-	}
-	var encoder = gob.NewEncoder(file)
-	err = encoder.Encode(node)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// LoadNodeFromGob loads a Node from a gob file.
-func LoadNodeFromGob(path string) (*Node, error) {
-	var file, err = os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	var (
-		decoder = gob.NewDecoder(file)
-		node    *Node
-	)
-	err = decoder.Decode(&node)
-	if err != nil {
-		return nil, err
-	}
-	return node, nil
+	return program, nil
 }

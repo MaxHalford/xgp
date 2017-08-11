@@ -14,7 +14,7 @@ import (
 type Estimator struct {
 	DataFrame       *dataframe.DataFrame
 	Metric          metric.Metric
-	Transform       func(float64) float64
+	Transform       Transform
 	PVariable       float64         // Probability of producing a Variable when creating a terminal Node
 	NodeInitializer NodeInitializer // Method for producing new Program trees
 	FunctionSet     map[int][]Operator
