@@ -3,7 +3,7 @@
   <img src="https://docs.google.com/drawings/d/1en_XKo3L65RCiFtu2ftutXYpPE3DO7SBW3qLL36Rdg4/pub?w=389&h=227"/>
 </div>
 
-xgp is a machine learning tool based on [genetic programming](https://www.wikiwand.com/en/Genetic_programming) which can be used for classification and regression problems.
+xgp is a machine learning tool based on [genetic programming](https://www.wikiwand.com/en/Genetic_programming) which can be used for both classification and regression problems.
 
 ## To do
 
