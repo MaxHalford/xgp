@@ -56,30 +56,23 @@ func (est Estimator) newFunctionOfArity(arity int, rng *rand.Rand) Operator {
 	return est.FunctionSet[arity][rng.Intn(len(est.FunctionSet[arity]))]
 }
 
-// newNode generates a random *Node. If leaf is true then newNode returns a
-// Constant or a Variable by flipping a coin against PVariable. If leaf is not
-// true then newNode returns a Function.
-func (est Estimator) newNode(terminal bool, rng *rand.Rand) *Node {
-	var operator Operator
+// newOperator generates a random *Node. If terminal is true then a Constant or
+// a Variable is returned. If not a Function is returned.
+func (est Estimator) newOperator(terminal bool, rng *rand.Rand) Operator {
 	if terminal {
 		if rng.Float64() < est.PVariable {
-			operator = est.newVariable(rng)
+			return est.newVariable(rng)
 		} else {
-			operator = est.newConstant(rng)
+			return est.newConstant(rng)
 		}
-		return &Node{Operator: operator}
 	}
-	operator = est.newFunctionOfArity(2, rng)
-	return &Node{
-		Operator: operator,
-		Children: make([]*Node, operator.Arity()),
-	}
+	return est.newFunctionOfArity(2, rng)
 }
 
 // NewProgram can be used by gago to produce a new Genome.
 func (est *Estimator) NewProgram(rng *rand.Rand) gago.Genome {
 	return &Program{
-		Root:      est.NodeInitializer.Apply(est.newNode, rng),
+		Root:      est.NodeInitializer.Apply(est.newOperator, rng),
 		Estimator: est,
 	}
 }
