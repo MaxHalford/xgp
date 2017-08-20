@@ -83,7 +83,7 @@ var fitCmd = cli.Command{
 			},
 		}
 		// Instantiate a GA
-		estimator.GA = gago.GA{
+		estimator.GA = &gago.GA{
 			GenomeFactory: estimator.NewProgram,
 			NPops:         1,
 			PopSize:       100,
@@ -97,6 +97,7 @@ var fitCmd = cli.Command{
 		// Initialize the Estimator
 		estimator.Initialize()
 
+		// Run the first GA
 		for i := 0; i < c.Int("generations"); i++ {
 			estimator.GA.Enhance()
 			fmt.Printf("Score: %.3f | %d / %d \n", estimator.GA.Best.Fitness, i+1, c.Int("generations"))

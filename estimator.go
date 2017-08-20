@@ -18,7 +18,8 @@ type Estimator struct {
 	PVariable       float64         // Probability of producing a Variable when creating a terminal Node
 	NodeInitializer NodeInitializer // Method for producing new Program trees
 	FunctionSet     map[int][]Operator
-	GA              gago.GA
+	GA              *gago.GA
+	TuningGA        *gago.GA
 
 	// Fields that are generated at runtime
 	targetMean                  float64 // Used for generating new Constants
@@ -36,6 +37,11 @@ func (est *Estimator) Initialize() {
 
 	// Initialize the genetic algorithm
 	est.GA.Initialize()
+
+	// Initialize the tuning genetic algorithm
+	if est.TuningGA != nil {
+		est.TuningGA.Initialize()
+	}
 }
 
 func (est Estimator) newConstant(rng *rand.Rand) Constant {
@@ -62,9 +68,8 @@ func (est Estimator) newOperator(terminal bool, rng *rand.Rand) Operator {
 	if terminal {
 		if rng.Float64() < est.PVariable {
 			return est.newVariable(rng)
-		} else {
-			return est.newConstant(rng)
 		}
+		return est.newConstant(rng)
 	}
 	return est.newFunctionOfArity(2, rng)
 }
@@ -75,4 +80,17 @@ func (est *Estimator) NewProgram(rng *rand.Rand) gago.Genome {
 		Root:      est.NodeInitializer.Apply(est.newOperator, rng),
 		Estimator: est,
 	}
+}
+
+// NewProgramTuner can be used by gago to produce a new Genome.
+func (est *Estimator) NewProgramTuner(rng *rand.Rand) gago.Genome {
+	var (
+		bestProg  = est.GA.Best.Genome.(*Program)
+		progTuner = newProgramTuner(*bestProg)
+	)
+	return &progTuner
+}
+
+// Fit an Estimator to find an optimal Program.
+func (est *Estimator) Fit() {
 }

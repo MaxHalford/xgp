@@ -14,6 +14,14 @@ type Node struct {
 	Children []*Node
 }
 
+// RecApply recursively applies a function to a Node and it's children.
+func (node *Node) RecApply(f func(*Node)) {
+	f(node)
+	for _, child := range node.Children {
+		child.RecApply(f)
+	}
+}
+
 // Clone a Node by recursively copying it's children's attributes.
 func (node *Node) clone() *Node {
 	var children = make([]*Node, len(node.Children))

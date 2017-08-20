@@ -10,12 +10,11 @@ import (
 
 func TestFullNodeInitializer(t *testing.T) {
 	var (
-		newNode = func(leaf bool, rng *rand.Rand) *Node {
-			var node = &Node{}
-			if !leaf {
-				node.Children = make([]*Node, 2)
+		newOperator = func(terminal bool, rng *rand.Rand) Operator {
+			if terminal {
+				return Constant{1}
 			}
-			return node
+			return Sum{}
 		}
 		rng       = rand.New(rand.NewSource(time.Now().UnixNano()))
 		testCases = []struct {
@@ -38,7 +37,7 @@ func TestFullNodeInitializer(t *testing.T) {
 	)
 
 	for _, tc := range testCases {
-		var node = FullNodeInitializer{Height: tc.height}.Apply(newNode, rng)
+		var node = FullNodeInitializer{Height: tc.height}.Apply(newOperator, rng)
 		if tree.GetNNodes(node) != tc.nnodes {
 			t.Errorf("Expected %d nodes, got %d", tc.nnodes, tree.GetNNodes(node))
 		}
@@ -48,12 +47,11 @@ func TestFullNodeInitializer(t *testing.T) {
 
 func TestGrowNodeInitializer(t *testing.T) {
 	var (
-		newNode = func(leaf bool, rng *rand.Rand) *Node {
-			var node = &Node{}
-			if !leaf {
-				node.Children = make([]*Node, 2)
+		newOperator = func(terminal bool, rng *rand.Rand) Operator {
+			if terminal {
+				return Constant{1}
 			}
-			return node
+			return Sum{}
 		}
 		rng       = rand.New(rand.NewSource(time.Now().UnixNano()))
 		testCases = []struct {
@@ -97,7 +95,7 @@ func TestGrowNodeInitializer(t *testing.T) {
 	for _, tc := range testCases {
 		var (
 			initializer = GrowNodeInitializer{MaxHeight: tc.maxHeight, PLeaf: tc.pLeaf}
-			node        = initializer.Apply(newNode, rng)
+			node        = initializer.Apply(newOperator, rng)
 		)
 		if tree.GetNNodes(node) != tc.nnodes {
 			t.Errorf("Expected %d nodes, got %d", tc.nnodes, tree.GetNNodes(node))

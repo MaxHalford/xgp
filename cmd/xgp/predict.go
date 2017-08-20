@@ -58,7 +58,7 @@ var predictCmd = cli.Command{
 			return cli.NewExitError(err.Error(), 1)
 		}
 
-		var yPred = prog.PredictDataFrame(test, prog.Estimator.Transform)
+		var yPred = prog.PredictDataFrame(test)
 		var score, _ = metric.Apply(test.Y, yPred)
 		fmt.Printf("Test score: %.3f\n", score)
 

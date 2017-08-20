@@ -7,6 +7,9 @@ xgp is a machine learning tool based on [genetic programming](https://www.wikiwa
 
 ## To do
 
+- Ramped half and half
+- Optimize constant parameters
+- Boosting
 - Create lookup tables for operators that time to evaluate at runtime
 - http://www.genetic-programming.com/gpquadraticexample.html
 - http://www.genetic-programming.com/gpflowchart.html

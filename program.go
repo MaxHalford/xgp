@@ -21,41 +21,47 @@ func (prog Program) String() string {
 	return prog.Root.String()
 }
 
+// Clone a Program.
+func (prog Program) clone() Program {
+	return Program{
+		Root:      prog.Root.clone(),
+		Estimator: prog.Estimator,
+	}
+}
+
 // PredictRow predicts the target of a row in a DataFrame.
-func (prog Program) PredictRow(row []float64, transform Transform) float64 {
+func (prog Program) PredictRow(row []float64) float64 {
 	var y = prog.Root.evaluate(row)
-	if transform != nil {
-		return transform.Apply(y)
+	if prog.Estimator != nil && prog.Estimator.Transform != nil {
+		return prog.Estimator.Transform.Apply(y)
 	}
 	return y
 }
 
 // PredictDataFrame predicts the target of each row in a DataFrame.
-func (prog Program) PredictDataFrame(df *dataframe.DataFrame, transform Transform) []float64 {
+func (prog Program) PredictDataFrame(df *dataframe.DataFrame) []float64 {
 	var (
 		n, _  = df.Shape()
 		yPred = make([]float64, n)
 	)
 	for i, row := range df.X {
-		yPred[i] = prog.PredictRow(row, transform)
+		yPred[i] = prog.PredictRow(row)
 	}
 	return yPred
 }
 
 // Implementation of the Genome interface from the gago package
 
-// Evaluate method required to implement the Genome interface from the gago
-// package.
+// Evaluate method required to implement gago.Genome.
 func (prog Program) Evaluate() float64 {
 	var (
-		yPred      = prog.PredictDataFrame(prog.Estimator.DataFrame, prog.Estimator.Transform)
+		yPred      = prog.PredictDataFrame(prog.Estimator.DataFrame)
 		fitness, _ = prog.Estimator.Metric.Apply(prog.Estimator.DataFrame.Y, yPred)
 	)
 	return fitness
 }
 
-// Mutate method required to implement the Genome interface from the gago
-// package.
+// Mutate method required to implement gago.Genome.
 func (prog *Program) Mutate(rng *rand.Rand) {
 
 	var (
@@ -82,8 +88,7 @@ func (prog *Program) Mutate(rng *rand.Rand) {
 	mutateNode(prog.Root)
 }
 
-// Crossover method required to implement the Genome interface from the gago
-// package.
+// Crossover method required to implement gago.Genome.
 func (prog Program) Crossover(prog2 gago.Genome, rng *rand.Rand) (gago.Genome, gago.Genome) {
 	var (
 		offspring1 = prog.Clone().(*Program)
@@ -97,11 +102,8 @@ func (prog Program) Crossover(prog2 gago.Genome, rng *rand.Rand) (gago.Genome, g
 	return offspring1, offspring2
 }
 
-// Clone method required to implement the Genome interface from the gago
-// package.
+// Clone method required to implement gago.Genome.
 func (prog Program) Clone() gago.Genome {
-	return &Program{
-		Root:      prog.Root.clone(),
-		Estimator: prog.Estimator,
-	}
+	var clone = prog.clone()
+	return &clone
 }
