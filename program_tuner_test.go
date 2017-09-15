@@ -47,3 +47,52 @@ func TestNewProgramTuner(t *testing.T) {
 		t.Errorf("Expected %f, got %f", 3.0, y)
 	}
 }
+
+func TestSetProgConstants(t *testing.T) {
+	var (
+		prog = Program{
+			Root: &Node{
+				Operator: Sum{},
+				Children: []*Node{
+					&Node{Operator: Constant{1}},
+					&Node{Operator: Constant{2}},
+				},
+			},
+		}
+		progTuner = newProgramTuner(prog)
+	)
+	// Set new Constants
+	for i, c := range progTuner.ConstValues {
+		progTuner.ConstValues[i] = c + 1
+	}
+	progTuner.setProgConstants()
+	// Check with the Program's Constants
+	for i, child := range progTuner.Program.Root.Children {
+		if child.Operator.(Constant).Value != prog.Root.Children[i].Operator.(Constant).Value+1 {
+			t.Errorf("Expected %v, got %v", prog.Root.Children[i], child.Operator)
+		}
+	}
+}
+
+func TestJitterConstants(t *testing.T) {
+	var (
+		prog = Program{
+			Root: &Node{
+				Operator: Sum{},
+				Children: []*Node{
+					&Node{Operator: Constant{1}},
+					&Node{Operator: Constant{2}},
+				},
+			},
+		}
+		progTuner = newProgramTuner(prog)
+	)
+	// Jitter Constants
+	progTuner.jitterConstants(makeRNG())
+	// Compare with the Program's Constants
+	for i, c := range progTuner.ConstValues {
+		if c == prog.Root.Children[i].Operator.(Constant).Value {
+			t.Errorf("Expected %v and %v to be different", prog.Root.Children[i], c)
+		}
+	}
+}

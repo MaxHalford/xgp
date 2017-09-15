@@ -1,4 +1,4 @@
-package metric
+package metrics
 
 // BinaryPrecision measures the fraction of times a class was correctly predicted.
 type BinaryPrecision struct {
@@ -6,8 +6,8 @@ type BinaryPrecision struct {
 }
 
 // Apply BinaryPrecision.
-func (metric BinaryPrecision) Apply(yTrue []float64, yPred []float64) (float64, error) {
-	var cm, err = MakeConfusionMatrix(yTrue, yPred)
+func (metric BinaryPrecision) Apply(yTrue, yPred, weights []float64) (float64, error) {
+	var cm, err = MakeConfusionMatrix(yTrue, yPred, weights)
 	if err != nil {
 		return 0, err
 	}
@@ -30,8 +30,8 @@ type NegativeBinaryPrecision struct {
 }
 
 // Apply NegativeBinaryPrecision.
-func (metric NegativeBinaryPrecision) Apply(yTrue []float64, yPred []float64) (float64, error) {
-	var precision, err = BinaryPrecision{Class: metric.Class}.Apply(yTrue, yPred)
+func (metric NegativeBinaryPrecision) Apply(yTrue, yPred, weights []float64) (float64, error) {
+	var precision, err = BinaryPrecision{Class: metric.Class}.Apply(yTrue, yPred, weights)
 	return -precision, err
 }
 
@@ -40,8 +40,8 @@ func (metric NegativeBinaryPrecision) Apply(yTrue []float64, yPred []float64) (f
 type MicroPrecision struct{}
 
 // Apply MicroPrecision.
-func (metric MicroPrecision) Apply(yTrue []float64, yPred []float64) (float64, error) {
-	var cm, err = MakeConfusionMatrix(yTrue, yPred)
+func (metric MicroPrecision) Apply(yTrue, yPred, weights []float64) (float64, error) {
+	var cm, err = MakeConfusionMatrix(yTrue, yPred, weights)
 	if err != nil {
 		return 0, err
 	}
@@ -68,8 +68,8 @@ func (metric MicroPrecision) Apply(yTrue []float64, yPred []float64) (float64, e
 type NegativeMicroPrecision struct{}
 
 // Apply NegativeMicroPrecision.
-func (metric NegativeMicroPrecision) Apply(yTrue []float64, yPred []float64) (float64, error) {
-	var precision, err = MicroPrecision{}.Apply(yTrue, yPred)
+func (metric NegativeMicroPrecision) Apply(yTrue, yPred, weights []float64) (float64, error) {
+	var precision, err = MicroPrecision{}.Apply(yTrue, yPred, weights)
 	return -precision, err
 }
 
@@ -78,14 +78,14 @@ func (metric NegativeMicroPrecision) Apply(yTrue []float64, yPred []float64) (fl
 type MacroPrecision struct{}
 
 // Apply MacroPrecision.
-func (metric MacroPrecision) Apply(yTrue []float64, yPred []float64) (float64, error) {
-	var cm, err = MakeConfusionMatrix(yTrue, yPred)
+func (metric MacroPrecision) Apply(yTrue, yPred, weights []float64) (float64, error) {
+	var cm, err = MakeConfusionMatrix(yTrue, yPred, weights)
 	if err != nil {
 		return 0, err
 	}
 	var sum float64
 	for _, class := range cm.Classes() {
-		var precision, _ = BinaryPrecision{Class: class}.Apply(yTrue, yPred)
+		var precision, _ = BinaryPrecision{Class: class}.Apply(yTrue, yPred, weights)
 		sum += precision
 	}
 	return sum / float64(cm.NClasses()), nil
@@ -95,8 +95,8 @@ func (metric MacroPrecision) Apply(yTrue []float64, yPred []float64) (float64, e
 type NegativeMacroPrecision struct{}
 
 // Apply NegativeMacroPrecision.
-func (metric NegativeMacroPrecision) Apply(yTrue []float64, yPred []float64) (float64, error) {
-	var precision, err = MacroPrecision{}.Apply(yTrue, yPred)
+func (metric NegativeMacroPrecision) Apply(yTrue, yPred, weights []float64) (float64, error) {
+	var precision, err = MacroPrecision{}.Apply(yTrue, yPred, weights)
 	return -precision, err
 }
 
@@ -105,8 +105,8 @@ func (metric NegativeMacroPrecision) Apply(yTrue []float64, yPred []float64) (fl
 type WeightedPrecision struct{}
 
 // Apply WeightedPrecision.
-func (metric WeightedPrecision) Apply(yTrue []float64, yPred []float64) (float64, error) {
-	var cm, err = MakeConfusionMatrix(yTrue, yPred)
+func (metric WeightedPrecision) Apply(yTrue, yPred, weights []float64) (float64, error) {
+	var cm, err = MakeConfusionMatrix(yTrue, yPred, weights)
 	if err != nil {
 		return 0, err
 	}
@@ -116,7 +116,7 @@ func (metric WeightedPrecision) Apply(yTrue []float64, yPred []float64) (float64
 	)
 	for _, class := range cm.Classes() {
 		var (
-			precision, _ = BinaryPrecision{Class: class}.Apply(yTrue, yPred)
+			precision, _ = BinaryPrecision{Class: class}.Apply(yTrue, yPred, weights)
 			TP, _        = cm.TruePositives(class)
 			FN, _        = cm.FalseNegatives(class)
 		)
@@ -130,7 +130,7 @@ func (metric WeightedPrecision) Apply(yTrue []float64, yPred []float64) (float64
 type NegativeWeightedPrecision struct{}
 
 // Apply NegativeWeightedPrecision.
-func (metric NegativeWeightedPrecision) Apply(yTrue []float64, yPred []float64) (float64, error) {
-	var precision, err = WeightedPrecision{}.Apply(yTrue, yPred)
+func (metric NegativeWeightedPrecision) Apply(yTrue, yPred, weights []float64) (float64, error) {
+	var precision, err = WeightedPrecision{}.Apply(yTrue, yPred, weights)
 	return -precision, err
 }

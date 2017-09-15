@@ -13,19 +13,9 @@ type ProgramTuner struct {
 	ConstSetters []ConstantSetter
 }
 
-// Clone a ProgramTuner.
-func (progTuner ProgramTuner) clone() ProgramTuner {
-	var (
-		constValues  = make([]float64, len(progTuner.ConstValues))
-		constSetters = make([]ConstantSetter, len(progTuner.ConstSetters))
-	)
-	copy(constValues, progTuner.ConstValues)
-	copy(constSetters, progTuner.ConstSetters)
-	return ProgramTuner{
-		ConstValues:  constValues,
-		ConstSetters: constSetters,
-		Program:      progTuner.Program.clone(),
-	}
+// String representation of a ProgramTuner.
+func (progTuner ProgramTuner) String() string {
+	return progTuner.Program.Root.String()
 }
 
 // newProgramTuner returns a ProgramTuner from a Program.
@@ -39,8 +29,8 @@ func newProgramTuner(prog Program) ProgramTuner {
 				constSetters = append(constSetters, node.newConstantSetter())
 			}
 		}
+		progTuner = ProgramTuner{Program: prog.clone()}
 	)
-	var progTuner = ProgramTuner{Program: prog.clone()}
 	// Extract all the Constants from the Program
 	progTuner.Program.Root.RecApply(addConst)
 	progTuner.ConstValues = consts
@@ -48,13 +38,30 @@ func newProgramTuner(prog Program) ProgramTuner {
 	return progTuner
 }
 
-// Implementation of the Genome interface from the gago package
+// Clone a ProgramTuner.
+func (progTuner ProgramTuner) clone() ProgramTuner {
+	var clone = newProgramTuner(progTuner.Program)
+	copy(clone.ConstValues, progTuner.ConstValues)
+	return clone
+}
 
-// Evaluate method required to implement gago.Genome.
-func (progTuner ProgramTuner) Evaluate() float64 {
+func (progTuner *ProgramTuner) setProgConstants() {
 	for i, constValue := range progTuner.ConstValues {
 		progTuner.ConstSetters[i](constValue)
 	}
+}
+
+func (progTuner *ProgramTuner) jitterConstants(rng *rand.Rand) {
+	for i, constValue := range progTuner.ConstValues {
+		progTuner.ConstValues[i] += constValue * rng.NormFloat64()
+	}
+}
+
+// Implementation of the Genome interface from the gago package
+
+// Evaluate method required to implement gago.Genome.
+func (progTuner *ProgramTuner) Evaluate() float64 {
+	progTuner.setProgConstants()
 	return progTuner.Program.Evaluate()
 }
 
@@ -64,7 +71,7 @@ func (progTuner *ProgramTuner) Mutate(rng *rand.Rand) {
 }
 
 // Crossover method required to implement gago.Genome.
-func (progTuner ProgramTuner) Crossover(progTuner2 gago.Genome, rng *rand.Rand) (gago.Genome, gago.Genome) {
+func (progTuner *ProgramTuner) Crossover(progTuner2 gago.Genome, rng *rand.Rand) (gago.Genome, gago.Genome) {
 	var (
 		o1     = progTuner.clone()
 		o2     = progTuner.clone()

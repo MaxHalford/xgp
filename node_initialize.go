@@ -59,3 +59,25 @@ func (init GrowNodeInitializer) Apply(newOperator newOperator, rng *rand.Rand) *
 	}
 	return node
 }
+
+// RampedHaldAndHalfInitializer randomly chooses GrowNodeInitializer or
+// FullNodeInitializer with a random height in [MinHeight, MaxHeight].
+type RampedHaldAndHalfInitializer struct {
+	MinHeight int
+	MaxHeight int
+	PLeaf     float64 // Probability of producing a leaf for GrowNodeInitializer
+}
+
+// Apply RampedHaldAndHalfInitializer.
+func (init RampedHaldAndHalfInitializer) Apply(newOperator newOperator, rng *rand.Rand) *Node {
+	// Randomly pick a height
+	var height = randInt(init.MinHeight, init.MaxHeight, rng)
+	// Randomly apply full initialization or grow initialization
+	if rng.Float64() < 0.5 {
+		return FullNodeInitializer{Height: height}.Apply(newOperator, rng)
+	}
+	return GrowNodeInitializer{
+		MaxHeight: height,
+		PLeaf:     init.PLeaf,
+	}.Apply(newOperator, rng)
+}

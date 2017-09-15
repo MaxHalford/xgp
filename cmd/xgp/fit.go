@@ -1,13 +1,43 @@
 package main
 
 import (
-	"fmt"
+	"math"
 
 	"github.com/MaxHalford/gago"
 	"github.com/MaxHalford/xgp"
 	"github.com/MaxHalford/xgp/dataframe"
+	"github.com/fatih/color"
+	"github.com/gosuri/uiprogress"
 	"github.com/urfave/cli"
 )
+
+func monitorProgress(ch <-chan float64, done chan bool) {
+	uiprogress.Start()
+	var (
+		bar         = uiprogress.AddBar(cap(ch))
+		green       = color.New(color.FgGreen).SprintfFunc()
+		bestFitness = math.Inf(1)
+	)
+	bar.AppendCompleted()
+	bar.PrependElapsed()
+	bar.PrependFunc(func(b *uiprogress.Bar) string {
+		return green("Best fitness => %.5f", bestFitness)
+	})
+	for i := 0; i < cap(ch); i++ {
+		var fitness = <-ch
+		bar.Incr()
+		if fitness < bestFitness {
+			bestFitness = fitness
+		}
+	}
+	uiprogress.Stop()
+	done <- true
+}
+
+func exitCLI(err error) *cli.ExitError {
+	var red = color.New(color.FgRed).SprintFunc()
+	return cli.NewExitError(red(err.Error()), 1)
+}
 
 var fitCmd = cli.Command{
 	Name:  "fit",
@@ -22,6 +52,11 @@ var fitCmd = cli.Command{
 			Name:  "generations, g",
 			Value: 10,
 			Usage: "Number of generations",
+		},
+		cli.IntFlag{
+			Name:  "tuningGenerations, tg",
+			Value: 5,
+			Usage: "Number of tuning generations",
 		},
 		cli.StringFlag{
 			Name:  "task, t",
@@ -48,7 +83,7 @@ var fitCmd = cli.Command{
 		// Check if the training file exists
 		var file = c.Args().First()
 		if err := fileExists(file); err != nil {
-			return cli.NewExitError(err.Error(), 1)
+			return exitCLI(err)
 		}
 
 		// Determine the task to perform
@@ -57,22 +92,19 @@ var fitCmd = cli.Command{
 		// Determine the metric to use
 		metric, err := getMetric(c.String("metric"), c.Float64("class"))
 		if err != nil {
-			return cli.NewExitError(err.Error(), 1)
-		}
-
-		// Load the training set in memory
-		train, err := dataframe.ReadCSV(file, c.String("target_col"), isClassification)
-		if err != nil {
-			return cli.NewExitError(err.Error(), 1)
+			return exitCLI(err)
 		}
 
 		// Instantiate an Estimator
 		estimator := xgp.Estimator{
-			DataFrame:       train,
-			Metric:          metric,
-			Transform:       xgp.Identity{},
-			PVariable:       0.5,
-			NodeInitializer: xgp.FullNodeInitializer{Height: 3},
+			Metric:    metric,
+			Transform: xgp.Identity{},
+			PVariable: 0.5,
+			NodeInitializer: xgp.RampedHaldAndHalfInitializer{
+				MinHeight: 2,
+				MaxHeight: 5,
+				PLeaf:     0.5,
+			},
 			FunctionSet: map[int][]xgp.Operator{
 				2: []xgp.Operator{
 					xgp.Sum{},
@@ -82,7 +114,8 @@ var fitCmd = cli.Command{
 				},
 			},
 		}
-		// Instantiate a GA
+
+		// Set the initial GA
 		estimator.GA = &gago.GA{
 			GenomeFactory: estimator.NewProgram,
 			NPops:         1,
@@ -94,18 +127,58 @@ var fitCmd = cli.Command{
 				MutRate: 0.5,
 			},
 		}
-		// Initialize the Estimator
-		estimator.Initialize()
 
-		// Run the first GA
-		for i := 0; i < c.Int("generations"); i++ {
-			estimator.GA.Enhance()
-			fmt.Printf("Score: %.3f | %d / %d \n", estimator.GA.Best.Fitness, i+1, c.Int("generations"))
+		// Set the tuning GA
+		estimator.TuningGA = &gago.GA{
+			GenomeFactory: estimator.NewProgramTuner,
+			NPops:         1,
+			PopSize:       20,
+			Model: gago.ModGenerational{
+				Selector: gago.SelTournament{
+					NContestants: 3,
+				},
+				MutRate: 0.5,
+			},
+		}
+
+		// Load the training set in memory
+		df, err := dataframe.ReadCSV(file, c.String("target_col"), isClassification)
+		if err != nil {
+			return exitCLI(err)
+		}
+
+		// Monitor progress
+		color.Blue(
+			"Fitting for %d generations and tuning for %d generations",
+			c.Int("generations"),
+			c.Int("tuningGenerations"),
+		)
+		var (
+			ch   = make(chan float64, c.Int("generations")+c.Int("tuningGenerations"))
+			done = make(chan bool)
+		)
+		go monitorProgress(ch, done)
+
+		// Fit the Estimator
+		err = estimator.Fit(df, c.Int("generations"), ch)
+		if err != nil {
+			return exitCLI(err)
+		}
+
+		// Tune the Estimator
+		err = estimator.Tune(df, c.Int("tuningGenerations"), ch)
+		if err != nil {
+			return exitCLI(err)
 		}
 
 		// Save the best Program
-		var bestProg = estimator.GA.Best.Genome.(*xgp.Program)
-		xgp.SaveProgramToJSON(*bestProg, c.String("output"))
+		<-done
+		color.Blue("Saving best program to '%s'...", c.String("output"))
+		var bestProg, _ = estimator.BestProgram()
+		err = xgp.SaveProgramToJSON(*bestProg, c.String("output"))
+		if err != nil {
+			return exitCLI(err)
+		}
 
 		return nil
 

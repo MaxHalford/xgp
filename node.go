@@ -56,7 +56,7 @@ func (node *Node) setOperator(op Operator, rng *rand.Rand) {
 
 // String representation of a Node.
 func (node *Node) String() string {
-	var displayer = tree.DirDisplay{TabSize: 4}
+	var displayer = tree.EquationDisplay{}
 	return displayer.Apply(node)
 }
 

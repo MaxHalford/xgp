@@ -1,4 +1,4 @@
-package metric
+package metrics
 
 import (
 	"bytes"
@@ -129,20 +129,31 @@ func (cm ConfusionMatrix) String() string {
 
 // MakeConfusionMatrix returns a ConfusionMatrix from a slice of true classes
 // and another slice of predicted classes.
-func MakeConfusionMatrix(yTrue, yPred []float64) (ConfusionMatrix, error) {
+func MakeConfusionMatrix(yTrue, yPred, weights []float64) (ConfusionMatrix, error) {
 
 	if len(yTrue) != len(yPred) {
 		return nil, &errMismatchedLengths{len(yTrue), len(yPred)}
+	}
+	if weights != nil && len(yTrue) != len(weights) {
+		return nil, &errMismatchedLengths{len(yTrue), len(weights)}
 	}
 
 	var cm = make(ConfusionMatrix)
 
 	for i, yt := range yTrue {
 		if _, ok := cm[yt]; ok {
-			cm[yt][yPred[i]]++
+			if weights != nil {
+				cm[yt][yPred[i]] += weights[i]
+			} else {
+				cm[yt][yPred[i]]++
+			}
 		} else {
 			cm[yt] = make(map[float64]float64)
-			cm[yt][yPred[i]] = 1
+			if weights != nil {
+				cm[yt][yPred[i]] = weights[i]
+			} else {
+				cm[yt][yPred[i]] = 1
+			}
 		}
 	}
 

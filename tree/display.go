@@ -87,3 +87,25 @@ func (displayer GraphvizDisplay) Apply(tree Tree) string {
 	str += "}"
 	return str
 }
+
+// EquationDisplay outputs an equation-like representation of a Tree.
+type EquationDisplay struct{}
+
+// Apply EquationDisplay.
+func (displayer EquationDisplay) Apply(tree Tree) string {
+	switch tree.NBranches() {
+	case 0:
+		return tree.ToString()
+	case 1:
+		return fmt.Sprintf("%s(%s)", tree.ToString(), displayer.Apply(tree.GetBranch(0)))
+	case 2:
+		return fmt.Sprintf(
+			"(%s)%s(%s)",
+			displayer.Apply(tree.GetBranch(0)),
+			tree.ToString(),
+			displayer.Apply(tree.GetBranch(1)),
+		)
+	default:
+		return tree.ToString()
+	}
+}

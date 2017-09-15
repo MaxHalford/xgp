@@ -1,4 +1,4 @@
-package metric
+package metrics
 
 // BinaryRecall measures the fraction of times a true class was predicted.
 type BinaryRecall struct {
@@ -6,8 +6,8 @@ type BinaryRecall struct {
 }
 
 // Apply BinaryRecall.
-func (metric BinaryRecall) Apply(yTrue []float64, yPred []float64) (float64, error) {
-	var cm, err = MakeConfusionMatrix(yTrue, yPred)
+func (metric BinaryRecall) Apply(yTrue, yPred, weights []float64) (float64, error) {
+	var cm, err = MakeConfusionMatrix(yTrue, yPred, weights)
 	if err != nil {
 		return 0, err
 	}
@@ -30,8 +30,8 @@ type NegativeBinaryRecall struct {
 }
 
 // Apply NegativeBinaryRecall.
-func (metric NegativeBinaryRecall) Apply(yTrue []float64, yPred []float64) (float64, error) {
-	var recall, err = BinaryRecall{Class: metric.Class}.Apply(yTrue, yPred)
+func (metric NegativeBinaryRecall) Apply(yTrue, yPred, weights []float64) (float64, error) {
+	var recall, err = BinaryRecall{Class: metric.Class}.Apply(yTrue, yPred, weights)
 	return -recall, err
 }
 
@@ -40,8 +40,8 @@ func (metric NegativeBinaryRecall) Apply(yTrue []float64, yPred []float64) (floa
 type MicroRecall struct{}
 
 // Apply MicroRecall.
-func (metric MicroRecall) Apply(yTrue []float64, yPred []float64) (float64, error) {
-	var cm, err = MakeConfusionMatrix(yTrue, yPred)
+func (metric MicroRecall) Apply(yTrue, yPred, weights []float64) (float64, error) {
+	var cm, err = MakeConfusionMatrix(yTrue, yPred, weights)
 	if err != nil {
 		return 0, err
 	}
@@ -68,8 +68,8 @@ func (metric MicroRecall) Apply(yTrue []float64, yPred []float64) (float64, erro
 type NegativeMicroRecall struct{}
 
 // Apply NegativeMicroRecall.
-func (metric NegativeMicroRecall) Apply(yTrue []float64, yPred []float64) (float64, error) {
-	var recall, err = MicroRecall{}.Apply(yTrue, yPred)
+func (metric NegativeMicroRecall) Apply(yTrue, yPred, weights []float64) (float64, error) {
+	var recall, err = MicroRecall{}.Apply(yTrue, yPred, weights)
 	return -recall, err
 }
 
@@ -78,14 +78,14 @@ func (metric NegativeMicroRecall) Apply(yTrue []float64, yPred []float64) (float
 type MacroRecall struct{}
 
 // Apply MacroRecall.
-func (metric MacroRecall) Apply(yTrue []float64, yPred []float64) (float64, error) {
-	var cm, err = MakeConfusionMatrix(yTrue, yPred)
+func (metric MacroRecall) Apply(yTrue, yPred, weights []float64) (float64, error) {
+	var cm, err = MakeConfusionMatrix(yTrue, yPred, weights)
 	if err != nil {
 		return 0, err
 	}
 	var sum float64
 	for _, class := range cm.Classes() {
-		var recall, _ = BinaryRecall{Class: class}.Apply(yTrue, yPred)
+		var recall, _ = BinaryRecall{Class: class}.Apply(yTrue, yPred, weights)
 		sum += recall
 	}
 	return sum / float64(cm.NClasses()), nil
@@ -95,8 +95,8 @@ func (metric MacroRecall) Apply(yTrue []float64, yPred []float64) (float64, erro
 type NegativeMacroRecall struct{}
 
 // Apply NegativeMacroRecall.
-func (metric NegativeMacroRecall) Apply(yTrue []float64, yPred []float64) (float64, error) {
-	var recall, err = MacroRecall{}.Apply(yTrue, yPred)
+func (metric NegativeMacroRecall) Apply(yTrue, yPred, weights []float64) (float64, error) {
+	var recall, err = MacroRecall{}.Apply(yTrue, yPred, weights)
 	return -recall, err
 }
 
@@ -105,8 +105,8 @@ func (metric NegativeMacroRecall) Apply(yTrue []float64, yPred []float64) (float
 type WeightedRecall struct{}
 
 // Apply WeightedRecall.
-func (metric WeightedRecall) Apply(yTrue []float64, yPred []float64) (float64, error) {
-	var cm, err = MakeConfusionMatrix(yTrue, yPred)
+func (metric WeightedRecall) Apply(yTrue, yPred, weights []float64) (float64, error) {
+	var cm, err = MakeConfusionMatrix(yTrue, yPred, weights)
 	if err != nil {
 		return 0, err
 	}
@@ -116,7 +116,7 @@ func (metric WeightedRecall) Apply(yTrue []float64, yPred []float64) (float64, e
 	)
 	for _, class := range cm.Classes() {
 		var (
-			recall, _ = BinaryRecall{Class: class}.Apply(yTrue, yPred)
+			recall, _ = BinaryRecall{Class: class}.Apply(yTrue, yPred, weights)
 			TP, _     = cm.TruePositives(class)
 			FN, _     = cm.FalseNegatives(class)
 		)
@@ -130,7 +130,7 @@ func (metric WeightedRecall) Apply(yTrue []float64, yPred []float64) (float64, e
 type NegativeWeightedRecall struct{}
 
 // Apply NegativeWeightedRecall.
-func (metric NegativeWeightedRecall) Apply(yTrue []float64, yPred []float64) (float64, error) {
-	var recall, err = WeightedRecall{}.Apply(yTrue, yPred)
+func (metric NegativeWeightedRecall) Apply(yTrue, yPred, weights []float64) (float64, error) {
+	var recall, err = WeightedRecall{}.Apply(yTrue, yPred, weights)
 	return -recall, err
 }

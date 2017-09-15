@@ -1,19 +1,19 @@
 package xgp
 
 import (
+	"errors"
 	"math"
 	"math/rand"
 
 	"github.com/MaxHalford/gago"
 	"github.com/MaxHalford/xgp/dataframe"
-	"github.com/MaxHalford/xgp/metric"
+	"github.com/MaxHalford/xgp/metrics"
 )
 
 // An Estimator links all the different components together and can be used to
 // train Programs on a DataFrame.
 type Estimator struct {
-	DataFrame       *dataframe.DataFrame
-	Metric          metric.Metric
+	Metric          metrics.Metric
 	Transform       Transform
 	PVariable       float64         // Probability of producing a Variable when creating a terminal Node
 	NodeInitializer NodeInitializer // Method for producing new Program trees
@@ -21,27 +21,79 @@ type Estimator struct {
 	GA              *gago.GA
 	TuningGA        *gago.GA
 
-	// Fields that are generated at runtime
+	df                          *dataframe.DataFrame
 	targetMean                  float64 // Used for generating new Constants
 	targetStdDev                float64 // Used for generating new Constants
 	bestScore                   float64 // Used for determining early stopping
 	generationsSinceImprovement int     // Used for determining early stopping
 }
 
-// Initialize an Estimator.
-func (est *Estimator) Initialize() {
+// BestProgram returns the best program an Estimator has produced.
+func (est Estimator) BestProgram() (*Program, error) {
+	var (
+		GAOK       = !(est.GA == nil) && est.GA.Initialized()
+		tuningGAOK = !(est.TuningGA == nil) && est.TuningGA.Initialized()
+	)
+	if !GAOK && !tuningGAOK {
+		return nil, errors.New("No GA has been set")
+	}
+	if GAOK && !tuningGAOK {
+		return est.GA.Best.Genome.(*Program), nil
+	}
+	if !GAOK && tuningGAOK {
+		return est.TuningGA.Best.Genome.(*Program), nil
+	}
+	if est.GA.Best.Fitness < est.TuningGA.Best.Fitness {
+		return est.GA.Best.Genome.(*Program), nil
+	}
+	return &est.TuningGA.Best.Genome.(*ProgramTuner).Program, nil
+}
+
+// Fit an Estimator to a dataframe.DataFrame.
+func (est *Estimator) Fit(df *dataframe.DataFrame, generations int, ch chan<- float64) error {
+	// Set the df so that the initial GA can be initialized
+	est.df = df
+
 	// Compute the target average and standard deviation to help produce
 	// meaningful Constants
-	est.targetMean = meanFloat64s(est.DataFrame.Y)
-	est.targetStdDev = math.Pow(varianceFloat64s(est.DataFrame.Y), 0.5)
+	est.targetMean = meanFloat64s(est.df.Y)
+	est.targetStdDev = math.Pow(varianceFloat64s(est.df.Y), 0.5)
 
-	// Initialize the genetic algorithm
+	// Run the initial GA
 	est.GA.Initialize()
-
-	// Initialize the tuning genetic algorithm
-	if est.TuningGA != nil {
-		est.TuningGA.Initialize()
+	for i := 0; i < generations; i++ {
+		est.GA.Enhance()
+		if ch != nil {
+			ch <- est.GA.CurrentBest.Fitness
+		}
 	}
+
+	return nil
+}
+
+// Tune an Estimator.
+func (est *Estimator) Tune(df *dataframe.DataFrame, generations int, ch chan<- float64) error {
+	// Set the df so that the initial GA can be initialized
+	est.df = df
+
+	// Compute the target average and standard deviation to help produce
+	// meaningful Constants
+	est.targetMean = meanFloat64s(est.df.Y)
+	est.targetStdDev = math.Pow(varianceFloat64s(est.df.Y), 0.5)
+
+	// Run the tuning GA
+	if est.TuningGA == nil {
+		return errors.New("TuningGA has not been set")
+	}
+	est.TuningGA.Initialize()
+	for i := 0; i < generations; i++ {
+		est.TuningGA.Enhance()
+		if ch != nil {
+			ch <- est.TuningGA.CurrentBest.Fitness
+		}
+	}
+
+	return nil
 }
 
 func (est Estimator) newConstant(rng *rand.Rand) Constant {
@@ -51,10 +103,10 @@ func (est Estimator) newConstant(rng *rand.Rand) Constant {
 }
 
 // newVariable returns a Variable with an index in range [0, p) where p is the
-// number of explanatory variables in the Estimator's DataFrame.
+// number of explanatory variables in the Estimator's dataframe.DataFrame.
 func (est Estimator) newVariable(rng *rand.Rand) Variable {
 	return Variable{
-		Index: rng.Intn(est.DataFrame.NFeatures()),
+		Index: rng.Intn(est.df.NFeatures()),
 	}
 }
 
@@ -88,9 +140,6 @@ func (est *Estimator) NewProgramTuner(rng *rand.Rand) gago.Genome {
 		bestProg  = est.GA.Best.Genome.(*Program)
 		progTuner = newProgramTuner(*bestProg)
 	)
+	progTuner.jitterConstants(rng)
 	return &progTuner
-}
-
-// Fit an Estimator to find an optimal Program.
-func (est *Estimator) Fit() {
 }

@@ -55,8 +55,8 @@ func (prog Program) PredictDataFrame(df *dataframe.DataFrame) []float64 {
 // Evaluate method required to implement gago.Genome.
 func (prog Program) Evaluate() float64 {
 	var (
-		yPred      = prog.PredictDataFrame(prog.Estimator.DataFrame)
-		fitness, _ = prog.Estimator.Metric.Apply(prog.Estimator.DataFrame.Y, yPred)
+		yPred      = prog.PredictDataFrame(prog.Estimator.df)
+		fitness, _ = prog.Estimator.Metric.Apply(prog.Estimator.df.Y, yPred)
 	)
 	return fitness
 }

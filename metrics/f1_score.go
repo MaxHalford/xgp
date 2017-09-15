@@ -1,4 +1,4 @@
-package metric
+package metrics
 
 // BinaryF1Score measures the F1-score.
 type BinaryF1Score struct {
@@ -6,8 +6,8 @@ type BinaryF1Score struct {
 }
 
 // Apply BinaryF1Score.
-func (metric BinaryF1Score) Apply(yTrue []float64, yPred []float64) (float64, error) {
-	var cm, err = MakeConfusionMatrix(yTrue, yPred)
+func (metric BinaryF1Score) Apply(yTrue, yPred, weights []float64) (float64, error) {
+	var cm, err = MakeConfusionMatrix(yTrue, yPred, weights)
 	if err != nil {
 		return 0, err
 	}
@@ -36,8 +36,8 @@ type NegativeBinaryF1Score struct {
 }
 
 // Apply NegativeBinaryF1Score.
-func (metric NegativeBinaryF1Score) Apply(yTrue []float64, yPred []float64) (float64, error) {
-	var f1Score, err = BinaryF1Score{Class: metric.Class}.Apply(yTrue, yPred)
+func (metric NegativeBinaryF1Score) Apply(yTrue, yPred, weights []float64) (float64, error) {
+	var f1Score, err = BinaryF1Score{Class: metric.Class}.Apply(yTrue, yPred, weights)
 	return -f1Score, err
 }
 
@@ -45,12 +45,12 @@ func (metric NegativeBinaryF1Score) Apply(yTrue []float64, yPred []float64) (flo
 type MicroF1Score struct{}
 
 // Apply MicroF1Score.
-func (metric MicroF1Score) Apply(yTrue []float64, yPred []float64) (float64, error) {
-	var microPrecision, err = MicroPrecision{}.Apply(yTrue, yPred)
+func (metric MicroF1Score) Apply(yTrue, yPred, weights []float64) (float64, error) {
+	var microPrecision, err = MicroPrecision{}.Apply(yTrue, yPred, weights)
 	if err != nil {
 		return 0, err
 	}
-	microRecall, err := MicroRecall{}.Apply(yTrue, yPred)
+	microRecall, err := MicroRecall{}.Apply(yTrue, yPred, weights)
 	if err != nil {
 		return 0, err
 	}
@@ -62,8 +62,8 @@ func (metric MicroF1Score) Apply(yTrue []float64, yPred []float64) (float64, err
 type NegativeMicroF1Score struct{}
 
 // Apply NegativeMicroF1Score.
-func (metric NegativeMicroF1Score) Apply(yTrue []float64, yPred []float64) (float64, error) {
-	var f1Score, err = MicroF1Score{}.Apply(yTrue, yPred)
+func (metric NegativeMicroF1Score) Apply(yTrue, yPred, weights []float64) (float64, error) {
+	var f1Score, err = MicroF1Score{}.Apply(yTrue, yPred, weights)
 	return -f1Score, err
 }
 
@@ -71,12 +71,12 @@ func (metric NegativeMicroF1Score) Apply(yTrue []float64, yPred []float64) (floa
 type MacroF1Score struct{}
 
 // Apply MacroF1Score.
-func (metric MacroF1Score) Apply(yTrue []float64, yPred []float64) (float64, error) {
-	var macroPrecision, err = MacroPrecision{}.Apply(yTrue, yPred)
+func (metric MacroF1Score) Apply(yTrue, yPred, weights []float64) (float64, error) {
+	var macroPrecision, err = MacroPrecision{}.Apply(yTrue, yPred, weights)
 	if err != nil {
 		return 0, err
 	}
-	macroRecall, err := MacroRecall{}.Apply(yTrue, yPred)
+	macroRecall, err := MacroRecall{}.Apply(yTrue, yPred, weights)
 	if err != nil {
 		return 0, err
 	}
@@ -88,8 +88,8 @@ func (metric MacroF1Score) Apply(yTrue []float64, yPred []float64) (float64, err
 type NegativeMacroF1Score struct{}
 
 // Apply NegativeMacroF1Score.
-func (metric NegativeMacroF1Score) Apply(yTrue []float64, yPred []float64) (float64, error) {
-	var f1Score, err = MacroF1Score{}.Apply(yTrue, yPred)
+func (metric NegativeMacroF1Score) Apply(yTrue, yPred, weights []float64) (float64, error) {
+	var f1Score, err = MacroF1Score{}.Apply(yTrue, yPred, weights)
 	return -f1Score, err
 }
 
@@ -98,8 +98,8 @@ func (metric NegativeMacroF1Score) Apply(yTrue []float64, yPred []float64) (floa
 type WeightedF1Score struct{}
 
 // Apply WeightedF1Score.
-func (metric WeightedF1Score) Apply(yTrue []float64, yPred []float64) (float64, error) {
-	var cm, err = MakeConfusionMatrix(yTrue, yPred)
+func (metric WeightedF1Score) Apply(yTrue, yPred, weights []float64) (float64, error) {
+	var cm, err = MakeConfusionMatrix(yTrue, yPred, weights)
 	if err != nil {
 		return 0, err
 	}
@@ -109,7 +109,7 @@ func (metric WeightedF1Score) Apply(yTrue []float64, yPred []float64) (float64, 
 	)
 	for _, class := range cm.Classes() {
 		var (
-			f1Score, _ = BinaryF1Score{Class: class}.Apply(yTrue, yPred)
+			f1Score, _ = BinaryF1Score{Class: class}.Apply(yTrue, yPred, weights)
 			TP, _      = cm.TruePositives(class)
 			FN, _      = cm.FalseNegatives(class)
 		)
@@ -123,7 +123,7 @@ func (metric WeightedF1Score) Apply(yTrue []float64, yPred []float64) (float64, 
 type NegativeWeightedF1Score struct{}
 
 // Apply NegativeWeightedF1Score.
-func (metric NegativeWeightedF1Score) Apply(yTrue []float64, yPred []float64) (float64, error) {
-	var f1Score, err = WeightedF1Score{}.Apply(yTrue, yPred)
+func (metric NegativeWeightedF1Score) Apply(yTrue, yPred, weights []float64) (float64, error) {
+	var f1Score, err = WeightedF1Score{}.Apply(yTrue, yPred, weights)
 	return -f1Score, err
 }
