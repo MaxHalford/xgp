@@ -25,17 +25,35 @@ First, [install Go](https://golang.org/dl/), set your `GOPATH`, and make sure `$
 ```sh
 brew install go # If using homebrew
 
-# Put these in .bash_profile or .zshrc
+# Put these in your .bash_profile or .zshrc
 export GOPATH="$HOME/go"
 export PATH="$PATH:$GOPATH/bin"
 ```
 
 ## Installation
 
-```
+### Go library
+
+```sh
 go get -u github.com/MaxHalford/xgp
 ```
 
 This will install the xgp package. The following Go dependencies will be installed alongside:
 
 - [MaxHalford/gago](https://github.com/MaxHalford/gago)
+
+### CLI
+
+```sh
+go get -u github.com/MaxHalford/xgp/cmd
+```
+
+This will install the xgp package together with the CLI. The following Go dependencies will be installed alongside:
+
+- [fatih/color](https://github.com/fatih/color)
+- [gosuri/uiprogress](https://github.com/gosuri/uiprogress)
+- [MaxHalford/gago](https://github.com/MaxHalford/gago)
+- [spf13/cobra](https://github.com/spf13/cobra)
+- [spf13/viper](https://github.com/spf13/viper)
+
+### Python package

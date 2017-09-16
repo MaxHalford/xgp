@@ -1,4 +1,4 @@
-package main
+package xgp
 
 import (
 	"math"
@@ -8,8 +8,19 @@ import (
 	"github.com/MaxHalford/xgp/dataframe"
 	"github.com/fatih/color"
 	"github.com/gosuri/uiprogress"
-	"github.com/urfave/cli"
+	"github.com/spf13/cobra"
 )
+
+func init() {
+	RootCmd.AddCommand(fitCmd)
+
+	fitCmd.Flags().StringVarP(&metricName, "metric", "m", "mse", "Metric to use")
+	fitCmd.Flags().IntVarP(&class, "class", "c", 1, "Which class to apply the metric to if applicable")
+	fitCmd.Flags().IntVarP(&generations, "generations", "g", 30, "Number of generations")
+	fitCmd.Flags().IntVarP(&tuningGenerations, "t_generations", "t", 30, "Number of tuning generations")
+	fitCmd.Flags().StringVarP(&targetCol, "target_col", "y", "y", "Name of the target column")
+	fitCmd.Flags().StringVarP(&outputName, "output", "o", "program.json", "Path where to save the output program")
+}
 
 func monitorProgress(ch <-chan float64, done chan bool) {
 	uiprogress.Start()
@@ -34,60 +45,22 @@ func monitorProgress(ch <-chan float64, done chan bool) {
 	done <- true
 }
 
-var fitCmd = cli.Command{
-	Name:  "fit",
-	Usage: "Fits a program on a dataset",
-	Flags: []cli.Flag{
-		cli.StringFlag{
-			Name:  "target_col, tc",
-			Value: "target",
-			Usage: "Name of the target column",
-		},
-		cli.IntFlag{
-			Name:  "generations, g",
-			Value: 10,
-			Usage: "Number of generations",
-		},
-		cli.IntFlag{
-			Name:  "tuningGenerations, tg",
-			Value: 5,
-			Usage: "Number of tuning generations",
-		},
-		cli.StringFlag{
-			Name:  "task, t",
-			Value: "regression",
-			Usage: "What kind of task to perform",
-		},
-		cli.StringFlag{
-			Name:  "metric, m",
-			Value: "mean_squared_error",
-			Usage: "What kind of metric to use",
-		},
-		cli.IntFlag{
-			Name:  "class, c",
-			Value: 1,
-			Usage: "Which class to apply the metric to if applicable",
-		},
-		cli.StringFlag{
-			Name:  "output, o",
-			Value: "program.json",
-			Usage: "Path for the output program",
-		},
-	},
-	Action: func(c *cli.Context) error {
+var fitCmd = &cobra.Command{
+	Use:   "fit",
+	Short: "Fits a program to a dataset",
+	Long:  "Fits a program to a dataset",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
 		// Check if the training file exists
-		var file = c.Args().First()
+		var file = args[0]
 		if err := fileExists(file); err != nil {
-			return exitCLI(err)
+			return err
 		}
 
-		// Determine the task to perform
-		isClassification := c.String("task") == "classification"
-
 		// Determine the metric to use
-		metric, err := getMetric(c.String("metric"), c.Float64("class"))
+		metric, err := getMetric(metricName, class)
 		if err != nil {
-			return exitCLI(err)
+			return err
 		}
 
 		// Instantiate an Estimator
@@ -108,16 +81,16 @@ var fitCmd = cli.Command{
 					xgp.Division{},
 				},
 			},
-			Generations:       c.Int("generations"),
-			TuningGenerations: c.Int("tuningGenerations"),
-			ProgressChan:      make(chan float64, c.Int("generations")+c.Int("tuningGenerations")),
+			Generations:       generations,
+			TuningGenerations: tuningGenerations,
+			ProgressChan:      make(chan float64, generations+tuningGenerations),
 		}
 
 		// Set the initial GA
 		estimator.GA = &gago.GA{
-			GenomeFactory: estimator.NewProgram,
-			NPops:         1,
-			PopSize:       100,
+			NewGenome: estimator.NewProgram,
+			NPops:     1,
+			PopSize:   100,
 			Model: gago.ModGenerational{
 				Selector: gago.SelTournament{
 					NContestants: 3,
@@ -128,9 +101,9 @@ var fitCmd = cli.Command{
 
 		// Set the tuning GA
 		estimator.TuningGA = &gago.GA{
-			GenomeFactory: estimator.NewProgramTuner,
-			NPops:         1,
-			PopSize:       20,
+			NewGenome: estimator.NewProgramTuner,
+			NPops:     1,
+			PopSize:   20,
 			Model: gago.ModGenerational{
 				Selector: gago.SelTournament{
 					NContestants: 3,
@@ -140,16 +113,20 @@ var fitCmd = cli.Command{
 		}
 
 		// Load the training set in memory
-		df, err := dataframe.ReadCSV(file, c.String("target_col"), isClassification)
+		isClassification, err := isClassificationMetric(metricName)
 		if err != nil {
-			return exitCLI(err)
+			return err
+		}
+		df, err := dataframe.ReadCSV(file, targetCol, isClassification)
+		if err != nil {
+			return err
 		}
 
 		// Monitor progress
 		color.Blue(
 			"Fitting for %d generations and tuning for %d generations",
-			c.Int("generations"),
-			c.Int("tuningGenerations"),
+			generations,
+			tuningGenerations,
 		)
 		var done = make(chan bool)
 		go monitorProgress(estimator.ProgressChan, done)
@@ -157,19 +134,18 @@ var fitCmd = cli.Command{
 		// Fit the Estimator
 		err = estimator.Fit(df)
 		if err != nil {
-			return exitCLI(err)
+			return err
 		}
 
 		// Save the best Program
 		<-done
-		color.Blue("Saving best program to '%s'...", c.String("output"))
+		color.Blue("Saving best program to '%s'...", outputName)
 		var bestProg, _ = estimator.BestProgram()
-		err = xgp.SaveProgramToJSON(*bestProg, c.String("output"))
+		err = xgp.SaveProgramToJSON(*bestProg, outputName)
 		if err != nil {
-			return exitCLI(err)
+			return err
 		}
 
 		return nil
-
 	},
 }

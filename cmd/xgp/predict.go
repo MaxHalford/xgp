@@ -1,65 +1,59 @@
-package main
+package xgp
 
 import (
 	"fmt"
 
 	"github.com/MaxHalford/xgp"
 	"github.com/MaxHalford/xgp/dataframe"
-	"github.com/urfave/cli"
+	"github.com/spf13/cobra"
 )
 
-var predictCmd = cli.Command{
-	Name:  "predict",
-	Usage: "Predicts a dataset with a program",
-	Flags: []cli.Flag{
-		cli.StringFlag{
-			Name:  "program, p",
-			Value: "program.json",
-			Usage: "Path to the trained program",
-		},
-		cli.StringFlag{
-			Name:  "metric, m",
-			Value: "mean_squared_error",
-			Usage: "What kind of metric to use",
-		},
-		cli.IntFlag{
-			Name:  "class, c",
-			Value: 1,
-			Usage: "Which class to apply the metric to if applicable",
-		},
-		cli.StringFlag{
-			Name:  "target_col, tc",
-			Value: "target",
-			Usage: "Name of the target column",
-		},
-	},
-	Action: func(c *cli.Context) error {
+func init() {
+	RootCmd.AddCommand(predictCmd)
+
+	predictCmd.Flags().StringVarP(&programName, "program", "p", "program.json", "Path to the program")
+	predictCmd.Flags().StringVarP(&metricName, "metric", "m", "mse", "Metric to use")
+	predictCmd.Flags().IntVarP(&class, "class", "c", 1, "Which class to apply the metric to if applicable")
+	predictCmd.Flags().StringVarP(&targetCol, "target_col", "y", "y", "Name of the target column")
+}
+
+var predictCmd = &cobra.Command{
+	Use:   "predict",
+	Short: "Predicts a dataset with a program",
+	Long:  "Predicts a dataset with a program",
+	RunE: func(cmd *cobra.Command, args []string) error {
 		// Check if the file exists
-		var file = c.Args().First()
+		var file = args[0]
 		if err := fileExists(file); err != nil {
 			return err
 		}
 
 		// Determine the metric to use
-		metric, err := getMetric(c.String("metric"), c.Float64("class"))
+		metric, err := getMetric(metricName, class)
 		if err != nil {
-			return cli.NewExitError(err.Error(), 1)
+			return err
 		}
 
 		// Load the test set in memory
-		test, err := dataframe.ReadCSV(file, c.String("target_col"), false)
+		test, err := dataframe.ReadCSV(file, targetCol, false)
 		if err != nil {
-			return cli.NewExitError(err.Error(), 1)
+			return err
 		}
 
 		// Load the program
-		prog, err := xgp.LoadProgramFromJSON(c.String("program"))
+		prog, err := xgp.LoadProgramFromJSON(programName)
 		if err != nil {
-			return cli.NewExitError(err.Error(), 1)
+			return err
 		}
 
-		var yPred = prog.PredictDataFrame(test)
-		var score, _ = metric.Apply(test.Y, yPred, nil)
+		yPred, err := prog.PredictDataFrame(test)
+		if err != nil {
+			return err
+		}
+		score, err := metric.Apply(test.Y, yPred, nil)
+		if err != nil {
+			return err
+		}
 		fmt.Printf("Test score: %.3f\n", score)
 
 		return nil
