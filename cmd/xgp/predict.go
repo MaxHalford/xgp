@@ -59,7 +59,7 @@ var predictCmd = cli.Command{
 		}
 
 		var yPred = prog.PredictDataFrame(test)
-		var score, _ = metric.Apply(test.Y, yPred)
+		var score, _ = metric.Apply(test.Y, yPred, nil)
 		fmt.Printf("Test score: %.3f\n", score)
 
 		return nil

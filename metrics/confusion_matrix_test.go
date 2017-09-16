@@ -1,6 +1,7 @@
 package metrics
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -36,10 +37,12 @@ func TestConfusionMatrixClasses(t *testing.T) {
 		},
 	}
 	for i, tc := range testCases {
-		var classes = tc.cm.Classes()
-		if !reflect.DeepEqual(classes, tc.classes) {
-			t.Errorf("Error in test case number %d", i)
-		}
+		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
+			var classes = tc.cm.Classes()
+			if !reflect.DeepEqual(classes, tc.classes) {
+				t.Errorf("Error in test case number %d", i)
+			}
+		})
 	}
 }
 
@@ -70,10 +73,12 @@ func TestMakeConfusionMatrix(t *testing.T) {
 		},
 	}
 	for i, tc := range testCases {
-		var cm, err = MakeConfusionMatrix(tc.yTrue, tc.yPred, tc.weights)
-		if !reflect.DeepEqual(cm, tc.cm) || !reflect.DeepEqual(err, tc.err) {
-			t.Errorf("Error in test case number %d", i)
-		}
+		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
+			var cm, err = MakeConfusionMatrix(tc.yTrue, tc.yPred, tc.weights)
+			if !reflect.DeepEqual(cm, tc.cm) || !reflect.DeepEqual(err, tc.err) {
+				t.Errorf("Error in test case number %d", i)
+			}
+		})
 	}
 }
 
@@ -110,13 +115,15 @@ func TestConfusionMatrixTruePositives(t *testing.T) {
 		},
 	}
 	for i, tc := range testCases {
-		var cm, _ = MakeConfusionMatrix(tc.yTrue, tc.yPred, tc.weights)
-		for _, class := range cm.Classes() {
-			var TP, _ = cm.TruePositives(class)
-			if TP != tc.TPs[int(class)] {
-				t.Errorf("Error in test case number %d", i)
+		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
+			var cm, _ = MakeConfusionMatrix(tc.yTrue, tc.yPred, tc.weights)
+			for _, class := range cm.Classes() {
+				var TP, _ = cm.TruePositives(class)
+				if TP != tc.TPs[int(class)] {
+					t.Errorf("Error in test case number %d", i)
+				}
 			}
-		}
+		})
 	}
 }
 
@@ -153,13 +160,15 @@ func TestConfusionMatrixFalsePositives(t *testing.T) {
 		},
 	}
 	for i, tc := range testCases {
-		var cm, _ = MakeConfusionMatrix(tc.yTrue, tc.yPred, tc.weights)
-		for _, class := range cm.Classes() {
-			var FP, _ = cm.FalsePositives(class)
-			if FP != tc.FPs[int(class)] {
-				t.Errorf("Error in test case number %d", i)
+		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
+			var cm, _ = MakeConfusionMatrix(tc.yTrue, tc.yPred, tc.weights)
+			for _, class := range cm.Classes() {
+				var FP, _ = cm.FalsePositives(class)
+				if FP != tc.FPs[int(class)] {
+					t.Errorf("Error in test case number %d", i)
+				}
 			}
-		}
+		})
 	}
 }
 
@@ -196,13 +205,15 @@ func TestConfusionMatrixFalseNegatives(t *testing.T) {
 		},
 	}
 	for i, tc := range testCases {
-		var cm, _ = MakeConfusionMatrix(tc.yTrue, tc.yPred, tc.weights)
-		for _, class := range cm.Classes() {
-			var FN, _ = cm.FalseNegatives(class)
-			if FN != tc.FNs[int(class)] {
-				t.Errorf("Error in test case number %d", i)
+		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
+			var cm, _ = MakeConfusionMatrix(tc.yTrue, tc.yPred, tc.weights)
+			for _, class := range cm.Classes() {
+				var FN, _ = cm.FalseNegatives(class)
+				if FN != tc.FNs[int(class)] {
+					t.Errorf("Error in test case number %d", i)
+				}
 			}
-		}
+		})
 	}
 }
 
@@ -239,12 +250,14 @@ func TestConfusionMatrixTrueNegatives(t *testing.T) {
 		},
 	}
 	for i, tc := range testCases {
-		var cm, _ = MakeConfusionMatrix(tc.yTrue, tc.yPred, tc.weights)
-		for _, class := range cm.Classes() {
-			var TN, _ = cm.TrueNegatives(class)
-			if TN != tc.TNs[int(class)] {
-				t.Errorf("Error in test case number %d", i)
+		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
+			var cm, _ = MakeConfusionMatrix(tc.yTrue, tc.yPred, tc.weights)
+			for _, class := range cm.Classes() {
+				var TN, _ = cm.TrueNegatives(class)
+				if TN != tc.TNs[int(class)] {
+					t.Errorf("Error in test case number %d", i)
+				}
 			}
-		}
+		})
 	}
 }

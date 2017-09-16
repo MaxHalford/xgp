@@ -7,7 +7,7 @@ xgp is a machine learning tool based on [genetic programming](https://www.wikiwa
 
 ## To do
 
-- Boosting
+- Boosting command-line
 - Create lookup tables for operators that take time to evaluate at runtime
 - http://www.genetic-programming.com/gpquadraticexample.html
 - http://www.genetic-programming.com/gpflowchart.html

@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/MaxHalford/xgp/metrics"
+	"github.com/fatih/color"
 	"github.com/urfave/cli"
 )
 
@@ -13,6 +14,11 @@ func fileExists(file string) error {
 		return cli.NewExitError(fmt.Sprintf("No file named '%s'", file), 1)
 	}
 	return nil
+}
+
+func exitCLI(err error) *cli.ExitError {
+	var red = color.New(color.FgRed).SprintFunc()
+	return cli.NewExitError(red(err.Error()), 1)
 }
 
 func getMetric(metricName string, class float64) (metrics.Metric, error) {

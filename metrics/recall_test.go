@@ -1,6 +1,7 @@
 package metrics
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -104,9 +105,11 @@ func TestRecall(t *testing.T) {
 		},
 	}
 	for i, tc := range testCases {
-		var score, err = tc.metric.Apply(tc.yTrue, tc.yPred, tc.weights)
-		if score != tc.score || !reflect.DeepEqual(err, tc.err) {
-			t.Errorf("Expected %.3f got %.3f in test case number %d", tc.score, score, i)
-		}
+		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
+			var score, err = tc.metric.Apply(tc.yTrue, tc.yPred, tc.weights)
+			if score != tc.score || !reflect.DeepEqual(err, tc.err) {
+				t.Errorf("Expected %.3f got %.3f in test case number %d", tc.score, score, i)
+			}
+		})
 	}
 }

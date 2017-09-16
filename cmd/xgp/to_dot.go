@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/MaxHalford/xgp"
@@ -10,12 +11,20 @@ import (
 
 var toDOTCmd = cli.Command{
 	Name:  "todot",
-	Usage: "Creates a .dot file from a program",
+	Usage: "Produces a DOT language representation of a program",
 	Flags: []cli.Flag{
 		cli.StringFlag{
 			Name:  "program, p",
 			Value: "program.json",
 			Usage: "Path to the program",
+		},
+		cli.BoolTFlag{
+			Name:  "shell, sh",
+			Usage: "Output in the shell or not",
+		},
+		cli.BoolFlag{
+			Name:  "save, s",
+			Usage: "Save to a file or not",
 		},
 		cli.StringFlag{
 			Name:  "output, o",
@@ -27,17 +36,24 @@ var toDOTCmd = cli.Command{
 		// Load the program
 		program, err := xgp.LoadProgramFromJSON(c.String("program"))
 		if err != nil {
-			return cli.NewExitError(err.Error(), 1)
+			return exitCLI(err)
+		}
+		// Make the Graphviz representation
+		var str = tree.GraphvizDisplay{}.Apply(program.Root)
+		// Output in the shell
+		if c.Bool("sh") {
+			fmt.Println(str)
 		}
 		// Create the output file
+		if !c.Bool("save") {
+			return nil
+		}
 		file, err := os.Create(c.String("output"))
 		if err != nil {
-			return cli.NewExitError(err.Error(), 1)
+			return exitCLI(err)
 		}
 		defer file.Close()
-		// Make the Graphviz representation
-		var graphviz = tree.GraphvizDisplay{}
-		file.WriteString(graphviz.Apply(program.Root))
+		file.WriteString(str)
 		file.Sync()
 		return nil
 	},

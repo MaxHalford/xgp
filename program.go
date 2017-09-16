@@ -30,24 +30,28 @@ func (prog Program) clone() Program {
 }
 
 // PredictRow predicts the target of a row in a DataFrame.
-func (prog Program) PredictRow(row []float64) float64 {
+func (prog Program) PredictRow(row []float64) (float64, error) {
 	var y = prog.Root.evaluate(row)
 	if prog.Estimator != nil && prog.Estimator.Transform != nil {
-		return prog.Estimator.Transform.Apply(y)
+		return prog.Estimator.Transform.Apply(y), nil
 	}
-	return y
+	return y, nil
 }
 
 // PredictDataFrame predicts the target of each row in a DataFrame.
-func (prog Program) PredictDataFrame(df *dataframe.DataFrame) []float64 {
+func (prog Program) PredictDataFrame(df *dataframe.DataFrame) ([]float64, error) {
 	var (
 		n, _  = df.Shape()
 		yPred = make([]float64, n)
 	)
 	for i, row := range df.X {
-		yPred[i] = prog.PredictRow(row)
+		var y, err = prog.PredictRow(row)
+		if err != nil {
+			return nil, err
+		}
+		yPred[i] = y
 	}
-	return yPred
+	return yPred, nil
 }
 
 // Implementation of the Genome interface from the gago package
@@ -55,8 +59,8 @@ func (prog Program) PredictDataFrame(df *dataframe.DataFrame) []float64 {
 // Evaluate method required to implement gago.Genome.
 func (prog Program) Evaluate() float64 {
 	var (
-		yPred      = prog.PredictDataFrame(prog.Estimator.df)
-		fitness, _ = prog.Estimator.Metric.Apply(prog.Estimator.df.Y, yPred)
+		yPred, _   = prog.PredictDataFrame(prog.Estimator.df)
+		fitness, _ = prog.Estimator.Metric.Apply(prog.Estimator.df.Y, yPred, nil)
 	)
 	return fitness
 }

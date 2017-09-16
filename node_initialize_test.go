@@ -1,6 +1,7 @@
 package xgp
 
 import (
+	"fmt"
 	"math/rand"
 	"testing"
 	"time"
@@ -36,11 +37,13 @@ func TestFullNodeInitializer(t *testing.T) {
 		}
 	)
 
-	for _, tc := range testCases {
-		var node = FullNodeInitializer{Height: tc.height}.Apply(newOperator, rng)
-		if tree.GetNNodes(node) != tc.nnodes {
-			t.Errorf("Expected %d nodes, got %d", tc.nnodes, tree.GetNNodes(node))
-		}
+	for i, tc := range testCases {
+		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
+			var node = FullNodeInitializer{Height: tc.height}.Apply(newOperator, rng)
+			if tree.GetNNodes(node) != tc.nnodes {
+				t.Errorf("Expected %d nodes, got %d", tc.nnodes, tree.GetNNodes(node))
+			}
+		})
 	}
 
 }
@@ -92,14 +95,15 @@ func TestGrowNodeInitializer(t *testing.T) {
 		}
 	)
 
-	for _, tc := range testCases {
-		var (
-			initializer = GrowNodeInitializer{MaxHeight: tc.maxHeight, PLeaf: tc.pLeaf}
-			node        = initializer.Apply(newOperator, rng)
-		)
-		if tree.GetNNodes(node) != tc.nnodes {
-			t.Errorf("Expected %d nodes, got %d", tc.nnodes, tree.GetNNodes(node))
-		}
+	for i, tc := range testCases {
+		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
+			var (
+				initializer = GrowNodeInitializer{MaxHeight: tc.maxHeight, PLeaf: tc.pLeaf}
+				node        = initializer.Apply(newOperator, rng)
+			)
+			if tree.GetNNodes(node) != tc.nnodes {
+				t.Errorf("Expected %d nodes, got %d", tc.nnodes, tree.GetNNodes(node))
+			}
+		})
 	}
-
 }

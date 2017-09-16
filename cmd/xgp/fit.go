@@ -34,11 +34,6 @@ func monitorProgress(ch <-chan float64, done chan bool) {
 	done <- true
 }
 
-func exitCLI(err error) *cli.ExitError {
-	var red = color.New(color.FgRed).SprintFunc()
-	return cli.NewExitError(red(err.Error()), 1)
-}
-
 var fitCmd = cli.Command{
 	Name:  "fit",
 	Usage: "Fits a program on a dataset",
@@ -113,6 +108,9 @@ var fitCmd = cli.Command{
 					xgp.Division{},
 				},
 			},
+			Generations:       c.Int("generations"),
+			TuningGenerations: c.Int("tuningGenerations"),
+			ProgressChan:      make(chan float64, c.Int("generations")+c.Int("tuningGenerations")),
 		}
 
 		// Set the initial GA
@@ -153,20 +151,11 @@ var fitCmd = cli.Command{
 			c.Int("generations"),
 			c.Int("tuningGenerations"),
 		)
-		var (
-			ch   = make(chan float64, c.Int("generations")+c.Int("tuningGenerations"))
-			done = make(chan bool)
-		)
-		go monitorProgress(ch, done)
+		var done = make(chan bool)
+		go monitorProgress(estimator.ProgressChan, done)
 
 		// Fit the Estimator
-		err = estimator.Fit(df, c.Int("generations"), ch)
-		if err != nil {
-			return exitCLI(err)
-		}
-
-		// Tune the Estimator
-		err = estimator.Tune(df, c.Int("tuningGenerations"), ch)
+		err = estimator.Fit(df)
 		if err != nil {
 			return exitCLI(err)
 		}

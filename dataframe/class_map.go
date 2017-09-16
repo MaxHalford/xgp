@@ -16,8 +16,8 @@ func (cm *ClassMap) Get(c string) float64 {
 	return cm.Map[c]
 }
 
-func MakeClassMap() ClassMap {
-	return ClassMap{
+func MakeClassMap() *ClassMap {
+	return &ClassMap{
 		Map:        make(map[string]float64),
 		ReverseMap: make(map[float64]string),
 	}

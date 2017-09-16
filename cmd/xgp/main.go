@@ -17,6 +17,7 @@ func main() {
 		fitCmd,
 		predictCmd,
 		toDOTCmd,
+		toEquationCmd,
 	}
 
 	app.Run(os.Args)

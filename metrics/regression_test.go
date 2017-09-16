@@ -65,9 +65,11 @@ func TestRegression(t *testing.T) {
 		},
 	}
 	for i, tc := range testCases {
-		var score, err = tc.metric.Apply(tc.yTrue, tc.yPred, tc.weights)
-		if fmt.Sprintf("%.15f", score) != fmt.Sprintf("%.15f", tc.score) || !reflect.DeepEqual(err, tc.err) {
-			t.Errorf("Expected %.15f got %.15f in test case number %d", tc.score, score, i)
-		}
+		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
+			var score, err = tc.metric.Apply(tc.yTrue, tc.yPred, tc.weights)
+			if fmt.Sprintf("%.15f", score) != fmt.Sprintf("%.15f", tc.score) || !reflect.DeepEqual(err, tc.err) {
+				t.Errorf("Expected %.15f got %.15f in test case number %d", tc.score, score, i)
+			}
+		})
 	}
 }

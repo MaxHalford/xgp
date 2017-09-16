@@ -2,6 +2,7 @@ package dataframe
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"math/rand"
 	"text/tabwriter"
@@ -12,7 +13,7 @@ type DataFrame struct {
 	XNames   []string
 	Y        []float64
 	YName    string
-	ClassMap ClassMap
+	ClassMap *ClassMap
 }
 
 func (df DataFrame) NRows() int {
@@ -25,6 +26,13 @@ func (df DataFrame) NFeatures() int {
 
 func (df DataFrame) Shape() (int, int) {
 	return df.NRows(), df.NFeatures() + 1
+}
+
+func (df DataFrame) NClasses() (int, error) {
+	if df.ClassMap == nil {
+		return 0, errors.New("Target is not discrete")
+	}
+	return len(df.ClassMap.Map), nil
 }
 
 func (df DataFrame) Sample(k int, rng *rand.Rand) DataFrame {

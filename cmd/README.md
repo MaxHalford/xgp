@@ -29,5 +29,5 @@ This will install the xgp package together with the CLI. The following Go depend
 
 ```sh
 cd xgp/cmd
-go run *.go fit ../examples/regression/train.csv -tc y && go run *.go predict ../examples/regression/test.csv -tc y
+go run *.go fit ../../examples/regression/train.csv -tc y && go run *.go predict ../../examples/regression/test.csv -tc y
 ```
