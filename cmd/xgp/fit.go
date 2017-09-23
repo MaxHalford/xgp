@@ -5,7 +5,8 @@ import (
 
 	"github.com/MaxHalford/gago"
 	"github.com/MaxHalford/xgp"
-	"github.com/MaxHalford/xgp/dataframe"
+	"github.com/MaxHalford/xgp/dataset"
+	"github.com/MaxHalford/xgp/metrics"
 	"github.com/fatih/color"
 	"github.com/gosuri/uiprogress"
 	"github.com/spf13/cobra"
@@ -58,7 +59,13 @@ var fitCmd = &cobra.Command{
 		}
 
 		// Determine the metric to use
-		metric, err := getMetric(metricName, class)
+		metric, err := metrics.GetMetric(metricName, class)
+		if err != nil {
+			return err
+		}
+
+		// Load the training set in memory
+		dataset, err := dataset.ReadCSV(file, targetCol, metric.Classification())
 		if err != nil {
 			return err
 		}
@@ -112,16 +119,6 @@ var fitCmd = &cobra.Command{
 			},
 		}
 
-		// Load the training set in memory
-		isClassification, err := isClassificationMetric(metricName)
-		if err != nil {
-			return err
-		}
-		df, err := dataframe.ReadCSV(file, targetCol, isClassification)
-		if err != nil {
-			return err
-		}
-
 		// Monitor progress
 		color.Blue(
 			"Fitting for %d generations and tuning for %d generations",
@@ -132,7 +129,7 @@ var fitCmd = &cobra.Command{
 		go monitorProgress(estimator.ProgressChan, done)
 
 		// Fit the Estimator
-		err = estimator.Fit(df)
+		err = estimator.Fit(dataset)
 		if err != nil {
 			return err
 		}

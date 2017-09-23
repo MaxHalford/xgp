@@ -37,6 +37,16 @@ func (metric Accuracy) Apply(yTrue, yPred, weights []float64) (float64, error) {
 	return accuracy / float64(len(yTrue)), nil
 }
 
+// Classification method of Accuracy.
+func (metric Accuracy) Classification() bool {
+	return true
+}
+
+// String method of Accuracy.
+func (metric Accuracy) String() string {
+	return "accuracy"
+}
+
 // NegativeAccuracy measures the inverse accuracy.
 type NegativeAccuracy struct{}
 
@@ -44,4 +54,14 @@ type NegativeAccuracy struct{}
 func (metric NegativeAccuracy) Apply(yTrue, yPred, weights []float64) (float64, error) {
 	var accuracy, err = Accuracy{}.Apply(yTrue, yPred, weights)
 	return -accuracy, err
+}
+
+// Classification method of NegativeAccuracy.
+func (metric NegativeAccuracy) Classification() bool {
+	return true
+}
+
+// String method of NegativeAccuracy.
+func (metric NegativeAccuracy) String() string {
+	return "neg_accuracy"
 }

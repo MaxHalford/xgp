@@ -1,8 +1,6 @@
 package boosting
 
-import "github.com/MaxHalford/xgp/dataframe"
-
-// A Learner can be used by a Booster to fit a dataframe.DataFrame.
+// A Learner can be used by a Booster to train on a dataset.
 type Learner interface {
-	Learn(df *dataframe.DataFrame) (Predictor, error)
+	Learn(X [][]float64, Y []float64) (Predictor, error)
 }

@@ -1,9 +1,7 @@
 package boosting
 
-import "github.com/MaxHalford/xgp/dataframe"
-
-// A Booster can fit a dataframe.DataFrame given a "weak" learner.
+// A Booster can train on a dataset given a "weak" learner.
 type Booster interface {
-	Fit(learner Learner, df *dataframe.DataFrame, rounds int) error
-	Predict(df *dataframe.DataFrame) ([]float64, error)
+	Fit(learner Learner, X [][]float64, Y []float64, rounds int) error
+	Predict(X [][]float64) ([]float64, error)
 }

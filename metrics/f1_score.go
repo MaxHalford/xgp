@@ -30,6 +30,16 @@ func (metric BinaryF1Score) Apply(yTrue, yPred, weights []float64) (float64, err
 	return f1Score, nil
 }
 
+// Classification method of BinaryF1Score.
+func (metric BinaryF1Score) Classification() bool {
+	return true
+}
+
+// String method of BinaryF1Score.
+func (metric BinaryF1Score) String() string {
+	return "f1_score"
+}
+
 // NegativeBinaryF1Score measures the negative F1-score.
 type NegativeBinaryF1Score struct {
 	Class float64
@@ -39,6 +49,16 @@ type NegativeBinaryF1Score struct {
 func (metric NegativeBinaryF1Score) Apply(yTrue, yPred, weights []float64) (float64, error) {
 	var f1Score, err = BinaryF1Score{Class: metric.Class}.Apply(yTrue, yPred, weights)
 	return -f1Score, err
+}
+
+// Classification method of NegativeBinaryF1Score.
+func (metric NegativeBinaryF1Score) Classification() bool {
+	return true
+}
+
+// String method of NegativeBinaryF1Score.
+func (metric NegativeBinaryF1Score) String() string {
+	return "neg_f1_score"
 }
 
 // MicroF1Score measures the global F1 score.
@@ -58,6 +78,16 @@ func (metric MicroF1Score) Apply(yTrue, yPred, weights []float64) (float64, erro
 	return microF1Score, nil
 }
 
+// Classification method of MicroF1Score.
+func (metric MicroF1Score) Classification() bool {
+	return true
+}
+
+// String method of MicroF1Score.
+func (metric MicroF1Score) String() string {
+	return "micro_f1_score"
+}
+
 // NegativeMicroF1Score measures the negative micro F1 score.
 type NegativeMicroF1Score struct{}
 
@@ -65,6 +95,16 @@ type NegativeMicroF1Score struct{}
 func (metric NegativeMicroF1Score) Apply(yTrue, yPred, weights []float64) (float64, error) {
 	var f1Score, err = MicroF1Score{}.Apply(yTrue, yPred, weights)
 	return -f1Score, err
+}
+
+// Classification method of NegativeMicroF1Score.
+func (metric NegativeMicroF1Score) Classification() bool {
+	return true
+}
+
+// String method of NegativeMicroF1Score.
+func (metric NegativeMicroF1Score) String() string {
+	return "neg_micro_f1_score"
 }
 
 // MacroF1Score measures the global F1 score.
@@ -84,6 +124,16 @@ func (metric MacroF1Score) Apply(yTrue, yPred, weights []float64) (float64, erro
 	return macroF1Score, nil
 }
 
+// Classification method of MacroF1Score.
+func (metric MacroF1Score) Classification() bool {
+	return true
+}
+
+// String method of MacroF1Score.
+func (metric MacroF1Score) String() string {
+	return "macro_f1_score"
+}
+
 // NegativeMacroF1Score measures the negative micro precision.
 type NegativeMacroF1Score struct{}
 
@@ -91,6 +141,16 @@ type NegativeMacroF1Score struct{}
 func (metric NegativeMacroF1Score) Apply(yTrue, yPred, weights []float64) (float64, error) {
 	var f1Score, err = MacroF1Score{}.Apply(yTrue, yPred, weights)
 	return -f1Score, err
+}
+
+// Classification method of NegativeMacroF1Score.
+func (metric NegativeMacroF1Score) Classification() bool {
+	return true
+}
+
+// String method of NegativeMacroF1Score.
+func (metric NegativeMacroF1Score) String() string {
+	return "neg_macro_f1_score"
 }
 
 // WeightedF1Score measures the weighted average F1 score across all classes.
@@ -119,6 +179,16 @@ func (metric WeightedF1Score) Apply(yTrue, yPred, weights []float64) (float64, e
 	return sum / n, nil
 }
 
+// Classification method of WeightedF1Score.
+func (metric WeightedF1Score) Classification() bool {
+	return true
+}
+
+// String method of WeightedF1Score.
+func (metric WeightedF1Score) String() string {
+	return "weighted_f1_score"
+}
+
 // NegativeWeightedF1Score measures the negative micro precision.
 type NegativeWeightedF1Score struct{}
 
@@ -126,4 +196,14 @@ type NegativeWeightedF1Score struct{}
 func (metric NegativeWeightedF1Score) Apply(yTrue, yPred, weights []float64) (float64, error) {
 	var f1Score, err = WeightedF1Score{}.Apply(yTrue, yPred, weights)
 	return -f1Score, err
+}
+
+// Classification method of NegativeWeightedF1Score.
+func (metric NegativeWeightedF1Score) Classification() bool {
+	return true
+}
+
+// String method of NegativeWeightedF1Score.
+func (metric NegativeWeightedF1Score) String() string {
+	return "neg_weighted_f1_score"
 }

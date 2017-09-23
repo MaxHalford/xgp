@@ -191,7 +191,7 @@ func SaveProgramToJSON(program Program, path string) error {
 	return nil
 }
 
-// LoadProgramFromJSON loads a Program from a JSON file.
+// LoadProgramFromJSON loadataset a Program from a JSON file.
 func LoadProgramFromJSON(path string) (Program, error) {
 	var bytes, err = ioutil.ReadFile(path)
 	if err != nil {

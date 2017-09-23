@@ -1,4 +1,4 @@
-package dataframe
+package dataset
 
 type ClassMap struct {
 	Map        map[string]float64

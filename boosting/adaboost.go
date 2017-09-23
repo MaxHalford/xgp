@@ -2,14 +2,11 @@ package boosting
 
 import (
 	"math"
-
-	"github.com/MaxHalford/xgp/dataframe"
 )
 
-// AdaBoost implements adaptive boosting. The implementation is based on the
-// SAMME algorithm proposed in Zhu et al (2009).
-type AdaBoost struct {
-	Regression       bool
+// AdaBoostClassifier implements adaptive boosting for classification. The
+// implementation is based on the SAMME algorithm proposed in Zhu et al (2009).
+type AdaBoostClassifier struct {
 	rowWeights       []float64
 	predictors       []Predictor
 	predictorWeights []float64
@@ -17,24 +14,25 @@ type AdaBoost struct {
 }
 
 // fit represents one round of boosting.
-func (ada AdaBoost) fit(learner Learner, df *dataframe.DataFrame) (Predictor, float64, error) {
+func (ada AdaBoostClassifier) fit(learner Learner, X [][]float64, Y []float64) (Predictor, float64, error) {
 	// Fit the weak learner
 	var (
-		predictor, err = learner.Learn(df)
-		yPred          = make([]float64, df.NRows())
+		predictor, err = learner.Learn(X, Y)
+		n              = len(X)
+		yPred          = make([]float64, n)
 	)
 	if err != nil {
 		return nil, 0, err
 	}
 	// Compute weighted error
 	var E, W float64
-	for i, x := range df.X {
+	for i, x := range X {
 		y, err := predictor.PredictRow(x)
 		if err != nil {
 			return nil, 0, err
 		}
 		yPred[i] = y
-		if yPred[i] != df.Y[i] {
+		if yPred[i] != Y[i] {
 			E += ada.rowWeights[i]
 		}
 		W += ada.rowWeights[i]
@@ -42,14 +40,10 @@ func (ada AdaBoost) fit(learner Learner, df *dataframe.DataFrame) (Predictor, fl
 	E /= W
 	// Compute the predictor weight
 	var predWeight float64
-	if !ada.Regression {
-		predWeight = math.Log((1-E)/E) + math.Log(float64(ada.nClasses)-1)
-	} else {
-		predWeight = math.Log((1 - E) / E)
-	}
+	predWeight = math.Log((1-E)/E) + math.Log(float64(ada.nClasses)-1)
 	// Update the row weights
 	for i, w := range ada.rowWeights {
-		if yPred[i] != df.Y[i] {
+		if yPred[i] != Y[i] {
 			ada.rowWeights[i] = w * math.Exp(predWeight)
 		}
 	}
@@ -57,18 +51,13 @@ func (ada AdaBoost) fit(learner Learner, df *dataframe.DataFrame) (Predictor, fl
 }
 
 // Fit AdaBoost
-func (ada AdaBoost) Fit(learner Learner, df *dataframe.DataFrame, rounds int) error {
-	// Determine number of classes if the task is classification
-	if !ada.Regression {
-		var n, err = df.NClasses()
-		if err != nil {
-			return err
-		}
-		ada.nClasses = n
-	}
+func (ada AdaBoostClassifier) Fit(learner Learner, X [][]float64, Y []float64, rounds int) error {
+	// Determine the number of classes
+	ada.nClasses = 2
 	// Initialize weights
-	ada.rowWeights = make([]float64, df.NRows())
-	ada.predictorWeights = make([]float64, df.NRows())
+	var n = len(X)
+	ada.rowWeights = make([]float64, n)
+	ada.predictorWeights = make([]float64, n)
 	for i := range ada.rowWeights {
 		ada.rowWeights[i] = 1
 	}
@@ -76,7 +65,7 @@ func (ada AdaBoost) Fit(learner Learner, df *dataframe.DataFrame, rounds int) er
 	ada.predictors = make([]Predictor, rounds)
 	// Go through the rounds
 	for i := range ada.predictors {
-		var predictor, predWeight, err = ada.fit(learner, df)
+		var predictor, predWeight, err = ada.fit(learner, X, Y)
 		if err != nil {
 			return err
 		}
@@ -88,24 +77,7 @@ func (ada AdaBoost) Fit(learner Learner, df *dataframe.DataFrame, rounds int) er
 
 // PredictRow aggregates the votes of all the Predictors and outputs a final
 // value or class depending on the task at hand.
-func (ada AdaBoost) PredictRow(x []float64) (float64, error) {
-	// Regression
-	if ada.Regression {
-		var (
-			y float64
-			w float64
-		)
-		for i, predictor := range ada.predictors {
-			var p, err = predictor.PredictRow(x)
-			if err != nil {
-				return 0, err
-			}
-			y += p * ada.predictorWeights[i]
-			w += ada.predictorWeights[i]
-		}
-		return y / w, nil
-	}
-	// Classification
+func (ada AdaBoostClassifier) PredictRow(x []float64) (float64, error) {
 	var votes = make([]float64, ada.nClasses)
 	for i, predictor := range ada.predictors {
 		var c, err = predictor.PredictRow(x)
@@ -117,10 +89,10 @@ func (ada AdaBoost) PredictRow(x []float64) (float64, error) {
 	return float64(ArgMax(votes)), nil
 }
 
-// Predict runs PredictRow on each row in a dataframe.DataFrame.
-func (ada AdaBoost) Predict(df *dataframe.DataFrame) ([]float64, error) {
-	var Y = make([]float64, df.NRows())
-	for i, x := range df.X {
+// Predict runs PredictRow on each set of features of a slice of features.
+func (ada AdaBoostClassifier) Predict(X [][]float64) ([]float64, error) {
+	var Y = make([]float64, len(X))
+	for i, x := range X {
 		var y, err = ada.PredictRow(x)
 		if err != nil {
 			return nil, err

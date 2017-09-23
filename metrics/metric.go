@@ -5,4 +5,6 @@ package metrics
 // weights are used.
 type Metric interface {
 	Apply(yTrue, yPred, weights []float64) (float64, error)
+	Classification() bool
+	String() string
 }

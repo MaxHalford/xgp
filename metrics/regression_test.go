@@ -58,6 +58,14 @@ func TestRegression(t *testing.T) {
 		{
 			yTrue:   []float64{3, -0.5, 2, 7},
 			yPred:   []float64{2.5, 0, 2, 8},
+			weights: nil,
+			metric:  NegativeR2{},
+			score:   -(1 - 1.5/29.1875),
+			err:     nil,
+		},
+		{
+			yTrue:   []float64{3, -0.5, 2, 7},
+			yPred:   []float64{2.5, 0, 2, 8},
 			weights: []float64{2, 1, 1, 2},
 			metric:  R2{},
 			score:   0.936354869816779,

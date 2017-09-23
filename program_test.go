@@ -3,8 +3,6 @@ package xgp
 import (
 	"fmt"
 	"testing"
-
-	"github.com/MaxHalford/xgp/dataframe"
 )
 
 func TestPredictRow(t *testing.T) {
@@ -38,19 +36,17 @@ func TestPredictRow(t *testing.T) {
 	}
 }
 
-func TestPredictDataFrame(t *testing.T) {
+func TestPredict(t *testing.T) {
 	var testCases = []struct {
-		dataframe *dataframe.DataFrame
-		program   Program
-		y         []float64
+		X       [][]float64
+		program Program
+		y       []float64
 	}{
 		{
-			dataframe: &dataframe.DataFrame{
-				X: [][]float64{
-					[]float64{1, 1},
-					[]float64{1, 2},
-					[]float64{1, 3},
-				},
+			X: [][]float64{
+				[]float64{1, 1},
+				[]float64{1, 2},
+				[]float64{1, 3},
 			},
 			program: Program{
 				Root: &Node{
@@ -67,7 +63,7 @@ func TestPredictDataFrame(t *testing.T) {
 
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
-			var y, _ = tc.program.PredictDataFrame(tc.dataframe)
+			var y, _ = tc.program.Predict(tc.X)
 			for j := range y {
 				if y[j] != tc.y[j] {
 					t.Errorf("Error in test case number %d: got %.2f instead of %.2f", i, y[j], tc.y[j])

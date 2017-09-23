@@ -1,4 +1,4 @@
-package dataframe
+package dataset
 
 import "math/rand"
 

@@ -34,6 +34,16 @@ func (metric MeanAbsoluteError) Apply(yTrue, yPred, weights []float64) (float64,
 	return sum / float64(len(yTrue)), nil
 }
 
+// Classification method of MeanAbsoluteError.
+func (metric MeanAbsoluteError) Classification() bool {
+	return false
+}
+
+// String method of MeanAbsoluteError.
+func (metric MeanAbsoluteError) String() string {
+	return "mae"
+}
+
 // MeanSquaredError measures the mean absolute error (MAE).
 type MeanSquaredError struct{}
 
@@ -62,6 +72,16 @@ func (metric MeanSquaredError) Apply(yTrue, yPred, weights []float64) (float64, 
 		return sum / ws, nil
 	}
 	return sum / float64(len(yTrue)), nil
+}
+
+// Classification method of MeanSquaredError.
+func (metric MeanSquaredError) Classification() bool {
+	return false
+}
+
+// String method of MeanSquaredError.
+func (metric MeanSquaredError) String() string {
+	return "mse"
 }
 
 // R2 measures the coefficient of determination.
@@ -110,4 +130,33 @@ func (metric R2) Apply(yTrue, yPred, weights []float64) (float64, error) {
 	}
 
 	return 1 - SSR/SST, nil
+}
+
+// Classification method of R2.
+func (metric R2) Classification() bool {
+	return false
+}
+
+// String method of R2.
+func (metric R2) String() string {
+	return "r2"
+}
+
+// NegativeR2 measures the negative micro recall.
+type NegativeR2 struct{}
+
+// Apply NegativeR2.
+func (metric NegativeR2) Apply(yTrue, yPred, weights []float64) (float64, error) {
+	var r2, err = R2{}.Apply(yTrue, yPred, weights)
+	return -r2, err
+}
+
+// Classification method of NegativeR2.
+func (metric NegativeR2) Classification() bool {
+	return false
+}
+
+// String method of NegativeR2.
+func (metric NegativeR2) String() string {
+	return "neg_r2"
 }

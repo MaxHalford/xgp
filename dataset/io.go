@@ -1,4 +1,4 @@
-package dataframe
+package dataset
 
 import (
 	"bufio"
@@ -9,11 +9,11 @@ import (
 	"strconv"
 )
 
-func ReadCSV(path string, target string, classification bool) (*DataFrame, error) {
+func ReadCSV(path string, target string, classification bool) (*Dataset, error) {
 	var (
-		df   = &DataFrame{}
-		f, _ = os.Open(path)
-		r    = csv.NewReader(bufio.NewReader(f))
+		dataset = &Dataset{}
+		f, _    = os.Open(path)
+		r       = csv.NewReader(bufio.NewReader(f))
 	)
 	defer f.Close()
 
@@ -28,17 +28,17 @@ func ReadCSV(path string, target string, classification bool) (*DataFrame, error
 		targetIdx = -1
 		nXCols    int
 	)
-	df.XNames = make([]string, len(columns)-1)
+	dataset.XNames = make([]string, len(columns)-1)
 	for i, column := range columns {
 		if column == target {
-			df.YName = column
+			dataset.YName = column
 			targetIdx = i
 			break
 		} else {
-			if nXCols == len(df.XNames) {
+			if nXCols == len(dataset.XNames) {
 				break
 			}
-			df.XNames[nXCols] = column
+			dataset.XNames[nXCols] = column
 			nXCols++
 		}
 	}
@@ -48,7 +48,7 @@ func ReadCSV(path string, target string, classification bool) (*DataFrame, error
 
 	// Initialize an empty class map in case of classification
 	if classification {
-		df.ClassMap = MakeClassMap()
+		dataset.ClassMap = MakeClassMap()
 	}
 
 	// Iterate over the rows
@@ -64,14 +64,14 @@ func ReadCSV(path string, target string, classification bool) (*DataFrame, error
 				x[i], _ = strconv.ParseFloat(s, 64)
 			}
 		}
-		df.X = append(df.X, x)
+		dataset.X = append(dataset.X, x)
 		// Parse the target
 		if classification {
-			df.Y = append(df.Y, df.ClassMap.Get(record[targetIdx]))
+			dataset.Y = append(dataset.Y, dataset.ClassMap.Get(record[targetIdx]))
 		} else {
 			var y, _ = strconv.ParseFloat(record[targetIdx], 64)
-			df.Y = append(df.Y, y)
+			dataset.Y = append(dataset.Y, y)
 		}
 	}
-	return df, nil
+	return dataset, nil
 }

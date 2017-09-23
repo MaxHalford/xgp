@@ -1,3 +1,7 @@
 *.csv
 *.dot
 *.json
+*.h
+*.so
+*.pyc
+.cache

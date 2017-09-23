@@ -7,12 +7,12 @@ import (
 
 	"github.com/MaxHalford/gago"
 	"github.com/MaxHalford/xgp/boosting"
-	"github.com/MaxHalford/xgp/dataframe"
+	"github.com/MaxHalford/xgp/dataset"
 	"github.com/MaxHalford/xgp/metrics"
 )
 
 // An Estimator links all the different components together and can be used to
-// train Programs on a DataFrame.
+// train Programs on a dataset.
 type Estimator struct {
 	Metric            metrics.Metric
 	Transform         Transform
@@ -25,11 +25,9 @@ type Estimator struct {
 	TuningGenerations int
 	ProgressChan      chan float64
 
-	df                          *dataframe.DataFrame
-	targetMean                  float64 // Used for generating new Constants
-	targetStdDev                float64 // Used for generating new Constants
-	bestScore                   float64 // Used for determining early stopping
-	generationsSinceImprovement int     // Used for determining early stopping
+	dataset      *dataset.Dataset
+	targetMean   float64 // Used for generating new Constants
+	targetStdDev float64 // Used for generating new Constants
 }
 
 // BestProgram returns the best program an Estimator has produced.
@@ -53,15 +51,19 @@ func (est Estimator) BestProgram() (*Program, error) {
 	return &est.TuningGA.Best.Genome.(*ProgramTuner).Program, nil
 }
 
-// Fit an Estimator to a dataframe.DataFrame.
-func (est *Estimator) Fit(df *dataframe.DataFrame) error {
-	// Set the df so that the initial GA can be initialized
-	est.df = df
+// Fit an Estimator to a dataset.Dataset.
+func (est *Estimator) Fit(X [][]float64, Y []float64) error {
+	// Set the dataset so that the initial GA can be initialized
+	var dataset, err = dataset.NewDatasetXY(X, Y, est.Metric.Classification())
+	if err != nil {
+		return nil
+	}
+	est.dataset = dataset
 
 	// Compute the target average and standard deviation to help produce
 	// meaningful Constants
-	est.targetMean = meanFloat64s(est.df.Y)
-	est.targetStdDev = math.Pow(varianceFloat64s(est.df.Y), 0.5)
+	est.targetMean = meanFloat64s(est.dataset.Y)
+	est.targetStdDev = math.Pow(varianceFloat64s(est.dataset.Y), 0.5)
 
 	// Run the initial GA
 	est.GA.Initialize()
@@ -87,13 +89,13 @@ func (est *Estimator) Fit(df *dataframe.DataFrame) error {
 	return nil
 }
 
-// Predict the target of a dataframe.DataFrame.
-func (est *Estimator) Predict(df *dataframe.DataFrame) ([]float64, error) {
+// Predict the output of a slice of features.
+func (est Estimator) Predict(X [][]float64) ([]float64, error) {
 	var bestProg, err = est.BestProgram()
 	if err != nil {
 		return nil, err
 	}
-	yPred, err := bestProg.PredictDataFrame(df)
+	yPred, err := bestProg.Predict(X)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +103,7 @@ func (est *Estimator) Predict(df *dataframe.DataFrame) ([]float64, error) {
 }
 
 // newConstant returns a Constant whose value is sampled from a normal
-// distribution based on the Estimator's df's y slice.
+// distribution based on the Estimator's dataset's y slice.
 func (est Estimator) newConstant(rng *rand.Rand) Constant {
 	return Constant{
 		Value: est.targetMean + rng.NormFloat64()*est.targetStdDev,
@@ -109,10 +111,10 @@ func (est Estimator) newConstant(rng *rand.Rand) Constant {
 }
 
 // newVariable returns a Variable with an index in range [0, p) where p is the
-// number of explanatory variables in the Estimator's dataframe.DataFrame.
+// number of explanatory variables in the Estimator's dataset.dataset.
 func (est Estimator) newVariable(rng *rand.Rand) Variable {
 	return Variable{
-		Index: rng.Intn(est.df.NFeatures()),
+		Index: rng.Intn(est.dataset.NFeatures()),
 	}
 }
 
@@ -151,8 +153,8 @@ func (est *Estimator) NewProgramTuner(rng *rand.Rand) gago.Genome {
 }
 
 // Learn method required to implement boosting.Learner.
-func (est *Estimator) Learn(df *dataframe.DataFrame) (boosting.Predictor, error) {
-	est.Fit(df)
+func (est *Estimator) Learn(X [][]float64, Y []float64) (boosting.Predictor, error) {
+	est.Fit(X, Y)
 	var prog, err = est.BestProgram()
 	if err != nil {
 		return nil, err

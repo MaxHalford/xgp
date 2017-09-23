@@ -24,6 +24,16 @@ func (metric BinaryPrecision) Apply(yTrue, yPred, weights []float64) (float64, e
 	return TP / (TP + FP), nil
 }
 
+// Classification method of BinaryPrecision.
+func (metric BinaryPrecision) Classification() bool {
+	return true
+}
+
+// String method of BinaryPrecision.
+func (metric BinaryPrecision) String() string {
+	return "precision"
+}
+
 // NegativeBinaryPrecision measures the negative precision.
 type NegativeBinaryPrecision struct {
 	Class float64
@@ -33,6 +43,16 @@ type NegativeBinaryPrecision struct {
 func (metric NegativeBinaryPrecision) Apply(yTrue, yPred, weights []float64) (float64, error) {
 	var precision, err = BinaryPrecision{Class: metric.Class}.Apply(yTrue, yPred, weights)
 	return -precision, err
+}
+
+// Classification method of NegativeBinaryPrecision.
+func (metric NegativeBinaryPrecision) Classification() bool {
+	return true
+}
+
+// String method of NegativeBinaryPrecision.
+func (metric NegativeBinaryPrecision) String() string {
+	return "neg_precision"
 }
 
 // MicroPrecision measures the global precision by using the total true
@@ -64,6 +84,16 @@ func (metric MicroPrecision) Apply(yTrue, yPred, weights []float64) (float64, er
 	return TP / (TP + FP), nil
 }
 
+// Classification method of MicroPrecision.
+func (metric MicroPrecision) Classification() bool {
+	return true
+}
+
+// String method of MicroPrecision.
+func (metric MicroPrecision) String() string {
+	return "micro_precision"
+}
+
 // NegativeMicroPrecision measures the negative micro precision.
 type NegativeMicroPrecision struct{}
 
@@ -71,6 +101,16 @@ type NegativeMicroPrecision struct{}
 func (metric NegativeMicroPrecision) Apply(yTrue, yPred, weights []float64) (float64, error) {
 	var precision, err = MicroPrecision{}.Apply(yTrue, yPred, weights)
 	return -precision, err
+}
+
+// Classification method of NegativeMicroPrecision.
+func (metric NegativeMicroPrecision) Classification() bool {
+	return true
+}
+
+// String method of NegativeMicroPrecision.
+func (metric NegativeMicroPrecision) String() string {
+	return "neg_micro_precision"
 }
 
 // MacroPrecision measures the unweighted average precision across all classes.
@@ -91,6 +131,16 @@ func (metric MacroPrecision) Apply(yTrue, yPred, weights []float64) (float64, er
 	return sum / float64(cm.NClasses()), nil
 }
 
+// Classification method of MacroPrecision.
+func (metric MacroPrecision) Classification() bool {
+	return true
+}
+
+// String method of MacroPrecision.
+func (metric MacroPrecision) String() string {
+	return "macro_precision"
+}
+
 // NegativeMacroPrecision measures the negative micro precision.
 type NegativeMacroPrecision struct{}
 
@@ -98,6 +148,16 @@ type NegativeMacroPrecision struct{}
 func (metric NegativeMacroPrecision) Apply(yTrue, yPred, weights []float64) (float64, error) {
 	var precision, err = MacroPrecision{}.Apply(yTrue, yPred, weights)
 	return -precision, err
+}
+
+// Classification method of NegativeMacroPrecision.
+func (metric NegativeMacroPrecision) Classification() bool {
+	return true
+}
+
+// String method of NegativeMacroPrecision.
+func (metric NegativeMacroPrecision) String() string {
+	return "neg_macro_precision"
 }
 
 // WeightedPrecision measures the weighted average precision across all classes.
@@ -126,6 +186,16 @@ func (metric WeightedPrecision) Apply(yTrue, yPred, weights []float64) (float64,
 	return sum / n, nil
 }
 
+// Classification method of WeightedPrecision.
+func (metric WeightedPrecision) Classification() bool {
+	return true
+}
+
+// String method of WeightedPrecision.
+func (metric WeightedPrecision) String() string {
+	return "weighted_precision"
+}
+
 // NegativeWeightedPrecision measures the negative micro precision.
 type NegativeWeightedPrecision struct{}
 
@@ -133,4 +203,14 @@ type NegativeWeightedPrecision struct{}
 func (metric NegativeWeightedPrecision) Apply(yTrue, yPred, weights []float64) (float64, error) {
 	var precision, err = WeightedPrecision{}.Apply(yTrue, yPred, weights)
 	return -precision, err
+}
+
+// Classification method of NegativeWeightedPrecision.
+func (metric NegativeWeightedPrecision) Classification() bool {
+	return true
+}
+
+// String method of NegativeWeightedPrecision.
+func (metric NegativeWeightedPrecision) String() string {
+	return "neg_weighted_precision"
 }

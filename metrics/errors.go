@@ -18,3 +18,11 @@ type errClassNotFound struct {
 func (e *errClassNotFound) Error() string {
 	return fmt.Sprintf("Class not found: %0.f", e.class)
 }
+
+type errUnknownMetric struct {
+	metricName string
+}
+
+func (e *errUnknownMetric) Error() string {
+	return fmt.Sprintf("Unknown metric name: '%s'", e.metricName)
+}

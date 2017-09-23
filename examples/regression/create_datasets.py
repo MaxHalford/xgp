@@ -9,7 +9,7 @@ if __name__ == '__main__':
     # Training samples
     X_train = rng.uniform(-1, 1, 1000).reshape(500, 2)
     y_train = X_train[:, 0]**2 - X_train[:, 1]**2 + X_train[:, 1] - 1
-    pd.DataFrame({
+    pd.dataset({
         'x0': X_train[:, 0],
         'x1': X_train[:, 1],
         'y': y_train
@@ -18,7 +18,7 @@ if __name__ == '__main__':
     # Testing samples
     X_test = rng.uniform(-1, 1, 100).reshape(50, 2)
     y_test = X_test[:, 0]**2 - X_test[:, 1]**2 + X_test[:, 1] - 1
-    pd.DataFrame({
+    pd.dataset({
         'x0': X_test[:, 0],
         'x1': X_test[:, 1],
         'y': y_test

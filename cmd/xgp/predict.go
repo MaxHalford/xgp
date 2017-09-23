@@ -4,7 +4,8 @@ import (
 	"fmt"
 
 	"github.com/MaxHalford/xgp"
-	"github.com/MaxHalford/xgp/dataframe"
+	"github.com/MaxHalford/xgp/dataset"
+	"github.com/MaxHalford/xgp/metrics"
 	"github.com/spf13/cobra"
 )
 
@@ -29,13 +30,13 @@ var predictCmd = &cobra.Command{
 		}
 
 		// Determine the metric to use
-		metric, err := getMetric(metricName, class)
+		metric, err := metrics.GetMetric(metricName, class)
 		if err != nil {
 			return err
 		}
 
 		// Load the test set in memory
-		test, err := dataframe.ReadCSV(file, targetCol, false)
+		test, err := dataset.ReadCSV(file, targetCol, metric.Classification())
 		if err != nil {
 			return err
 		}
@@ -46,7 +47,7 @@ var predictCmd = &cobra.Command{
 			return err
 		}
 
-		yPred, err := prog.PredictDataFrame(test)
+		yPred, err := prog.Predict(test.X)
 		if err != nil {
 			return err
 		}
