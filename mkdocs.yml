@@ -1,0 +1,38 @@
+# Project information
+site_name: xgp
+site_description: 'A short description of my project'
+site_author: 'John Doe'
+site_url: 'https://john-doe.github.io/my-project'
+
+# Repository
+repo_name: 'MaxHalford/xgp'
+repo_url: 'https://github.com/MaxHalford/xgp'
+
+# Copyright
+copyright: 'Copyright &copy; Max Halford 2017'
+
+# Theme
+theme: 'material'
+
+# Pages
+pages:
+  - Home: index.md
+  - How it works: how-it-works.md
+  - CLI: cli.md
+  - Go: go.md
+  - Python: python.md
+  - Training parameters: training-parameters.md
+
+# Extensions
+markdown_extensions:
+  - admonition
+  - codehilite
+
+# Options
+extra:
+  palette:
+    primary: 'indigo'
+    accent: 'red'
+  social:
+    - type: 'github'
+      link: 'https://github.com/squidfunk'

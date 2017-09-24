@@ -14,3 +14,13 @@
 - http://cswww.essex.ac.uk/staff/poli/gp-field-guide/42StepbyStepSampleRun.html
 - Consider parsimony for generalization
 - Use a cache that empties every k generations to store results of sub-branches to avoid unnecessary evaluations
+
+## Documentation
+
+The documentation is rendered with [MkDocs](http://www.mkdocs.org/). Run the following commands to run the documentation locally.
+
+```sh
+pip install mkdocs mkdocs-material pygments
+cd /path/to/xgp
+mkdocs serve
+```

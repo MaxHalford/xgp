@@ -10,15 +10,15 @@ import (
 )
 
 func init() {
-	RootCmd.AddCommand(todotCmd)
+	RootCmd.AddCommand(toDOTCmd)
 
-	todotCmd.Flags().StringVarP(&programName, "program", "p", "program.json", "Path to the program")
-	todotCmd.Flags().BoolVarP(&shell, "shell", "t", true, "Output in the terminal or not")
-	todotCmd.Flags().BoolVarP(&save, "save", "c", false, "Save to a file or not")
-	todotCmd.Flags().StringVarP(&outputName, "output", "o", "program.dot", "Path for the output file")
+	toDOTCmd.Flags().StringVarP(&programName, "program", "p", "program.json", "Path to the program")
+	toDOTCmd.Flags().BoolVarP(&shell, "shell", "t", true, "Output in the terminal or not")
+	toDOTCmd.Flags().BoolVarP(&save, "save", "c", false, "Save to a file or not")
+	toDOTCmd.Flags().StringVarP(&outputName, "output", "o", "program.dot", "Path for the output file")
 }
 
-var todotCmd = &cobra.Command{
+var toDOTCmd = &cobra.Command{
 	Use:   "todot",
 	Short: "Produces a DOT language representation of a program",
 	Long:  "Produces a DOT language representation of a program",
