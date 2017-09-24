@@ -1,6 +1,22 @@
 package xgp
 
-import "math"
+import (
+	"fmt"
+	"math"
+)
+
+// GetTransform returns a Transform from it's String representation.
+func GetTransform(transformName string) (Transform, error) {
+	var transform, ok = map[string]Transform{
+		Identity{}.String(): Identity{},
+		Binary{}.String():   Binary{},
+		Sigmoid{}.String():  Sigmoid{},
+	}[transformName]
+	if !ok {
+		return nil, fmt.Errorf("Unknown transform name '%s'", transformName)
+	}
+	return transform, nil
+}
 
 // A Transform is a 1D function which can be applied to a float64.
 type Transform interface {

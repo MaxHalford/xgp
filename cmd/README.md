@@ -21,6 +21,7 @@ go get -u github.com/MaxHalford/xgp/cmd
 The following Go dependencies will be installed alongside:
 
 - [fatih/color](https://github.com/fatih/color)
+- [gonum/gonum](https://github.com/gonum/gonum)
 - [gosuri/uiprogress](https://github.com/gosuri/uiprogress)
 - [MaxHalford/gago](https://github.com/MaxHalford/gago)
 - [spf13/cobra](https://github.com/spf13/cobra)

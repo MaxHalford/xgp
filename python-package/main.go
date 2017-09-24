@@ -2,6 +2,8 @@ package main
 
 import "C"
 import (
+	"fmt"
+
 	"github.com/MaxHalford/gago"
 	"github.com/MaxHalford/xgp"
 	"github.com/MaxHalford/xgp/metrics"
@@ -20,7 +22,7 @@ func Fit(
 	// Set parameters
 	//var metric, err = metrics.GetMetric(metricName, 1)
 	//fmt.Println(metric, err)
-	//fmt.Println(generations, tuningGenerations)
+	fmt.Println(generations, tuningGenerations)
 	est.Metric = metrics.MeanSquaredError{}
 	est.Transform = xgp.Identity{}
 	est.PVariable = 0.5

@@ -4,4 +4,6 @@ package boosting
 type Booster interface {
 	Fit(learner Learner, X [][]float64, Y []float64, rounds int) error
 	Predict(X [][]float64) ([]float64, error)
+	MarshalJSON() ([]byte, error)
+	UnmarshalJSON(bytes []byte) error
 }

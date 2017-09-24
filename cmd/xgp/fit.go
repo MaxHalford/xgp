@@ -15,12 +15,17 @@ import (
 func init() {
 	RootCmd.AddCommand(fitCmd)
 
-	fitCmd.Flags().StringVarP(&metricName, "metric", "m", "mse", "Metric to use")
 	fitCmd.Flags().IntVarP(&class, "class", "c", 1, "Which class to apply the metric to if applicable")
+	fitCmd.Flags().StringVarP(&funcsString, "functions", "f", "+,-,*,/", "Allowed functions")
 	fitCmd.Flags().IntVarP(&generations, "generations", "g", 30, "Number of generations")
-	fitCmd.Flags().IntVarP(&tuningGenerations, "t_generations", "t", 30, "Number of tuning generations")
-	fitCmd.Flags().StringVarP(&targetCol, "target_col", "y", "y", "Name of the target column")
+	fitCmd.Flags().IntVarP(&maxHeight, "max_height", "u", 6, "Max program height used in ramped half-and-half initialization")
+	fitCmd.Flags().IntVarP(&minHeight, "min_height", "l", 2, "Min program height used in ramped half-and-half initialization")
+	fitCmd.Flags().StringVarP(&metricName, "metric", "m", "mse", "Metric to use, this determines if the task is classification or regression")
 	fitCmd.Flags().StringVarP(&outputName, "output", "o", "program.json", "Path where to save the output program")
+	fitCmd.Flags().Float64VarP(&pLeaf, "p_leaf", "p", 0.5, "Probability of generating a leaf node in ramped half-and-half initialization")
+	fitCmd.Flags().Float64VarP(&pVariable, "p_variable", "v", 0.5, "Probability of picking a variable and not a constant when generating leaf nodes")
+	fitCmd.Flags().StringVarP(&targetCol, "target_col", "y", "y", "Name of the target column in the training set")
+	fitCmd.Flags().IntVarP(&tuningGenerations, "t_generations", "t", 30, "Number of tuning generations")
 }
 
 func monitorProgress(ch <-chan float64, done chan bool) {
@@ -64,6 +69,12 @@ var fitCmd = &cobra.Command{
 			return err
 		}
 
+		// Determine the functions to use
+		functions, err := parseStringFuncs(funcsString)
+		if err != nil {
+			return err
+		}
+
 		// Load the training set in memory
 		dataset, err := dataset.ReadCSV(file, targetCol, metric.Classification())
 		if err != nil {
@@ -74,20 +85,13 @@ var fitCmd = &cobra.Command{
 		estimator := xgp.Estimator{
 			Metric:    metric,
 			Transform: xgp.Identity{},
-			PVariable: 0.5,
+			PVariable: pVariable,
 			NodeInitializer: xgp.RampedHaldAndHalfInitializer{
-				MinHeight: 2,
-				MaxHeight: 5,
-				PLeaf:     0.5,
+				MinHeight: minHeight,
+				MaxHeight: maxHeight,
+				PLeaf:     pLeaf,
 			},
-			FunctionSet: map[int][]xgp.Operator{
-				2: []xgp.Operator{
-					xgp.Sum{},
-					xgp.Difference{},
-					xgp.Product{},
-					xgp.Division{},
-				},
-			},
+			Functions:         functions,
 			Generations:       generations,
 			TuningGenerations: tuningGenerations,
 			ProgressChan:      make(chan float64, generations+tuningGenerations),

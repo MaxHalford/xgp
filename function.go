@@ -1,10 +1,32 @@
 package xgp
 
 import (
+	"fmt"
 	"math"
 
 	"gonum.org/v1/gonum/floats"
 )
+
+// GetFunction returns a functional Operator from it's String representation.
+func GetFunction(funcName string) (Operator, error) {
+	var f, ok = map[string]Operator{
+		Cos{}.String():        Cos{},
+		Sin{}.String():        Sin{},
+		Log{}.String():        Log{},
+		Exp{}.String():        Exp{},
+		Max{}.String():        Max{},
+		Min{}.String():        Min{},
+		Sum{}.String():        Sum{},
+		Difference{}.String(): Difference{},
+		Division{}.String():   Division{},
+		Product{}.String():    Product{},
+		Power{}.String():      Power{},
+	}[funcName]
+	if !ok {
+		return nil, fmt.Errorf("Unknown function name '%s'", funcName)
+	}
+	return f, nil
+}
 
 // 1D functions
 

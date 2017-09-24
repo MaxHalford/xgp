@@ -18,13 +18,14 @@ type Estimator struct {
 	Transform         Transform
 	PVariable         float64         // Probability of producing a Variable when creating a terminal Node
 	NodeInitializer   NodeInitializer // Method for producing new Program trees
-	FunctionSet       map[int][]Operator
+	Functions         []Operator
 	GA                *gago.GA
 	TuningGA          *gago.GA
 	Generations       int
 	TuningGenerations int
 	ProgressChan      chan float64
 
+	fm           map[int][]Operator // Function map
 	dataset      *dataset.Dataset
 	targetMean   float64 // Used for generating new Constants
 	targetStdDev float64 // Used for generating new Constants
@@ -110,6 +111,28 @@ func (est Estimator) newConstant(rng *rand.Rand) Constant {
 	}
 }
 
+// functionMap returns a map mapping an integer to Operators that are in the
+// Estimator's Functions and whose arity is equal to the integer. The result
+// is memoized for subsequent calls.
+func (est Estimator) functionMap() map[int][]Operator {
+	// Check if functionMap has already been computed
+	if est.fm != nil {
+		return est.fm
+	}
+	// Convert the slice of Operators into a map of Operators based on the
+	// arities
+	est.fm = make(map[int][]Operator)
+	for _, f := range est.Functions {
+		var arity = f.Arity()
+		if _, ok := est.fm[arity]; ok {
+			est.fm[arity] = append(est.fm[arity], f)
+		} else {
+			est.fm[arity] = []Operator{f}
+		}
+	}
+	return est.fm
+}
+
 // newVariable returns a Variable with an index in range [0, p) where p is the
 // number of explanatory variables in the Estimator's dataset.dataset.
 func (est Estimator) newVariable(rng *rand.Rand) Variable {
@@ -119,7 +142,8 @@ func (est Estimator) newVariable(rng *rand.Rand) Variable {
 }
 
 func (est Estimator) newFunctionOfArity(arity int, rng *rand.Rand) Operator {
-	return est.FunctionSet[arity][rng.Intn(len(est.FunctionSet[arity]))]
+	var fm = est.functionMap()
+	return fm[arity][rng.Intn(len(fm[arity]))]
 }
 
 // newOperator generates a random *Node. If terminal is true then a Constant or

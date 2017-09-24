@@ -13,3 +13,4 @@
 - http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.475.3010&rep=rep1&type=pdf
 - http://cswww.essex.ac.uk/staff/poli/gp-field-guide/42StepbyStepSampleRun.html
 - Consider parsimony for generalization
+- Use a cache that empties every k generations to store results of sub-branches to avoid unnecessary evaluations

@@ -2,48 +2,23 @@ package xgp
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 )
 
-// FUNCTIONS maps string representations of Functions to their respective
-// Function for serialization purposes.
-var FUNCTIONS = map[string]Operator{
-	Cos{}.String():        Cos{},
-	Sin{}.String():        Sin{},
-	Log{}.String():        Log{},
-	Exp{}.String():        Exp{},
-	Max{}.String():        Max{},
-	Min{}.String():        Min{},
-	Sum{}.String():        Sum{},
-	Difference{}.String(): Difference{},
-	Division{}.String():   Division{},
-	Product{}.String():    Product{},
-	Power{}.String():      Power{},
-}
-
-// TRANSFORMS maps string representations of Transforms to their respective
-// Transform for serialization purposes.
-var TRANSFORMS = map[string]Transform{
-	Identity{}.String(): Identity{},
-	Binary{}.String():   Binary{},
-	Sigmoid{}.String():  Sigmoid{},
-}
-
-// A SerialNode can be serialized and holds information that can be used to
+// A serialNode can be serialized and holds information that can be used to
 // initialize a Node.
-type SerialNode struct {
+type serialNode struct {
 	OperatorType  string       `json:"operator_type"`
 	FunctionName  string       `json:"function_name"`
 	ConstantValue float64      `json:"constant_value"`
 	VariableIndex int          `json:"variable_index"`
-	Children      []SerialNode `json:"children"`
+	Children      []serialNode `json:"children"`
 }
 
-// SerializeNode recursively transforms a *Node into a SerialNode.
-func SerializeNode(node *Node) (SerialNode, error) {
-	var serial = SerialNode{
-		Children: make([]SerialNode, node.NBranches()),
+// serializeNode recursively transforms a *Node into a serialNode.
+func serializeNode(node *Node) (serialNode, error) {
+	var serial = serialNode{
+		Children: make([]serialNode, node.NBranches()),
 	}
 	switch node.Operator.(type) {
 	case Constant:
@@ -57,7 +32,7 @@ func SerializeNode(node *Node) (SerialNode, error) {
 		serial.FunctionName = node.Operator.String()
 	}
 	for i, child := range node.Children {
-		var serialChild, err = SerializeNode(child)
+		var serialChild, err = serializeNode(child)
 		if err != nil {
 			return serial, err
 		}
@@ -66,8 +41,8 @@ func SerializeNode(node *Node) (SerialNode, error) {
 	return serial, nil
 }
 
-// ParseSerialNode recursively transforms a SerialNode into a *Node.
-func ParseSerialNode(serial SerialNode) (*Node, error) {
+// parseSerialNode recursively transforms a serialNode into a *Node.
+func parseSerialNode(serial serialNode) (*Node, error) {
 	var node = &Node{
 		Children: make([]*Node, len(serial.Children)),
 	}
@@ -77,14 +52,14 @@ func ParseSerialNode(serial SerialNode) (*Node, error) {
 	case "variable":
 		node.Operator = Variable{serial.VariableIndex}
 	default:
-		var function, ok = FUNCTIONS[serial.FunctionName]
-		if !ok {
-			return nil, fmt.Errorf("Unknown function name '%s'", serial.FunctionName)
+		var function, err = GetFunction(serial.FunctionName)
+		if err != nil {
+			return nil, err
 		}
 		node.Operator = function
 	}
 	for i, child := range serial.Children {
-		var nodeChild, err = ParseSerialNode(child)
+		var nodeChild, err = parseSerialNode(child)
 		if err != nil {
 			return node, err
 		}
@@ -93,24 +68,24 @@ func ParseSerialNode(serial SerialNode) (*Node, error) {
 	return node, nil
 }
 
-// MarshalJSON serializes a *Node into JSON bytes. A SerialNode is used as an
+// MarshalJSON serializes a *Node into JSON bytes. A serialNode is used as an
 // intermediary.
 func (node *Node) MarshalJSON() ([]byte, error) {
-	var serial, err = SerializeNode(node)
+	var serial, err = serializeNode(node)
 	if err != nil {
 		return nil, err
 	}
 	return json.Marshal(&serial)
 }
 
-// UnmarshalJSON parses JSON bytes into a *Node. A SerialNode is used as an
+// UnmarshalJSON parses JSON bytes into a *Node. A serialNode is used as an
 // intermediary.
 func (node *Node) UnmarshalJSON(bytes []byte) error {
-	var serial SerialNode
+	var serial serialNode
 	if err := json.Unmarshal(bytes, &serial); err != nil {
 		return err
 	}
-	var parsedNode, err = ParseSerialNode(serial)
+	var parsedNode, err = parseSerialNode(serial)
 	if err != nil {
 		return err
 	}
@@ -118,34 +93,34 @@ func (node *Node) UnmarshalJSON(bytes []byte) error {
 	return nil
 }
 
-// A SerialProgram can be serialized and holds information that can be used to
+// A serialProgram can be serialized and holds information that can be used to
 // initialize a Program.
-type SerialProgram struct {
-	Root          SerialNode `json:"root"`
+type serialProgram struct {
+	Root          serialNode `json:"root"`
 	TransformName string     `json:"transform"`
 }
 
-// SerializeProgram transforms a SerialProgram into a Program.
-func SerializeProgram(prog Program) (SerialProgram, error) {
-	var root, err = SerializeNode(prog.Root)
+// serializeProgram transforms a serialProgram into a Program.
+func serializeProgram(prog Program) (serialProgram, error) {
+	var root, err = serializeNode(prog.Root)
 	if err != nil {
-		return SerialProgram{}, err
+		return serialProgram{}, err
 	}
-	return SerialProgram{
+	return serialProgram{
 		Root:          root,
 		TransformName: prog.Estimator.Transform.String(),
 	}, nil
 }
 
-// ParseSerialProgram recursively transforms a SerialProgram into a Program.
-func ParseSerialProgram(serial SerialProgram) (Program, error) {
-	var root, err = ParseSerialNode(serial.Root)
+// parseserialProgram recursively transforms a serialProgram into a Program.
+func parseserialProgram(serial serialProgram) (Program, error) {
+	var root, err = parseSerialNode(serial.Root)
 	if err != nil {
 		return Program{}, err
 	}
-	var transform, ok = TRANSFORMS[serial.TransformName]
-	if !ok {
-		return Program{}, fmt.Errorf("Unknown transform name '%s'", serial.TransformName)
+	transform, err := GetTransform(serial.TransformName)
+	if err != nil {
+		return Program{}, err
 	}
 	return Program{
 		Root:      root,
@@ -153,24 +128,24 @@ func ParseSerialProgram(serial SerialProgram) (Program, error) {
 	}, nil
 }
 
-// MarshalJSON serializes a Program into JSON bytes. A SerialProgram is used as
-// an intermediary.
+// MarshalJSON serializes a Program into JSON. A serialProgram is used as an
+// intermediary.
 func (prog *Program) MarshalJSON() ([]byte, error) {
-	var serial, err = SerializeProgram(*prog)
+	var serial, err = serializeProgram(*prog)
 	if err != nil {
 		return nil, err
 	}
 	return json.Marshal(&serial)
 }
 
-// UnmarshalJSON parses JSON bytes into a Program. A SerialProgram is used as an
+// UnmarshalJSON parses JSON into a Program. A serialProgram is used as an
 // intermediary.
 func (prog *Program) UnmarshalJSON(bytes []byte) error {
-	var serial SerialProgram
+	var serial serialProgram
 	if err := json.Unmarshal(bytes, &serial); err != nil {
 		return err
 	}
-	var parsedProg, err = ParseSerialProgram(serial)
+	var parsedProg, err = parseserialProgram(serial)
 	if err != nil {
 		return err
 	}
@@ -191,16 +166,18 @@ func SaveProgramToJSON(program Program, path string) error {
 	return nil
 }
 
-// LoadProgramFromJSON loadataset a Program from a JSON file.
+// LoadProgramFromJSON loads a Program from a JSON file.
 func LoadProgramFromJSON(path string) (Program, error) {
-	var bytes, err = ioutil.ReadFile(path)
+	var (
+		program    Program
+		bytes, err = ioutil.ReadFile(path)
+	)
 	if err != nil {
-		return Program{}, err
+		return program, err
 	}
-	var program Program
 	err = json.Unmarshal(bytes, &program)
 	if err != nil {
-		return Program{}, err
+		return program, err
 	}
 	return program, nil
 }

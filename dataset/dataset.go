@@ -17,7 +17,8 @@ type Dataset struct {
 	ClassMap *ClassMap
 }
 
-// XT returns the transpose of X. The transpose is memoized for future calls.
+// XT returns the transpose of X. The transpose is memoized for subsequent
+// calls.
 func (dataset *Dataset) XT() [][]float64 {
 	// Check if the transpose has already been computed
 	if dataset.xT != nil {
