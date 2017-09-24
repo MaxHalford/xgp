@@ -2,6 +2,8 @@ package xgp
 
 import (
 	"fmt"
+
+	"gonum.org/v1/gonum/floats"
 )
 
 // A Constant holds a float64 value.
@@ -10,11 +12,18 @@ type Constant struct {
 }
 
 // Apply Constant.
-func (c Constant) Apply(X []float64) float64 {
+func (c Constant) Apply(x []float64) float64 {
 	return c.Value
 }
 
-// Arity of a Constant.
+// ApplyXT Constant.
+func (c Constant) ApplyXT(XT [][]float64) []float64 {
+	var C = make([]float64, len(XT[0]))
+	floats.AddConst(c.Value, C)
+	return C
+}
+
+// Arity of a Constant is 0 because it is a terminal operator.
 func (c Constant) Arity() int {
 	return 0
 }

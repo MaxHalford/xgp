@@ -129,7 +129,7 @@ var fitCmd = &cobra.Command{
 		go monitorProgress(estimator.ProgressChan, done)
 
 		// Fit the Estimator
-		err = estimator.Fit(dataset)
+		err = estimator.Fit(dataset.X, dataset.Y)
 		if err != nil {
 			return err
 		}

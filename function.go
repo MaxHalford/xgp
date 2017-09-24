@@ -2,6 +2,8 @@ package xgp
 
 import (
 	"math"
+
+	"gonum.org/v1/gonum/floats"
 )
 
 // 1D functions
@@ -10,8 +12,17 @@ import (
 type Cos struct{}
 
 // Apply Cos.
-func (op Cos) Apply(X []float64) float64 {
-	return math.Cos(X[0])
+func (op Cos) Apply(x []float64) float64 {
+	return math.Cos(x[0])
+}
+
+// ApplyXT Cos.
+func (op Cos) ApplyXT(XT [][]float64) []float64 {
+	var Y = make([]float64, len(XT[0]))
+	for i, x := range XT[0] {
+		Y[i] = math.Cos(x)
+	}
+	return Y
 }
 
 // Arity of Cos.
@@ -32,6 +43,15 @@ func (op Sin) Apply(X []float64) float64 {
 	return math.Sin(X[0])
 }
 
+// ApplyXT Sin.
+func (op Sin) ApplyXT(XT [][]float64) []float64 {
+	var Y = make([]float64, len(XT[0]))
+	for i, x := range XT[0] {
+		Y[i] = math.Sin(x)
+	}
+	return Y
+}
+
 // Arity of Sin.
 func (op Sin) Arity() int {
 	return 1
@@ -50,6 +70,15 @@ func (op Log) Apply(X []float64) float64 {
 	return math.Log(X[0])
 }
 
+// ApplyXT Log.
+func (op Log) ApplyXT(XT [][]float64) []float64 {
+	var Y = make([]float64, len(XT[0]))
+	for i, x := range XT[0] {
+		Y[i] = math.Log(x)
+	}
+	return Y
+}
+
 // Arity of Log.
 func (op Log) Arity() int {
 	return 1
@@ -66,6 +95,15 @@ type Exp struct{}
 // Apply Exp.
 func (op Exp) Apply(X []float64) float64 {
 	return math.Exp(X[0])
+}
+
+// ApplyXT Exp.
+func (op Exp) ApplyXT(XT [][]float64) []float64 {
+	var Y = make([]float64, len(XT[0]))
+	for i, x := range XT[0] {
+		Y[i] = math.Exp(x)
+	}
+	return Y
 }
 
 // Arity of Exp.
@@ -91,6 +129,19 @@ func (op Max) Apply(X []float64) float64 {
 	return X[1]
 }
 
+// ApplyXT Max.
+func (op Max) ApplyXT(XT [][]float64) []float64 {
+	var Y = make([]float64, len(XT[0]))
+	for i := range XT[0] {
+		if XT[0][i] > XT[1][i] {
+			Y[i] = XT[0][i]
+		} else {
+			Y[i] = XT[1][i]
+		}
+	}
+	return Y
+}
+
 // Arity of Max.
 func (op Max) Arity() int {
 	return 2
@@ -112,6 +163,19 @@ func (op Min) Apply(X []float64) float64 {
 	return X[1]
 }
 
+// ApplyXT Min.
+func (op Min) ApplyXT(XT [][]float64) []float64 {
+	var Y = make([]float64, len(XT[0]))
+	for i := range XT[0] {
+		if XT[0][i] < XT[1][i] {
+			Y[i] = XT[0][i]
+		} else {
+			Y[i] = XT[1][i]
+		}
+	}
+	return Y
+}
+
 // Arity of Min.
 func (op Min) Arity() int {
 	return 2
@@ -130,6 +194,12 @@ func (op Sum) Apply(X []float64) float64 {
 	return X[0] + X[1]
 }
 
+// ApplyXT Sum.
+func (op Sum) ApplyXT(XT [][]float64) []float64 {
+	floats.Add(XT[0], XT[1])
+	return XT[0]
+}
+
 // Arity of Sum.
 func (op Sum) Arity() int {
 	return 2
@@ -146,6 +216,12 @@ type Difference struct{}
 // Apply Difference.
 func (op Difference) Apply(X []float64) float64 {
 	return X[0] - X[1]
+}
+
+// ApplyXT Difference.
+func (op Difference) ApplyXT(XT [][]float64) []float64 {
+	floats.Sub(XT[0], XT[1])
+	return XT[0]
 }
 
 // Arity of Difference.
@@ -172,6 +248,12 @@ func (op Division) Apply(X []float64) float64 {
 	return X[0] / X[1]
 }
 
+// ApplyXT Division.
+func (op Division) ApplyXT(XT [][]float64) []float64 {
+	floats.Div(XT[0], XT[1])
+	return XT[0]
+}
+
 // Arity of Division.
 func (op Division) Arity() int {
 	return 2
@@ -190,6 +272,12 @@ func (op Product) Apply(X []float64) float64 {
 	return X[0] * X[1]
 }
 
+// ApplyXT Product.
+func (op Product) ApplyXT(XT [][]float64) []float64 {
+	floats.Mul(XT[0], XT[1])
+	return XT[0]
+}
+
 // Arity of Product.
 func (op Product) Arity() int {
 	return 2
@@ -206,6 +294,15 @@ type Power struct{}
 // Apply Power.
 func (op Power) Apply(X []float64) float64 {
 	return math.Pow(X[0], X[1])
+}
+
+// ApplyXT Power.
+func (op Power) ApplyXT(XT [][]float64) []float64 {
+	var Y = make([]float64, len(XT[0]))
+	for i := range XT[0] {
+		Y[i] = math.Pow(XT[0][i], XT[1][i])
+	}
+	return Y
 }
 
 // Arity of Power.

@@ -38,17 +38,12 @@ func (prog Program) PredictRow(x []float64) (float64, error) {
 }
 
 // Predict predicts the output of a slice of features.
-func (prog Program) Predict(X [][]float64) ([]float64, error) {
-	var (
-		n     = len(X)
-		yPred = make([]float64, n)
-	)
-	for i, x := range X {
-		var y, err = prog.PredictRow(x)
-		if err != nil {
-			return nil, err
+func (prog Program) Predict(XT [][]float64) ([]float64, error) {
+	var yPred = prog.Root.evaluateXT(XT)
+	if prog.Estimator != nil && prog.Estimator.Transform != nil {
+		for i, y := range yPred {
+			yPred[i] = prog.Estimator.Transform.Apply(y)
 		}
-		yPred[i] = y
 	}
 	return yPred, nil
 }
@@ -58,7 +53,7 @@ func (prog Program) Predict(X [][]float64) ([]float64, error) {
 // Evaluate method required to implement gago.Genome.
 func (prog Program) Evaluate() float64 {
 	var (
-		yPred, _   = prog.Predict(prog.Estimator.dataset.X)
+		yPred, _   = prog.Predict(prog.Estimator.dataset.XT())
 		fitness, _ = prog.Estimator.Metric.Apply(prog.Estimator.dataset.Y, yPred, nil)
 	)
 	return fitness

@@ -10,10 +10,31 @@ import (
 
 type Dataset struct {
 	X        [][]float64
+	xT       [][]float64
 	XNames   []string
 	Y        []float64
 	YName    string
 	ClassMap *ClassMap
+}
+
+// XT returns the transpose of X. The transpose is memoized for future calls.
+func (dataset *Dataset) XT() [][]float64 {
+	// Check if the transpose has already been computed
+	if dataset.xT != nil {
+		return dataset.xT
+	}
+	// Initialize xT with empty slices
+	dataset.xT = make([][]float64, len(dataset.X[0]))
+	for i := range dataset.xT {
+		dataset.xT[i] = make([]float64, len(dataset.X))
+	}
+	// Perform the transpose
+	for i, row := range dataset.X {
+		for j, cell := range row {
+			dataset.xT[j][i] = cell
+		}
+	}
+	return dataset.xT
 }
 
 func (dataset Dataset) NRows() int {
@@ -103,6 +124,7 @@ func (dataset Dataset) String() string {
 	return buffer.String()
 }
 
+// NewDatasetXY returns a Dataset from a set of features X and a target Y.
 func NewDatasetXY(X [][]float64, Y []float64, classification bool) (*Dataset, error) {
 	return &Dataset{
 		X:        X,

@@ -36,17 +36,30 @@ func (node *Node) clone() *Node {
 
 // Evaluate a Node by evaluating it's children recursively and running the
 // children's output through the Node's Operator.
-func (node Node) evaluate(X []float64) float64 {
+func (node Node) evaluate(x []float64) float64 {
 	// Either the Node is a leaf Node
 	if len(node.Children) == 0 {
-		return node.Operator.Apply(X)
+		return node.Operator.Apply(x)
 	}
 	// Either the Node is an internal Node
 	var childEvals = make([]float64, len(node.Children))
 	for i, child := range node.Children {
-		childEvals[i] = child.evaluate(X)
+		childEvals[i] = child.evaluate(x)
 	}
 	return node.Operator.Apply(childEvals)
+}
+
+func (node Node) evaluateXT(XT [][]float64) []float64 {
+	// Either the Node is a leaf Node
+	if len(node.Children) == 0 {
+		return node.Operator.ApplyXT(XT)
+	}
+	// Either the Node is an internal Node
+	var childEvals = make([][]float64, len(node.Children))
+	for i, child := range node.Children {
+		childEvals[i] = child.evaluateXT(XT)
+	}
+	return node.Operator.ApplyXT(childEvals)
 }
 
 // setOperator replaces the Operator of a Node.

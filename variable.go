@@ -11,12 +11,19 @@ type Variable struct {
 	Index int
 }
 
-// Apply a Variable.
-func (v Variable) Apply(X []float64) float64 {
-	return X[v.Index]
+// Apply Variable.
+func (v Variable) Apply(x []float64) float64 {
+	return x[v.Index]
 }
 
-// Arity of a Variable.
+// ApplyXT Variable.
+func (v Variable) ApplyXT(XT [][]float64) []float64 {
+	var V = make([]float64, len(XT[v.Index]))
+	copy(V, XT[v.Index])
+	return V
+}
+
+// Arity of a Variable is 0 because it is a terminal operator.
 func (v Variable) Arity() int {
 	return 0
 }
