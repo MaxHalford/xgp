@@ -3,7 +3,6 @@ package xgp
 import (
 	"errors"
 	"fmt"
-	"math"
 	"math/rand"
 	"os"
 	"text/tabwriter"
@@ -14,6 +13,7 @@ import (
 	"github.com/MaxHalford/xgp/dataset"
 	"github.com/MaxHalford/xgp/metrics"
 	cache "github.com/patrickmn/go-cache"
+	"gonum.org/v1/gonum/floats"
 )
 
 // An Estimator links all the different components together and can be used to
@@ -29,11 +29,11 @@ type Estimator struct {
 	TuningGenerations int
 	ParsimonyCoeff    float64
 
-	fm         map[int][]Operator // Function map
-	train      *dataset.Dataset
-	targetMean float64
-	targetStd  float64
-	nodeCache  *NodeCache
+	fm        map[int][]Operator // Function map
+	train     *dataset.Dataset
+	targetMin float64
+	targetMax float64
+	nodeCache *NodeCache
 }
 
 // BestProgram returns the best program an Estimator has produced.
@@ -68,8 +68,8 @@ func (est *Estimator) Fit(X [][]float64, Y []float64, verbose bool) error {
 
 	// Calculate target average and standard deviation to produce Constants with
 	// meaningful constants.
-	est.targetMean = meanFloat64s(est.train.Y)
-	est.targetStd = math.Sqrt(varianceFloat64s(est.train.Y))
+	est.targetMin = floats.Min(est.train.Y)
+	est.targetMax = floats.Max(est.train.Y)
 
 	// Set the cache
 	est.nodeCache = &NodeCache{c: cache.New(3*time.Second, 5*time.Second)}
@@ -173,7 +173,7 @@ func (est Estimator) functionMap() map[int][]Operator {
 // distribution based on the Estimator's dataset's y slice.
 func (est Estimator) newConstant(rng *rand.Rand) Constant {
 	return Constant{
-		Value: est.targetMean + rng.NormFloat64()*est.targetStd,
+		Value: randFloat64(est.targetMin, est.targetMax, rng),
 	}
 }
 
