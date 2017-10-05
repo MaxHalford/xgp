@@ -24,6 +24,7 @@ The following Go dependencies will be installed alongside:
 - [gonum/gonum](https://github.com/gonum/gonum)
 - [gosuri/uiprogress](https://github.com/gosuri/uiprogress)
 - [MaxHalford/gago](https://github.com/MaxHalford/gago)
+- [patrickmn/go-cache](github.com/patrickmn/go-cache)
 - [spf13/cobra](https://github.com/spf13/cobra)
 - [spf13/viper](https://github.com/spf13/viper)
 

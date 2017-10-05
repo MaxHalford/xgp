@@ -43,24 +43,8 @@ func TestRecall(t *testing.T) {
 			yTrue:   []float64{0, 1, 2, 0, 1, 2},
 			yPred:   []float64{0, 2, 1, 0, 0, 1},
 			weights: nil,
-			metric:  NegativeBinaryRecall{Class: 0},
-			score:   -1,
-			err:     nil,
-		},
-		{
-			yTrue:   []float64{0, 1, 2, 0, 1, 2},
-			yPred:   []float64{0, 2, 1, 0, 0, 1},
-			weights: nil,
 			metric:  MicroRecall{},
 			score:   2.0 / 6,
-			err:     nil,
-		},
-		{
-			yTrue:   []float64{0, 1, 2, 0, 1, 2},
-			yPred:   []float64{0, 2, 1, 0, 0, 1},
-			weights: nil,
-			metric:  NegativeMicroRecall{},
-			score:   -2.0 / 6,
 			err:     nil,
 		},
 		{
@@ -75,24 +59,8 @@ func TestRecall(t *testing.T) {
 			yTrue:   []float64{0, 1, 2, 0, 1, 2},
 			yPred:   []float64{0, 2, 1, 0, 0, 1},
 			weights: nil,
-			metric:  NegativeMacroRecall{},
-			score:   -(1.0 + 0 + 0) / 3,
-			err:     nil,
-		},
-		{
-			yTrue:   []float64{0, 1, 2, 0, 1, 2},
-			yPred:   []float64{0, 2, 1, 0, 0, 1},
-			weights: nil,
 			metric:  WeightedRecall{},
 			score:   (2*1.0 + 2*0 + 2*0) / 6, // 0.333...
-			err:     nil,
-		},
-		{
-			yTrue:   []float64{0, 1, 2, 0, 1, 2},
-			yPred:   []float64{0, 2, 1, 0, 0, 1},
-			weights: nil,
-			metric:  NegativeWeightedRecall{},
-			score:   -(2*1.0 + 2*0 + 2*0) / 6, // -0.333...
 			err:     nil,
 		},
 		{

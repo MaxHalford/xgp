@@ -6,5 +6,6 @@ package metrics
 type Metric interface {
 	Apply(yTrue, yPred, weights []float64) (float64, error)
 	Classification() bool
+	BiggerIsBetter() bool
 	String() string
 }

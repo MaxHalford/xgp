@@ -9,13 +9,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	toDOTProgramName string
+	toDOTSave        bool
+	toDOTShell       bool
+	toDOTOutputName  string
+)
+
 func init() {
 	RootCmd.AddCommand(toDOTCmd)
 
-	toDOTCmd.Flags().StringVarP(&programName, "program", "p", "program.json", "Path to the program")
-	toDOTCmd.Flags().BoolVarP(&shell, "shell", "t", true, "Output in the terminal or not")
-	toDOTCmd.Flags().BoolVarP(&save, "save", "c", false, "Save to a file or not")
-	toDOTCmd.Flags().StringVarP(&outputName, "output", "o", "program.dot", "Path for the output file")
+	toDOTCmd.Flags().StringVarP(&toDOTOutputName, "output", "o", "program.dot", "Path for the output file")
+	toDOTCmd.Flags().StringVarP(&toDOTProgramName, "program", "p", "program.json", "Path to the program")
+	toDOTCmd.Flags().BoolVarP(&toDOTSave, "save", "c", false, "Save to a file or not")
+	toDOTCmd.Flags().BoolVarP(&toDOTShell, "shell", "t", true, "Output in the terminal or not")
 }
 
 var toDOTCmd = &cobra.Command{
@@ -24,21 +31,21 @@ var toDOTCmd = &cobra.Command{
 	Long:  "Produces a DOT language representation of a program",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// Load the program
-		program, err := xgp.LoadProgramFromJSON(programName)
+		program, err := xgp.LoadProgramFromJSON(toDOTProgramName)
 		if err != nil {
 			return err
 		}
 		// Make the Graphviz representation
 		var str = tree.GraphvizDisplay{}.Apply(program.Root)
 		// Output in the shell
-		if shell {
+		if toDOTShell {
 			fmt.Println(str)
 		}
 		// Create the output file
-		if save {
+		if toDOTSave {
 			return nil
 		}
-		file, err := os.Create(outputName)
+		file, err := os.Create(toDOTOutputName)
 		if err != nil {
 			return err
 		}

@@ -6,16 +6,24 @@ import (
 	"github.com/MaxHalford/xgp"
 	"github.com/MaxHalford/xgp/dataset"
 	"github.com/MaxHalford/xgp/metrics"
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
+)
+
+var (
+	predictClass       int
+	predictMetricName  string
+	predictProgramName string
+	predictTargetCol   string
 )
 
 func init() {
 	RootCmd.AddCommand(predictCmd)
 
-	predictCmd.Flags().StringVarP(&programName, "program", "p", "program.json", "Path to the program")
-	predictCmd.Flags().StringVarP(&metricName, "metric", "m", "mse", "Metric to use")
-	predictCmd.Flags().IntVarP(&class, "class", "c", 1, "Which class to apply the metric to if applicable")
-	predictCmd.Flags().StringVarP(&targetCol, "target_col", "y", "y", "Name of the target column")
+	predictCmd.Flags().IntVarP(&predictClass, "class", "c", 1, "Which class to apply the metric to if applicable")
+	predictCmd.Flags().StringVarP(&predictMetricName, "metric", "m", "mse", "Metric to use")
+	predictCmd.Flags().StringVarP(&predictProgramName, "program", "p", "program.json", "Path to the program")
+	predictCmd.Flags().StringVarP(&predictTargetCol, "target_col", "y", "y", "Name of the target column")
 }
 
 var predictCmd = &cobra.Command{
@@ -30,32 +38,33 @@ var predictCmd = &cobra.Command{
 		}
 
 		// Determine the metric to use
-		metric, err := metrics.GetMetric(metricName, class)
+		metric, err := metrics.GetMetric(predictMetricName, predictClass)
 		if err != nil {
 			return err
 		}
 
 		// Load the test set in memory
-		test, err := dataset.ReadCSV(file, targetCol, metric.Classification())
+		test, err := dataset.ReadCSV(file, predictTargetCol, metric.Classification())
 		if err != nil {
 			return err
 		}
 
 		// Load the program
-		prog, err := xgp.LoadProgramFromJSON(programName)
+		prog, err := xgp.LoadProgramFromJSON(predictProgramName)
 		if err != nil {
 			return err
 		}
 
-		yPred, err := prog.Predict(test.X)
+		yPred, err := prog.Predict(test.XT())
 		if err != nil {
 			return err
 		}
+		fmt.Println(yPred)
 		score, err := metric.Apply(test.Y, yPred, nil)
 		if err != nil {
 			return err
 		}
-		fmt.Printf("Test score: %.3f\n", score)
+		color.Green("Test score: %.5f\n", score)
 
 		return nil
 	},

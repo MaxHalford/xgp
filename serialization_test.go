@@ -3,6 +3,7 @@ package xgp
 import (
 	"encoding/json"
 	"os"
+	"reflect"
 	"testing"
 )
 
@@ -41,6 +42,31 @@ func TestNodeJSONEncodeDecode(t *testing.T) {
 	check(newNode, initialNode)
 }
 
+func TestDRSJSONEncodeDecode(t *testing.T) {
+	var initialDRS = &DynamicRangeSelection{
+		cutPoints: []float64{0, 1, 2},
+		rangeMap:  map[float64]float64{0: 1, 1: 1, 2: 1},
+	}
+
+	// Serialize the initial DRS
+	var bytes, err = json.Marshal(initialDRS)
+	if err != nil {
+		t.Errorf("Expected nil, got '%s'", err.Error())
+	}
+
+	// Parse the bytes into a new Node
+	var newDRS *DynamicRangeSelection
+	err = json.Unmarshal(bytes, &newDRS)
+	if err != nil {
+		t.Errorf("Expected nil, got '%s'", err.Error())
+	}
+
+	// Compare the DRSs
+	if !reflect.DeepEqual(newDRS, initialDRS) {
+		t.Error("Initial and new DRS do not match")
+	}
+}
+
 func TestProgramJSONPersistence(t *testing.T) {
 	var initialProgram = Program{
 		Root: &Node{
@@ -50,8 +76,9 @@ func TestProgramJSONPersistence(t *testing.T) {
 				&Node{Operator: Variable{1}},
 			},
 		},
-		Estimator: &Estimator{
-			Transform: Sigmoid{},
+		DRS: &DynamicRangeSelection{
+			cutPoints: []float64{0, 1, 2},
+			rangeMap:  map[float64]float64{0: -1, 1: 1, 2: -1},
 		},
 	}
 
@@ -80,6 +107,11 @@ func TestProgramJSONPersistence(t *testing.T) {
 		}
 	}
 	check(newProgram.Root, initialProgram.Root)
+
+	// Compare the DRSs
+	if !reflect.DeepEqual(*newProgram.DRS, *initialProgram.DRS) {
+		t.Error("Initial and new DRS do not match")
+	}
 
 	// Delete the JSON file
 	os.Remove(path)

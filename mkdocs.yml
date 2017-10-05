@@ -1,8 +1,8 @@
 # Project information
 site_name: xgp
-site_description: 'A short description of my project'
-site_author: 'John Doe'
-site_url: 'https://john-doe.github.io/my-project'
+site_description: 'Genetic programming tool for classification and regression'
+site_author: 'Max Halford'
+site_url: 'https://maxhalford.github.io/xgp'
 
 # Repository
 repo_name: 'MaxHalford/xgp'

@@ -43,24 +43,8 @@ func TestPrecision(t *testing.T) {
 			yTrue:   []float64{0, 1, 2, 0, 1, 2},
 			yPred:   []float64{0, 2, 1, 0, 0, 1},
 			weights: nil,
-			metric:  NegativeBinaryPrecision{Class: 0},
-			score:   -2.0 / 3,
-			err:     nil,
-		},
-		{
-			yTrue:   []float64{0, 1, 2, 0, 1, 2},
-			yPred:   []float64{0, 2, 1, 0, 0, 1},
-			weights: nil,
 			metric:  MicroPrecision{},
 			score:   2.0 / 6,
-			err:     nil,
-		},
-		{
-			yTrue:   []float64{0, 1, 2, 0, 1, 2},
-			yPred:   []float64{0, 2, 1, 0, 0, 1},
-			weights: nil,
-			metric:  NegativeMicroPrecision{},
-			score:   -2.0 / 6,
 			err:     nil,
 		},
 		{
@@ -75,24 +59,8 @@ func TestPrecision(t *testing.T) {
 			yTrue:   []float64{0, 1, 2, 0, 1, 2},
 			yPred:   []float64{0, 2, 1, 0, 0, 1},
 			weights: nil,
-			metric:  NegativeMacroPrecision{},
-			score:   -(2.0/3 + 0 + 0) / 3, // -0.222...
-			err:     nil,
-		},
-		{
-			yTrue:   []float64{0, 1, 2, 0, 1, 2},
-			yPred:   []float64{0, 2, 1, 0, 0, 1},
-			weights: nil,
 			metric:  WeightedPrecision{},
 			score:   (2*2.0/3 + 2*0 + 1*0) / 6, // 0.222...
-			err:     nil,
-		},
-		{
-			yTrue:   []float64{0, 1, 2, 0, 1, 2},
-			yPred:   []float64{0, 2, 1, 0, 0, 1},
-			weights: nil,
-			metric:  NegativeWeightedPrecision{},
-			score:   -(2*2.0/3 + 2*0 + 1*0) / 6, // -0.222...
 			err:     nil,
 		},
 		{

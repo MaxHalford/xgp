@@ -1,6 +1,7 @@
 package xgp
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -40,9 +41,11 @@ func TestNodeSimplify(t *testing.T) {
 		},
 	}
 	for i, tc := range testCases {
-		tc.node.Simplify()
-		if !reflect.DeepEqual(tc.node, tc.prunedNode) {
-			t.Errorf("Error in test case %d", i)
-		}
+		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
+			tc.node.Simplify()
+			if !reflect.DeepEqual(tc.node, tc.prunedNode) {
+				t.Errorf("Expected %v, got %v", tc.prunedNode, tc.node)
+			}
+		})
 	}
 }

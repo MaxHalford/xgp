@@ -30,7 +30,7 @@ func TestPredictRow(t *testing.T) {
 		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
 			var output, _ = tc.program.PredictRow(tc.row)
 			if output != tc.output {
-				t.Errorf("Error in test case number %d: got %.2f instead of %.2f", i, output, tc.output)
+				t.Errorf("Expected %.2f, got %.2f", tc.output, output)
 			}
 		})
 	}
@@ -66,7 +66,7 @@ func TestPredict(t *testing.T) {
 			var y, _ = tc.program.Predict(tc.X)
 			for j := range y {
 				if y[j] != tc.y[j] {
-					t.Errorf("Error in test case number %d: got %.2f instead of %.2f", i, y[j], tc.y[j])
+					t.Errorf("Expected %.2f, got %.2f", tc.y[j], y[j])
 				}
 			}
 		})

@@ -43,24 +43,8 @@ func TestF1Score(t *testing.T) {
 			yTrue:   []float64{0, 1, 2, 0, 1, 2},
 			yPred:   []float64{0, 2, 1, 0, 0, 1},
 			weights: nil,
-			metric:  NegativeBinaryF1Score{Class: 0},
-			score:   -2 * (2.0 / 3 * 1) / (2.0/3 + 1), // -0.8
-			err:     nil,
-		},
-		{
-			yTrue:   []float64{0, 1, 2, 0, 1, 2},
-			yPred:   []float64{0, 2, 1, 0, 0, 1},
-			weights: nil,
 			metric:  MicroF1Score{},
 			score:   2.0 * (1.0 / 3 * 1.0 / 3) / (1.0/3 + 1.0/3), // 0.333...
-			err:     nil,
-		},
-		{
-			yTrue:   []float64{0, 1, 2, 0, 1, 2},
-			yPred:   []float64{0, 2, 1, 0, 0, 1},
-			weights: nil,
-			metric:  NegativeMicroF1Score{},
-			score:   -2.0 * (1.0 / 3 * 1.0 / 3) / (1.0/3 + 1.0/3), // -0.333...
 			err:     nil,
 		},
 		{
@@ -75,24 +59,8 @@ func TestF1Score(t *testing.T) {
 			yTrue:   []float64{0, 1, 2, 0, 1, 2},
 			yPred:   []float64{0, 2, 1, 0, 0, 1},
 			weights: nil,
-			metric:  NegativeMacroF1Score{},
-			score:   -2.0 * (2.0 / 9 * 1.0 / 3) / (2.0/9 + 1.0/3), // -0.266...
-			err:     nil,
-		},
-		{
-			yTrue:   []float64{0, 1, 2, 0, 1, 2},
-			yPred:   []float64{0, 2, 1, 0, 0, 1},
-			weights: nil,
 			metric:  WeightedF1Score{},
 			score:   (2.0*2*(2.0/3*1)/(2.0/3+1) + 0 + 0) / 6, // 0.266...
-			err:     nil,
-		},
-		{
-			yTrue:   []float64{0, 1, 2, 0, 1, 2},
-			yPred:   []float64{0, 2, 1, 0, 0, 1},
-			weights: nil,
-			metric:  NegativeWeightedF1Score{},
-			score:   -(2.0*2*(2.0/3*1)/(2.0/3+1) + 0 + 0) / 6, // -0.266...
 			err:     nil,
 		},
 		{

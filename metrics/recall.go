@@ -2,7 +2,7 @@ package metrics
 
 // BinaryRecall measures the fraction of times a true class was predicted.
 type BinaryRecall struct {
-	Class float64
+	Class float64 `json:"class"`
 }
 
 // Apply BinaryRecall.
@@ -29,30 +29,14 @@ func (metric BinaryRecall) Classification() bool {
 	return true
 }
 
-// String method of BinaryRecall.
-func (metric BinaryRecall) String() string {
-	return "recall"
-}
-
-// NegativeBinaryRecall measures the negative recall.
-type NegativeBinaryRecall struct {
-	Class float64
-}
-
-// Apply NegativeBinaryRecall.
-func (metric NegativeBinaryRecall) Apply(yTrue, yPred, weights []float64) (float64, error) {
-	var recall, err = BinaryRecall{Class: metric.Class}.Apply(yTrue, yPred, weights)
-	return -recall, err
-}
-
-// Classification method of NegativeBinaryRecall.
-func (metric NegativeBinaryRecall) Classification() bool {
+// BiggerIsBetter method of BinaryRecall.
+func (metric BinaryRecall) BiggerIsBetter() bool {
 	return true
 }
 
-// String method of NegativeBinaryRecall.
-func (metric NegativeBinaryRecall) String() string {
-	return "neg_recall"
+// String method of BinaryRecall.
+func (metric BinaryRecall) String() string {
+	return "recall"
 }
 
 // MicroRecall measures the global recall by using the total true positives and
@@ -89,28 +73,14 @@ func (metric MicroRecall) Classification() bool {
 	return true
 }
 
-// String method of MicroRecall.
-func (metric MicroRecall) String() string {
-	return "micro_recall"
-}
-
-// NegativeMicroRecall measures the negative micro recall.
-type NegativeMicroRecall struct{}
-
-// Apply NegativeMicroRecall.
-func (metric NegativeMicroRecall) Apply(yTrue, yPred, weights []float64) (float64, error) {
-	var recall, err = MicroRecall{}.Apply(yTrue, yPred, weights)
-	return -recall, err
-}
-
-// Classification method of NegativeMicroRecall.
-func (metric NegativeMicroRecall) Classification() bool {
+// BiggerIsBetter method of MicroRecall.
+func (metric MicroRecall) BiggerIsBetter() bool {
 	return true
 }
 
-// String method of NegativeMicroRecall.
-func (metric NegativeMicroRecall) String() string {
-	return "neg_micro_recall"
+// String method of MicroRecall.
+func (metric MicroRecall) String() string {
+	return "micro_recall"
 }
 
 // MacroRecall measures the unweighted average recall across all classes.
@@ -136,28 +106,14 @@ func (metric MacroRecall) Classification() bool {
 	return true
 }
 
-// String method of MacroRecall.
-func (metric MacroRecall) String() string {
-	return "macro_recall"
-}
-
-// NegativeMacroRecall measures the negative micro recall.
-type NegativeMacroRecall struct{}
-
-// Apply NegativeMacroRecall.
-func (metric NegativeMacroRecall) Apply(yTrue, yPred, weights []float64) (float64, error) {
-	var recall, err = MacroRecall{}.Apply(yTrue, yPred, weights)
-	return -recall, err
-}
-
-// Classification method of NegativeMacroRecall.
-func (metric NegativeMacroRecall) Classification() bool {
+// BiggerIsBetter method of MacroRecall.
+func (metric MacroRecall) BiggerIsBetter() bool {
 	return true
 }
 
-// String method of NegativeMacroRecall.
-func (metric NegativeMacroRecall) String() string {
-	return "neg_macro_recall"
+// String method of MacroRecall.
+func (metric MacroRecall) String() string {
+	return "macro_recall"
 }
 
 // WeightedRecall measures the weighted average recall across all classes.
@@ -191,26 +147,12 @@ func (metric WeightedRecall) Classification() bool {
 	return true
 }
 
-// String method of WeightedRecall.
-func (metric WeightedRecall) String() string {
-	return "weighted_recall"
-}
-
-// NegativeWeightedRecall measures the negative micro recall.
-type NegativeWeightedRecall struct{}
-
-// Apply NegativeWeightedRecall.
-func (metric NegativeWeightedRecall) Apply(yTrue, yPred, weights []float64) (float64, error) {
-	var recall, err = WeightedRecall{}.Apply(yTrue, yPred, weights)
-	return -recall, err
-}
-
-// Classification method of NegativeWeightedRecall.
-func (metric NegativeWeightedRecall) Classification() bool {
+// BiggerIsBetter method of WeightedRecall.
+func (metric WeightedRecall) BiggerIsBetter() bool {
 	return true
 }
 
-// String method of NegativeWeightedRecall.
-func (metric NegativeWeightedRecall) String() string {
-	return "neg_weighted_recall"
+// String method of WeightedRecall.
+func (metric WeightedRecall) String() string {
+	return "weighted_recall"
 }

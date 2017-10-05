@@ -1,9 +1,11 @@
 package xgp
 
 import (
+	"errors"
 	"math/rand"
 
 	"github.com/MaxHalford/xgp/tree"
+	"gonum.org/v1/gonum/floats"
 )
 
 // A Node holds an Operator and leaf Nodes called children. A Node is said to be
@@ -22,6 +24,20 @@ func (node *Node) RecApply(f func(*Node)) {
 	}
 }
 
+// NConstants returns the number of Constants in a Node tree.
+func (node Node) NConstants() int {
+	var (
+		n int
+		f = func(node *Node) {
+			if _, ok := node.Operator.(Constant); ok {
+				n++
+			}
+		}
+	)
+	node.RecApply(f)
+	return n
+}
+
 // Clone a Node by recursively copying it's children's attributes.
 func (node *Node) clone() *Node {
 	var children = make([]*Node, len(node.Children))
@@ -36,30 +52,51 @@ func (node *Node) clone() *Node {
 
 // Evaluate a Node by evaluating it's children recursively and running the
 // children's output through the Node's Operator.
-func (node Node) evaluate(x []float64) float64 {
+func (node Node) evaluateRow(x []float64) float64 {
 	// Either the Node is a leaf Node
 	if len(node.Children) == 0 {
 		return node.Operator.Apply(x)
 	}
-	// Either the Node is an internal Node
+	// Either the Node has children Nodes
 	var childEvals = make([]float64, len(node.Children))
 	for i, child := range node.Children {
-		childEvals[i] = child.evaluate(x)
+		childEvals[i] = child.evaluateRow(x)
 	}
 	return node.Operator.Apply(childEvals)
 }
 
-func (node Node) evaluateXT(XT [][]float64) []float64 {
+func (node *Node) evaluateXT(XT [][]float64, nodeCache *NodeCache) (y []float64, err error) {
+	// Simplify the Node to remove unnecessary evaluation parts
+	node.Simplify()
+	// Check if the result has been cached
+	if nodeCache != nil {
+		y, cached := nodeCache.Get(node)
+		if cached {
+			return y, nil
+		}
+	}
 	// Either the Node is a leaf Node
-	if len(node.Children) == 0 {
-		return node.Operator.ApplyXT(XT)
+	if node.NBranches() == 0 {
+		y = node.Operator.ApplyXT(XT)
+	} else {
+		// Either the Node has children Nodes
+		var childEvals = make([][]float64, len(node.Children))
+		for i, child := range node.Children {
+			childEvals[i], err = child.evaluateXT(XT, nodeCache)
+			if err != nil {
+				return nil, err
+			}
+		}
+		y = node.Operator.ApplyXT(childEvals)
 	}
-	// Either the Node is an internal Node
-	var childEvals = make([][]float64, len(node.Children))
-	for i, child := range node.Children {
-		childEvals[i] = child.evaluateXT(XT)
+	// Store the result
+	if floats.HasNaN(y) {
+		return nil, errors.New("Slice contains NaNs")
 	}
-	return node.Operator.ApplyXT(childEvals)
+	if nodeCache != nil {
+		nodeCache.Set(node, y)
+	}
+	return
 }
 
 // setOperator replaces the Operator of a Node.
@@ -76,21 +113,25 @@ func (node *Node) String() string {
 // Simplify a Node by removing unnecessary children. The algorithm starts at the
 // bottom of the tree from left to right.
 func (node *Node) Simplify() {
-	var varChildren bool
-	// Call the function recursively first so as to start from the bottom
+	// A Node with no children can't be simplified
+	if node.NBranches() == 0 {
+		return
+	}
+	var constChildren = true
 	for i, child := range node.Children {
+		// Call the function recursively first so as to start from the bottom
 		node.Children[i].Simplify()
-		// Check if the Node has children that contain Variable Operators
-		if _, ok := child.Operator.(Variable); ok {
-			varChildren = true
+		// Check if the Node has a child that isn't a Constant
+		if _, ok := child.Operator.(Constant); !ok {
+			constChildren = false
 		}
 	}
-	// Stop if the Node has no children or one of them has a Variable Operator
-	if varChildren || node.NBranches() == 0 {
+	// Stop if the Node has no children with Variable Operators
+	if !constChildren {
 		return
 	}
 	// Replace the Node's Operator with a Constant.
-	node.Operator = Constant{Value: node.evaluate([]float64{})}
+	node.Operator = Constant{Value: node.evaluateRow([]float64{})}
 	node.Children = nil
 }
 

@@ -12,20 +12,36 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	fitClass             int
+	fitFuncsString       string
+	fitGenerations       int
+	fitMaxHeight         int
+	fitMetricName        string
+	fitMinHeight         int
+	fitOutputName        string
+	fitPLeaf             float64
+	fitPVariable         float64
+	fitRounds            int
+	fitTargetCol         string
+	fitTuningGenerations int
+)
+
 func init() {
 	RootCmd.AddCommand(fitCmd)
 
-	fitCmd.Flags().IntVarP(&class, "class", "c", 1, "Which class to apply the metric to if applicable")
-	fitCmd.Flags().StringVarP(&funcsString, "functions", "f", "+,-,*,/", "Allowed functions")
-	fitCmd.Flags().IntVarP(&generations, "generations", "g", 30, "Number of generations")
-	fitCmd.Flags().IntVarP(&maxHeight, "max_height", "u", 6, "Max program height used in ramped half-and-half initialization")
-	fitCmd.Flags().IntVarP(&minHeight, "min_height", "l", 2, "Min program height used in ramped half-and-half initialization")
-	fitCmd.Flags().StringVarP(&metricName, "metric", "m", "mse", "Metric to use, this determines if the task is classification or regression")
-	fitCmd.Flags().StringVarP(&outputName, "output", "o", "program.json", "Path where to save the output program")
-	fitCmd.Flags().Float64VarP(&pLeaf, "p_leaf", "p", 0.5, "Probability of generating a leaf node in ramped half-and-half initialization")
-	fitCmd.Flags().Float64VarP(&pVariable, "p_variable", "v", 0.5, "Probability of picking a variable and not a constant when generating leaf nodes")
-	fitCmd.Flags().StringVarP(&targetCol, "target_col", "y", "y", "Name of the target column in the training set")
-	fitCmd.Flags().IntVarP(&tuningGenerations, "t_generations", "t", 30, "Number of tuning generations")
+	fitCmd.Flags().IntVarP(&fitClass, "class", "c", 1, "Which class to apply the metric to if applicable")
+	fitCmd.Flags().StringVarP(&fitFuncsString, "functions", "f", "+,-,*,/", "Allowed functions")
+	fitCmd.Flags().IntVarP(&fitGenerations, "generations", "g", 30, "Number of generations")
+	fitCmd.Flags().IntVarP(&fitMaxHeight, "max_height", "u", 6, "Max program height used in ramped half-and-half initialization")
+	fitCmd.Flags().StringVarP(&fitMetricName, "metric", "m", "mae", "Metric to use, this determines if the task is classification or regression")
+	fitCmd.Flags().IntVarP(&fitMinHeight, "min_height", "l", 2, "Min program height used in ramped half-and-half initialization")
+	fitCmd.Flags().StringVarP(&fitOutputName, "output", "o", "program.json", "Path where to save the output program")
+	fitCmd.Flags().Float64VarP(&fitPLeaf, "p_leaf", "p", 0.5, "Probability of generating a leaf node in ramped half-and-half initialization")
+	fitCmd.Flags().Float64VarP(&fitPVariable, "p_variable", "v", 0.5, "Probability of picking a variable and not a constant when generating leaf nodes")
+	fitCmd.Flags().IntVarP(&fitRounds, "rounds", "r", 1, "Number of boosting rounds")
+	fitCmd.Flags().StringVarP(&fitTargetCol, "target_col", "y", "y", "Name of the target column in the training set")
+	fitCmd.Flags().IntVarP(&fitTuningGenerations, "t_generations", "t", 30, "Number of tuning generations")
 }
 
 func monitorProgress(ch <-chan float64, done chan bool) {
@@ -64,19 +80,22 @@ var fitCmd = &cobra.Command{
 		}
 
 		// Determine the metric to use
-		metric, err := metrics.GetMetric(metricName, class)
+		metric, err := metrics.GetMetric(fitMetricName, fitClass)
 		if err != nil {
 			return err
 		}
+		if metric.BiggerIsBetter() {
+			metric = metrics.NegativeMetric{Metric: metric}
+		}
 
 		// Determine the functions to use
-		functions, err := parseStringFuncs(funcsString)
+		functions, err := parseStringFuncs(fitFuncsString)
 		if err != nil {
 			return err
 		}
 
 		// Load the training set in memory
-		dataset, err := dataset.ReadCSV(file, targetCol, metric.Classification())
+		train, err := dataset.ReadCSV(file, fitTargetCol, metric.Classification())
 		if err != nil {
 			return err
 		}
@@ -84,24 +103,22 @@ var fitCmd = &cobra.Command{
 		// Instantiate an Estimator
 		estimator := xgp.Estimator{
 			Metric:    metric,
-			Transform: xgp.Identity{},
-			PVariable: pVariable,
+			PVariable: fitPVariable,
 			NodeInitializer: xgp.RampedHaldAndHalfInitializer{
-				MinHeight: minHeight,
-				MaxHeight: maxHeight,
-				PLeaf:     pLeaf,
+				MinHeight: fitMinHeight,
+				MaxHeight: fitMaxHeight,
+				PLeaf:     fitPLeaf,
 			},
 			Functions:         functions,
-			Generations:       generations,
-			TuningGenerations: tuningGenerations,
-			ProgressChan:      make(chan float64, generations+tuningGenerations),
+			Generations:       fitGenerations,
+			TuningGenerations: fitTuningGenerations,
 		}
 
 		// Set the initial GA
 		estimator.GA = &gago.GA{
 			NewGenome: estimator.NewProgram,
 			NPops:     1,
-			PopSize:   100,
+			PopSize:   30,
 			Model: gago.ModGenerational{
 				Selector: gago.SelTournament{
 					NContestants: 3,
@@ -110,42 +127,32 @@ var fitCmd = &cobra.Command{
 			},
 		}
 
-		// Set the tuning GA
-		estimator.TuningGA = &gago.GA{
-			NewGenome: estimator.NewProgramTuner,
-			NPops:     1,
-			PopSize:   20,
-			Model: gago.ModGenerational{
-				Selector: gago.SelTournament{
-					NContestants: 3,
-				},
-				MutRate: 0.5,
-			},
-		}
+		err = estimator.Fit(train.X, train.Y, true)
 
-		// Monitor progress
-		color.Blue(
-			"Fitting for %d generations and tuning for %d generations",
-			generations,
-			tuningGenerations,
-		)
-		var done = make(chan bool)
-		go monitorProgress(estimator.ProgressChan, done)
+		// // No boosting
+		// if fitRounds <= 1 {
+		// 	color.Blue("Training without boosting")
+		// 	// Monitor progress
+		// 	var done = make(chan bool)
+		// 	go monitorProgress(estimator.ProgressChan, done)
+		// 	// Fit the Estimator
+		// 	err = estimator.Fit(train.X, train.Y)
+		// 	if err != nil {
+		// 		return err
+		// 	}
+		// 	// Save the best Program
+		// 	<-done
+		// 	color.Blue("Saving best program to '%s'...", fitOutputName)
+		// 	var bestProg, _ = estimator.BestProgram()
 
-		// Fit the Estimator
-		err = estimator.Fit(dataset.X, dataset.Y)
-		if err != nil {
-			return err
-		}
+		// 	fmt.Println(tree.GetNNodes(bestProg.Root))
 
-		// Save the best Program
-		<-done
-		color.Blue("Saving best program to '%s'...", outputName)
-		var bestProg, _ = estimator.BestProgram()
-		err = xgp.SaveProgramToJSON(*bestProg, outputName)
-		if err != nil {
-			return err
-		}
+		// 	err = xgp.SaveProgramToJSON(*bestProg, fitOutputName)
+		// 	if err != nil {
+		// 		return err
+		// 	}
+		// 	return nil
+		// }
 
 		return nil
 	},

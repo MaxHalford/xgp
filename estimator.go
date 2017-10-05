@@ -2,20 +2,24 @@ package xgp
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"math/rand"
+	"os"
+	"text/tabwriter"
+	"time"
 
 	"github.com/MaxHalford/gago"
 	"github.com/MaxHalford/xgp/boosting"
 	"github.com/MaxHalford/xgp/dataset"
 	"github.com/MaxHalford/xgp/metrics"
+	cache "github.com/patrickmn/go-cache"
 )
 
 // An Estimator links all the different components together and can be used to
 // train Programs on a dataset.
 type Estimator struct {
 	Metric            metrics.Metric
-	Transform         Transform
 	PVariable         float64         // Probability of producing a Variable when creating a terminal Node
 	NodeInitializer   NodeInitializer // Method for producing new Program trees
 	Functions         []Operator
@@ -23,12 +27,13 @@ type Estimator struct {
 	TuningGA          *gago.GA
 	Generations       int
 	TuningGenerations int
-	ProgressChan      chan float64
+	ParsimonyCoeff    float64
 
-	fm           map[int][]Operator // Function map
-	dataset      *dataset.Dataset
-	targetMean   float64 // Used for generating new Constants
-	targetStdDev float64 // Used for generating new Constants
+	fm         map[int][]Operator // Function map
+	train      *dataset.Dataset
+	targetMean float64
+	targetStd  float64
+	nodeCache  *NodeCache
 }
 
 // BestProgram returns the best program an Estimator has produced.
@@ -53,39 +58,78 @@ func (est Estimator) BestProgram() (*Program, error) {
 }
 
 // Fit an Estimator to a dataset.Dataset.
-func (est *Estimator) Fit(X [][]float64, Y []float64) error {
-	// Set the dataset so that the initial GA can be initialized
-	var dataset, err = dataset.NewDatasetXY(X, Y, est.Metric.Classification())
+func (est *Estimator) Fit(X [][]float64, Y []float64, verbose bool) error {
+	// Set the train dataset so that the initial GA can be initialized
+	var train, err = dataset.NewDatasetXY(X, Y, est.Metric.Classification())
 	if err != nil {
 		return nil
 	}
-	est.dataset = dataset
+	est.train = train
 
-	// Compute the target average and standard deviation to help produce
-	// meaningful Constants
-	est.targetMean = meanFloat64s(est.dataset.Y)
-	est.targetStdDev = math.Pow(varianceFloat64s(est.dataset.Y), 0.5)
+	// Calculate target average and standard deviation to produce Constants with
+	// meaningful constants.
+	est.targetMean = meanFloat64s(est.train.Y)
+	est.targetStd = math.Sqrt(varianceFloat64s(est.train.Y))
 
-	// Run the initial GA
+	// Set the cache
+	est.nodeCache = &NodeCache{c: cache.New(3*time.Second, 5*time.Second)}
+
+	var writer = tabwriter.NewWriter(os.Stdout, 0, 0, 4, ' ', 0)
+
+	// Initialize the GA
 	est.GA.Initialize()
+
+	// Display initial statistics
+	if verbose {
+		var stats = CollectStatistics(est.GA)
+		fmt.Fprintf(
+			writer,
+			"Generation: 0\tBest fitness: %.5f\tMean size: %.2f\n",
+			est.GA.Best.Fitness,
+			stats.AvgHeight,
+		)
+	}
+
+	// Enhance the GA est.Generations times
 	for i := 0; i < est.Generations; i++ {
 		est.GA.Enhance()
-		if est.ProgressChan != nil {
-			est.ProgressChan <- est.GA.CurrentBest.Fitness
+		// Display statistics
+		if verbose {
+			var stats = CollectStatistics(est.GA)
+			fmt.Fprintf(
+				writer,
+				"Generation: %d\tBest fitness: %.5f\tMean size: %.2f\n",
+				i+1,
+				est.GA.Best.Fitness,
+				stats.AvgNNodes,
+			)
+			writer.Flush()
 		}
 	}
 
-	// Run the tuning GA
-	if est.TuningGA == nil {
-		return nil
+	// Display the best equation
+	best, err := est.BestProgram()
+	fmt.Printf("Best equation: %s\n", best)
+
+	for _, pop := range est.GA.Populations {
+		fmt.Println(pop.Individuals)
 	}
-	est.TuningGA.Initialize()
-	for i := 0; i < est.TuningGenerations; i++ {
-		est.TuningGA.Enhance()
-		if est.ProgressChan != nil {
-			est.ProgressChan <- est.TuningGA.CurrentBest.Fitness
-		}
-	}
+
+	// // No need to continue if no tuning GA has been provided
+	// if est.TuningGA == nil {
+	// 	return nil
+	// }
+
+	// // Initialize the tuning GA
+	// est.TuningGA.Initialize()
+
+	// if verbose {
+	// 	fmt.Printf("Number of constants to tune: %d\n", best.Root.NConstants())
+	// }
+
+	// for i := 0; i < est.TuningGenerations; i++ {
+	// 	est.TuningGA.Enhance()
+	// }
 
 	return nil
 }
@@ -101,14 +145,6 @@ func (est Estimator) Predict(X [][]float64) ([]float64, error) {
 		return nil, err
 	}
 	return yPred, nil
-}
-
-// newConstant returns a Constant whose value is sampled from a normal
-// distribution based on the Estimator's dataset's y slice.
-func (est Estimator) newConstant(rng *rand.Rand) Constant {
-	return Constant{
-		Value: est.targetMean + rng.NormFloat64()*est.targetStdDev,
-	}
 }
 
 // functionMap returns a map mapping an integer to Operators that are in the
@@ -133,11 +169,19 @@ func (est Estimator) functionMap() map[int][]Operator {
 	return est.fm
 }
 
+// newConstant returns a Constant whose value is sampled from a normal
+// distribution based on the Estimator's dataset's y slice.
+func (est Estimator) newConstant(rng *rand.Rand) Constant {
+	return Constant{
+		Value: est.targetMean + rng.NormFloat64()*est.targetStd,
+	}
+}
+
 // newVariable returns a Variable with an index in range [0, p) where p is the
 // number of explanatory variables in the Estimator's dataset.dataset.
 func (est Estimator) newVariable(rng *rand.Rand) Variable {
 	return Variable{
-		Index: rng.Intn(est.dataset.NFeatures()),
+		Index: rng.Intn(est.train.NFeatures()),
 	}
 }
 
@@ -160,10 +204,14 @@ func (est Estimator) newOperator(terminal bool, rng *rand.Rand) Operator {
 
 // NewProgram can be used by gago to produce a new Genome.
 func (est *Estimator) NewProgram(rng *rand.Rand) gago.Genome {
-	return &Program{
+	var prog = Program{
 		Root:      est.NodeInitializer.Apply(est.newOperator, rng),
 		Estimator: est,
 	}
+	if est.Metric.Classification() {
+		prog.DRS = &DynamicRangeSelection{}
+	}
+	return &prog
 }
 
 // NewProgramTuner can be used by gago to produce a new Genome.
@@ -178,7 +226,7 @@ func (est *Estimator) NewProgramTuner(rng *rand.Rand) gago.Genome {
 
 // Learn method required to implement boosting.Learner.
 func (est *Estimator) Learn(X [][]float64, Y []float64) (boosting.Predictor, error) {
-	est.Fit(X, Y)
+	est.Fit(X, Y, false)
 	var prog, err = est.BestProgram()
 	if err != nil {
 		return nil, err

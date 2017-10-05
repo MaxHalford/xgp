@@ -3,16 +3,15 @@ package xgp
 import (
 	"encoding/json"
 	"io/ioutil"
+	"strconv"
 )
 
 // A serialNode can be serialized and holds information that can be used to
 // initialize a Node.
 type serialNode struct {
-	OperatorType  string       `json:"operator_type"`
-	FunctionName  string       `json:"function_name"`
-	ConstantValue float64      `json:"constant_value"`
-	VariableIndex int          `json:"variable_index"`
-	Children      []serialNode `json:"children"`
+	OpType   string       `json:"op_type"`
+	OpValue  string       `json:"op_value"`
+	Children []serialNode `json:"children"`
 }
 
 // serializeNode recursively transforms a *Node into a serialNode.
@@ -22,14 +21,14 @@ func serializeNode(node *Node) (serialNode, error) {
 	}
 	switch node.Operator.(type) {
 	case Constant:
-		serial.OperatorType = "constant"
-		serial.ConstantValue = node.Operator.(Constant).Value
+		serial.OpType = "constant"
+		serial.OpValue = strconv.FormatFloat(node.Operator.(Constant).Value, 'f', -1, 64)
 	case Variable:
-		serial.OperatorType = "variable"
-		serial.VariableIndex = node.Operator.(Variable).Index
+		serial.OpType = "variable"
+		serial.OpValue = strconv.Itoa(node.Operator.(Variable).Index)
 	default:
-		serial.OperatorType = "function"
-		serial.FunctionName = node.Operator.String()
+		serial.OpType = "function"
+		serial.OpValue = node.Operator.String()
 	}
 	for i, child := range node.Children {
 		var serialChild, err = serializeNode(child)
@@ -46,13 +45,21 @@ func parseSerialNode(serial serialNode) (*Node, error) {
 	var node = &Node{
 		Children: make([]*Node, len(serial.Children)),
 	}
-	switch serial.OperatorType {
+	switch serial.OpType {
 	case "constant":
-		node.Operator = Constant{serial.ConstantValue}
+		var val, err = strconv.ParseFloat(serial.OpValue, 64)
+		if err != nil {
+			return nil, err
+		}
+		node.Operator = Constant{val}
 	case "variable":
-		node.Operator = Variable{serial.VariableIndex}
+		var idx, err = strconv.Atoi(serial.OpValue)
+		if err != nil {
+			return nil, err
+		}
+		node.Operator = Variable{idx}
 	default:
-		var function, err = GetFunction(serial.FunctionName)
+		var function, err = GetFunction(serial.OpValue)
 		if err != nil {
 			return nil, err
 		}
@@ -93,63 +100,71 @@ func (node *Node) UnmarshalJSON(bytes []byte) error {
 	return nil
 }
 
-// A serialProgram can be serialized and holds information that can be used to
-// initialize a Program.
-type serialProgram struct {
-	Root          serialNode `json:"root"`
-	TransformName string     `json:"transform"`
+// A serialDRS can be serialized and holds information that can be used to
+// initialize a Node.
+type serialDRS struct {
+	CutPoints []float64         `json:"cut_points"`
+	RangeMap  map[string]string `json:"range_map"`
 }
 
-// serializeProgram transforms a serialProgram into a Program.
-func serializeProgram(prog Program) (serialProgram, error) {
-	var root, err = serializeNode(prog.Root)
-	if err != nil {
-		return serialProgram{}, err
+// serializeDRS transforms a *DynamicRangeSelection into a serialDRS.
+func serializeDRS(drs *DynamicRangeSelection) (serialDRS, error) {
+	var serial = serialDRS{
+		CutPoints: drs.cutPoints,
+		RangeMap:  make(map[string]string),
 	}
-	return serialProgram{
-		Root:          root,
-		TransformName: prog.Estimator.Transform.String(),
-	}, nil
+	for k, v := range drs.rangeMap {
+		var (
+			ks = strconv.FormatFloat(k, 'f', -1, 64)
+			vs = strconv.FormatFloat(v, 'f', -1, 64)
+		)
+		serial.RangeMap[ks] = vs
+	}
+	return serial, nil
 }
 
-// parseserialProgram recursively transforms a serialProgram into a Program.
-func parseserialProgram(serial serialProgram) (Program, error) {
-	var root, err = parseSerialNode(serial.Root)
-	if err != nil {
-		return Program{}, err
+// parseSerialDRS recursively transforms a serialDRS into a *DynamicRangeSelection.
+func parseSerialDRS(serial serialDRS) (*DynamicRangeSelection, error) {
+	var drs = &DynamicRangeSelection{
+		cutPoints: serial.CutPoints,
+		rangeMap:  make(map[float64]float64),
 	}
-	transform, err := GetTransform(serial.TransformName)
-	if err != nil {
-		return Program{}, err
+	for k, v := range serial.RangeMap {
+		kf, err := strconv.ParseFloat(k, 64)
+		if err != nil {
+			return nil, err
+		}
+		vf, err := strconv.ParseFloat(v, 64)
+		if err != nil {
+			return nil, err
+		}
+		drs.rangeMap[kf] = vf
 	}
-	return Program{
-		Root:      root,
-		Estimator: &Estimator{Transform: transform},
-	}, nil
+	return drs, nil
 }
 
-// MarshalJSON serializes a Program into JSON. A serialProgram is used as an
-// intermediary.
-func (prog *Program) MarshalJSON() ([]byte, error) {
-	var serial, err = serializeProgram(*prog)
+// MarshalJSON serializes a *DynamicRangeSelection into JSON bytes. A serialDRS
+// is used as an intermediary.
+func (drs *DynamicRangeSelection) MarshalJSON() ([]byte, error) {
+	var serial, err = serializeDRS(drs)
 	if err != nil {
 		return nil, err
 	}
 	return json.Marshal(&serial)
 }
 
-// UnmarshalJSON parses JSON into a Program. A serialProgram is used as an
-// intermediary.
-func (prog *Program) UnmarshalJSON(bytes []byte) error {
-	var serial serialProgram
+// UnmarshalJSON parses JSON bytes into a *DynamicRangeSelection. A serialDRS is
+// used as an intermediary.
+func (drs *DynamicRangeSelection) UnmarshalJSON(bytes []byte) error {
+	var serial serialDRS
 	if err := json.Unmarshal(bytes, &serial); err != nil {
 		return err
 	}
-	var parsedProg, err = parseserialProgram(serial)
+	var parsedDRS, err = parseSerialDRS(serial)
 	if err != nil {
 		return err
 	}
-	*prog = parsedProg
+	*drs = *parsedDRS
 	return nil
 }
 

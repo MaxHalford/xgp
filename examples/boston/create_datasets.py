@@ -5,7 +5,7 @@ from sklearn import model_selection
 
 if __name__ == '__main__':
 
-    X, y = datasets.load_iris(return_X_y=True)
+    X, y = datasets.load_boston(return_X_y=True)
 
     df = pd.DataFrame(X)
     df['y'] = y

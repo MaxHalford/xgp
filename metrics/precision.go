@@ -2,7 +2,7 @@ package metrics
 
 // BinaryPrecision measures the fraction of times a class was correctly predicted.
 type BinaryPrecision struct {
-	Class float64
+	Class float64 `json:"class"`
 }
 
 // Apply BinaryPrecision.
@@ -29,30 +29,14 @@ func (metric BinaryPrecision) Classification() bool {
 	return true
 }
 
-// String method of BinaryPrecision.
-func (metric BinaryPrecision) String() string {
-	return "precision"
-}
-
-// NegativeBinaryPrecision measures the negative precision.
-type NegativeBinaryPrecision struct {
-	Class float64
-}
-
-// Apply NegativeBinaryPrecision.
-func (metric NegativeBinaryPrecision) Apply(yTrue, yPred, weights []float64) (float64, error) {
-	var precision, err = BinaryPrecision{Class: metric.Class}.Apply(yTrue, yPred, weights)
-	return -precision, err
-}
-
-// Classification method of NegativeBinaryPrecision.
-func (metric NegativeBinaryPrecision) Classification() bool {
+// BiggerIsBetter method of BinaryPrecision.
+func (metric BinaryPrecision) BiggerIsBetter() bool {
 	return true
 }
 
-// String method of NegativeBinaryPrecision.
-func (metric NegativeBinaryPrecision) String() string {
-	return "neg_precision"
+// String method of BinaryPrecision.
+func (metric BinaryPrecision) String() string {
+	return "precision"
 }
 
 // MicroPrecision measures the global precision by using the total true
@@ -89,28 +73,14 @@ func (metric MicroPrecision) Classification() bool {
 	return true
 }
 
-// String method of MicroPrecision.
-func (metric MicroPrecision) String() string {
-	return "micro_precision"
-}
-
-// NegativeMicroPrecision measures the negative micro precision.
-type NegativeMicroPrecision struct{}
-
-// Apply NegativeMicroPrecision.
-func (metric NegativeMicroPrecision) Apply(yTrue, yPred, weights []float64) (float64, error) {
-	var precision, err = MicroPrecision{}.Apply(yTrue, yPred, weights)
-	return -precision, err
-}
-
-// Classification method of NegativeMicroPrecision.
-func (metric NegativeMicroPrecision) Classification() bool {
+// BiggerIsBetter method of MicroPrecision.
+func (metric MicroPrecision) BiggerIsBetter() bool {
 	return true
 }
 
-// String method of NegativeMicroPrecision.
-func (metric NegativeMicroPrecision) String() string {
-	return "neg_micro_precision"
+// String method of MicroPrecision.
+func (metric MicroPrecision) String() string {
+	return "micro_precision"
 }
 
 // MacroPrecision measures the unweighted average precision across all classes.
@@ -136,28 +106,14 @@ func (metric MacroPrecision) Classification() bool {
 	return true
 }
 
-// String method of MacroPrecision.
-func (metric MacroPrecision) String() string {
-	return "macro_precision"
-}
-
-// NegativeMacroPrecision measures the negative micro precision.
-type NegativeMacroPrecision struct{}
-
-// Apply NegativeMacroPrecision.
-func (metric NegativeMacroPrecision) Apply(yTrue, yPred, weights []float64) (float64, error) {
-	var precision, err = MacroPrecision{}.Apply(yTrue, yPred, weights)
-	return -precision, err
-}
-
-// Classification method of NegativeMacroPrecision.
-func (metric NegativeMacroPrecision) Classification() bool {
+// BiggerIsBetter method of MacroPrecision.
+func (metric MacroPrecision) BiggerIsBetter() bool {
 	return true
 }
 
-// String method of NegativeMacroPrecision.
-func (metric NegativeMacroPrecision) String() string {
-	return "neg_macro_precision"
+// String method of MacroPrecision.
+func (metric MacroPrecision) String() string {
+	return "macro_precision"
 }
 
 // WeightedPrecision measures the weighted average precision across all classes.
@@ -191,26 +147,12 @@ func (metric WeightedPrecision) Classification() bool {
 	return true
 }
 
-// String method of WeightedPrecision.
-func (metric WeightedPrecision) String() string {
-	return "weighted_precision"
-}
-
-// NegativeWeightedPrecision measures the negative micro precision.
-type NegativeWeightedPrecision struct{}
-
-// Apply NegativeWeightedPrecision.
-func (metric NegativeWeightedPrecision) Apply(yTrue, yPred, weights []float64) (float64, error) {
-	var precision, err = WeightedPrecision{}.Apply(yTrue, yPred, weights)
-	return -precision, err
-}
-
-// Classification method of NegativeWeightedPrecision.
-func (metric NegativeWeightedPrecision) Classification() bool {
+// BiggerIsBetter method of WeightedPrecision.
+func (metric WeightedPrecision) BiggerIsBetter() bool {
 	return true
 }
 
-// String method of NegativeWeightedPrecision.
-func (metric NegativeWeightedPrecision) String() string {
-	return "neg_weighted_precision"
+// String method of WeightedPrecision.
+func (metric WeightedPrecision) String() string {
+	return "weighted_precision"
 }

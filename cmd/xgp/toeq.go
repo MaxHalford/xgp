@@ -8,19 +8,23 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	RootCmd.AddCommand(toEquationCmd)
+var (
+	toEqProgramName string
+)
 
-	toEquationCmd.Flags().StringVarP(&programName, "program", "p", "program.json", "Path to the program")
+func init() {
+	RootCmd.AddCommand(toEq)
+
+	toEq.Flags().StringVarP(&toEqProgramName, "program", "p", "program.json", "Path to the program")
 }
 
-var toEquationCmd = &cobra.Command{
+var toEq = &cobra.Command{
 	Use:   "toeq",
 	Short: "Produces a equation representation of a program",
 	Long:  "Produces a equation representation of a program",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// Load the program
-		program, err := xgp.LoadProgramFromJSON(programName)
+		program, err := xgp.LoadProgramFromJSON(toEqProgramName)
 		if err != nil {
 			return err
 		}

@@ -17,24 +17,24 @@ func randInt(min, max int, rng *rand.Rand) int {
 }
 
 // meanFloat64s returns the mean of a float64 slice.
-func meanFloat64s(floats []float64) float64 {
+func meanFloat64s(fs []float64) float64 {
 	var sum float64
-	for _, f := range floats {
+	for _, f := range fs {
 		sum += f
 	}
-	return sum / float64(len(floats))
+	return sum / float64(len(fs))
 }
 
-// varianceFloat64s returns the variation of a float64 slice.
-func varianceFloat64s(floats []float64) float64 {
+// varianceFloat64s returns the variance of a float64 slice.
+func varianceFloat64s(fs []float64) float64 {
 	var (
-		m  = meanFloat64s(floats)
+		m  = meanFloat64s(fs)
 		ss float64
 	)
-	for _, x := range floats {
+	for _, x := range fs {
 		ss += math.Pow(x, 2)
 	}
-	return ss/float64(len(floats)) - math.Pow(m, 2)
+	return ss/float64(len(fs)) - math.Pow(m, 2)
 }
 
 // makeRNG returns a new random number generator with a random seed.
