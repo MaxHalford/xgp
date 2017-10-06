@@ -6,20 +6,19 @@ import (
 	"math/rand"
 	"os"
 	"text/tabwriter"
-	"time"
 
 	"github.com/MaxHalford/gago"
 	"github.com/MaxHalford/xgp/boosting"
 	"github.com/MaxHalford/xgp/dataset"
 	"github.com/MaxHalford/xgp/metrics"
-	cache "github.com/patrickmn/go-cache"
-	"gonum.org/v1/gonum/floats"
 )
 
 // An Estimator links all the different components together and can be used to
 // train Programs on a dataset.
 type Estimator struct {
 	Metric            metrics.Metric
+	ConstMin          float64
+	ConstMax          float64
 	PVariable         float64         // Probability of producing a Variable when creating a terminal Node
 	NodeInitializer   NodeInitializer // Method for producing new Program trees
 	Functions         []Operator
@@ -29,11 +28,8 @@ type Estimator struct {
 	TuningGenerations int
 	ParsimonyCoeff    float64
 
-	fm        map[int][]Operator // Function map
-	train     *dataset.Dataset
-	targetMin float64
-	targetMax float64
-	nodeCache *NodeCache
+	fm    functionMap
+	train *dataset.Dataset
 }
 
 // BestProgram returns the best program an Estimator has produced.
@@ -54,7 +50,7 @@ func (est Estimator) BestProgram() (*Program, error) {
 	if est.GA.Best.Fitness < est.TuningGA.Best.Fitness {
 		return est.GA.Best.Genome.(*Program), nil
 	}
-	return &est.TuningGA.Best.Genome.(*ProgramTuner).Program, nil
+	return est.TuningGA.Best.Genome.(*ProgramTuner).Program, nil
 }
 
 // Fit an Estimator to a dataset.Dataset.
@@ -66,54 +62,63 @@ func (est *Estimator) Fit(X [][]float64, Y []float64, verbose bool) error {
 	}
 	est.train = train
 
-	// Calculate target average and standard deviation to produce Constants with
-	// meaningful constants.
-	est.targetMin = floats.Min(est.train.Y)
-	est.targetMax = floats.Max(est.train.Y)
-
-	// Set the cache
-	est.nodeCache = &NodeCache{c: cache.New(3*time.Second, 5*time.Second)}
+	// // ((X[0])-(X[0]))/((X[0])*(X[1]))
+	// var n = &Node{
+	// 	Operator: Division{},
+	// 	Children: []*Node{
+	// 		&Node{
+	// 			Operator: Difference{},
+	// 			Children: []*Node{
+	// 				&Node{Operator: Variable{0}},
+	// 				&Node{Operator: Variable{0}},
+	// 			},
+	// 		},
+	// 		&Node{
+	// 			Operator: Product{},
+	// 			Children: []*Node{
+	// 				&Node{Operator: Variable{0}},
+	// 				&Node{Operator: Variable{1}},
+	// 			},
+	// 		},
+	// 	},
+	// }
+	// fmt.Println(n.evaluateXT(est.train.XT(), nil))
 
 	var writer = tabwriter.NewWriter(os.Stdout, 0, 0, 4, ' ', 0)
 
 	// Initialize the GA
 	est.GA.Initialize()
+	fmt.Println(est.GA.Populations[0].Individuals)
 
 	// Display initial statistics
+	var message = "[%d]\tBest fitness: %.5f\tMean size: %.2f\n"
 	if verbose {
 		var stats = CollectStatistics(est.GA)
-		fmt.Fprintf(
-			writer,
-			"Generation: 0\tBest fitness: %.5f\tMean size: %.2f\n",
-			est.GA.Best.Fitness,
-			stats.AvgHeight,
-		)
+		fmt.Fprintf(writer, message, 0, est.GA.Best.Fitness, stats.AvgHeight)
 	}
 
-	// Enhance the GA est.Generations times
-	for i := 0; i < est.Generations; i++ {
-		est.GA.Enhance()
-		// Display statistics
-		if verbose {
-			var stats = CollectStatistics(est.GA)
-			fmt.Fprintf(
-				writer,
-				"Generation: %d\tBest fitness: %.5f\tMean size: %.2f\n",
-				i+1,
-				est.GA.Best.Fitness,
-				stats.AvgNNodes,
-			)
-			writer.Flush()
-		}
-	}
+	// // Enhance the GA est.Generations times
+	// for i := 0; i < est.Generations; i++ {
+	// 	est.GA.Enhance()
+	// 	// Display statistics
+	// 	if verbose {
+	// 		var stats = CollectStatistics(est.GA)
+	// 		fmt.Fprintf(
+	// 			writer,
+	// 			"[%d]\tBest fitness: %.5f\tMean size: %.2f\n",
+	// 			i+1,
+	// 			est.GA.Best.Fitness,
+	// 			stats.AvgNNodes,
+	// 		)
+	// 		writer.Flush()
+	// 	}
+	// }
 
-	// Display the best equation
-	best, err := est.BestProgram()
-	fmt.Printf("Best equation: %s\n", best)
+	// // Display the best equation
+	// best, err := est.BestProgram()
+	// fmt.Printf("Best equation: %s\n", best)
 
-	for _, pop := range est.GA.Populations {
-		fmt.Println(pop.Individuals)
-	}
+	// fmt.Println(pop.Individual[0])
 
 	// // No need to continue if no tuning GA has been provided
 	// if est.TuningGA == nil {
@@ -150,14 +155,14 @@ func (est Estimator) Predict(X [][]float64) ([]float64, error) {
 // functionMap returns a map mapping an integer to Operators that are in the
 // Estimator's Functions and whose arity is equal to the integer. The result
 // is memoized for subsequent calls.
-func (est Estimator) functionMap() map[int][]Operator {
+func (est Estimator) functionMap() functionMap {
 	// Check if functionMap has already been computed
 	if est.fm != nil {
 		return est.fm
 	}
 	// Convert the slice of Operators into a map of Operators based on the
 	// arities
-	est.fm = make(map[int][]Operator)
+	est.fm = make(functionMap)
 	for _, f := range est.Functions {
 		var arity = f.Arity()
 		if _, ok := est.fm[arity]; ok {
@@ -170,24 +175,23 @@ func (est Estimator) functionMap() map[int][]Operator {
 }
 
 // newConstant returns a Constant whose value is sampled from a normal
-// distribution based on the Estimator's dataset's y slice.
+// distribution based on the Estimator's train's Y slice.
 func (est Estimator) newConstant(rng *rand.Rand) Constant {
-	return Constant{
-		Value: randFloat64(est.targetMin, est.targetMax, rng),
-	}
+	return newConstant(est.ConstMin, est.ConstMax, rng)
 }
 
 // newVariable returns a Variable with an index in range [0, p) where p is the
-// number of explanatory variables in the Estimator's dataset.dataset.
+// number of explanatory variables in the Estimator's train dataset.
 func (est Estimator) newVariable(rng *rand.Rand) Variable {
-	return Variable{
-		Index: rng.Intn(est.train.NFeatures()),
-	}
+	return newVariable(est.train.NFeatures(), rng)
+}
+
+func (est Estimator) newFunction(rng *rand.Rand) Operator {
+	return newFunction(est.Functions, rng)
 }
 
 func (est Estimator) newFunctionOfArity(arity int, rng *rand.Rand) Operator {
-	var fm = est.functionMap()
-	return fm[arity][rng.Intn(len(fm[arity]))]
+	return newFunctionOfArity(est.functionMap(), arity, rng)
 }
 
 // newOperator generates a random *Node. If terminal is true then a Constant or
@@ -199,7 +203,7 @@ func (est Estimator) newOperator(terminal bool, rng *rand.Rand) Operator {
 		}
 		return est.newConstant(rng)
 	}
-	return est.newFunctionOfArity(2, rng)
+	return est.newFunction(rng)
 }
 
 // NewProgram can be used by gago to produce a new Genome.
@@ -218,7 +222,7 @@ func (est *Estimator) NewProgram(rng *rand.Rand) gago.Genome {
 func (est *Estimator) NewProgramTuner(rng *rand.Rand) gago.Genome {
 	var (
 		bestProg  = est.GA.Best.Genome.(*Program)
-		progTuner = newProgramTuner(*bestProg)
+		progTuner = newProgramTuner(bestProg)
 	)
 	progTuner.jitterConstants(rng)
 	return &progTuner

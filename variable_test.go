@@ -39,6 +39,11 @@ func TestVariableApplyXT(t *testing.T) {
 			XT: [][]float64{[]float64{1, 2, 3}, []float64{4, 5, 6}},
 			Y:  []float64{1, 2, 3},
 		},
+		{
+			v:  Variable{1},
+			XT: [][]float64{[]float64{1, 2, 3}, []float64{4, 5, 6}},
+			Y:  []float64{4, 5, 6},
+		},
 	}
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {

@@ -3,9 +3,18 @@ package xgp
 import (
 	"fmt"
 	"math"
+	"math/rand"
 
 	"gonum.org/v1/gonum/floats"
 )
+
+func newFunction(functions []Operator, rng *rand.Rand) Operator {
+	return functions[rng.Intn(len(functions))]
+}
+
+func newFunctionOfArity(fm functionMap, arity int, rng *rand.Rand) Operator {
+	return newFunction(fm[arity], rng)
+}
 
 // GetFunction returns a functional Operator from it's String representation.
 func GetFunction(funcName string) (Operator, error) {
@@ -27,6 +36,9 @@ func GetFunction(funcName string) (Operator, error) {
 	}
 	return f, nil
 }
+
+// A functionMap maps arities to Operators.
+type functionMap map[int][]Operator
 
 // 1D functions
 
@@ -264,10 +276,7 @@ type Division struct{}
 
 // Apply Division.
 func (op Division) Apply(X []float64) float64 {
-	if math.Abs(X[1]) < 0.001 {
-		return 1
-	}
-	return X[0] / X[1]
+	return X[0] / (1 + X[1])
 }
 
 // ApplyXT Division.

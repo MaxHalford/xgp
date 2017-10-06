@@ -37,7 +37,7 @@ func init() {
 	fitCmd.Flags().StringVarP(&fitMetricName, "metric", "m", "mae", "Metric to use, this determines if the task is classification or regression")
 	fitCmd.Flags().IntVarP(&fitMinHeight, "min_height", "l", 2, "Min program height used in ramped half-and-half initialization")
 	fitCmd.Flags().StringVarP(&fitOutputName, "output", "o", "program.json", "Path where to save the output program")
-	fitCmd.Flags().Float64VarP(&fitPLeaf, "p_leaf", "p", 0.5, "Probability of generating a leaf node in ramped half-and-half initialization")
+	fitCmd.Flags().Float64VarP(&fitPLeaf, "p_leaf", "p", 0.3, "Probability of generating a leaf node in ramped half-and-half initialization")
 	fitCmd.Flags().Float64VarP(&fitPVariable, "p_variable", "v", 0.5, "Probability of picking a variable and not a constant when generating leaf nodes")
 	fitCmd.Flags().IntVarP(&fitRounds, "rounds", "r", 1, "Number of boosting rounds")
 	fitCmd.Flags().StringVarP(&fitTargetCol, "target_col", "y", "y", "Name of the target column in the training set")
@@ -103,6 +103,8 @@ var fitCmd = &cobra.Command{
 		// Instantiate an Estimator
 		estimator := xgp.Estimator{
 			Metric:    metric,
+			ConstMin:  -10,
+			ConstMax:  10,
 			PVariable: fitPVariable,
 			NodeInitializer: xgp.RampedHaldAndHalfInitializer{
 				MinHeight: fitMinHeight,
@@ -118,7 +120,7 @@ var fitCmd = &cobra.Command{
 		estimator.GA = &gago.GA{
 			NewGenome: estimator.NewProgram,
 			NPops:     1,
-			PopSize:   30,
+			PopSize:   1000,
 			Model: gago.ModGenerational{
 				Selector: gago.SelTournament{
 					NContestants: 3,

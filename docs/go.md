@@ -12,7 +12,6 @@ The following Go dependencies will be installed alongside:
 
 - [gonum/gonum](https://github.com/gonum/gonum)
 - [MaxHalford/gago](https://github.com/MaxHalford/gago)
-- [patrickmn/go-cache](github.com/patrickmn/go-cache)
 
 ## Usage
 

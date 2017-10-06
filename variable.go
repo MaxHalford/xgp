@@ -3,7 +3,15 @@ package xgp
 // Variable
 import (
 	"fmt"
+	"math/rand"
 )
+
+// newVariable returns a Variable with an index in range [0, p).
+func newVariable(p int, rng *rand.Rand) Variable {
+	return Variable{
+		Index: rng.Intn(p),
+	}
+}
 
 // A Variable holds an index that can be used to access a certain value of a
 // float64 vector. In other words a Variable represents a feature in a dataset.

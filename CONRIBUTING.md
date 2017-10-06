@@ -3,6 +3,7 @@
 ## To do
 
 - Range selection
+- Caching
 - Adaboost regressor
 - Add boosting to command-line
 - http://www.genetic-programming.com/gpquadraticexample.html

@@ -15,7 +15,7 @@ func TestNewProgramTuner(t *testing.T) {
 				},
 			},
 		}
-		progTuner = newProgramTuner(prog)
+		progTuner = newProgramTuner(&prog)
 	)
 	// Evaluate the Program
 	var y, _ = progTuner.Program.PredictRow([]float64{})
@@ -59,7 +59,7 @@ func TestSetProgConstants(t *testing.T) {
 				},
 			},
 		}
-		progTuner = newProgramTuner(prog)
+		progTuner = newProgramTuner(&prog)
 	)
 	// Set new Constants
 	for i, c := range progTuner.ConstValues {
@@ -85,7 +85,7 @@ func TestJitterConstants(t *testing.T) {
 				},
 			},
 		}
-		progTuner = newProgramTuner(prog)
+		progTuner = newProgramTuner(&prog)
 	)
 	// Jitter Constants
 	progTuner.jitterConstants(makeRNG())

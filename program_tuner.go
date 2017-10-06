@@ -8,7 +8,7 @@ import (
 
 // A ProgramTuner optimizes a Program by tuning the Program's Constants.
 type ProgramTuner struct {
-	Program      Program
+	Program      *Program
 	ConstValues  []float64
 	ConstSetters []ConstantSetter
 }
@@ -19,7 +19,7 @@ func (progTuner ProgramTuner) String() string {
 }
 
 // newProgramTuner returns a ProgramTuner from a Program.
-func newProgramTuner(prog Program) ProgramTuner {
+func newProgramTuner(prog *Program) ProgramTuner {
 	var (
 		consts       []float64
 		constSetters []ConstantSetter

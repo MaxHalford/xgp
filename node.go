@@ -65,24 +65,17 @@ func (node Node) evaluateRow(x []float64) float64 {
 	return node.Operator.Apply(childEvals)
 }
 
-func (node *Node) evaluateXT(XT [][]float64, nodeCache *NodeCache) (y []float64, err error) {
+func (node *Node) evaluateXT(XT [][]float64) (y []float64, err error) {
 	// Simplify the Node to remove unnecessary evaluation parts
 	node.Simplify()
-	// Check if the result has been cached
-	if nodeCache != nil {
-		y, cached := nodeCache.Get(node)
-		if cached {
-			return y, nil
-		}
-	}
 	// Either the Node is a leaf Node
-	if node.NBranches() == 0 {
+	var childEvals = make([][]float64, len(node.Children))
+	if node.IsTerminal() {
 		y = node.Operator.ApplyXT(XT)
 	} else {
 		// Either the Node has children Nodes
-		var childEvals = make([][]float64, len(node.Children))
 		for i, child := range node.Children {
-			childEvals[i], err = child.evaluateXT(XT, nodeCache)
+			childEvals[i], err = child.evaluateXT(XT)
 			if err != nil {
 				return nil, err
 			}
@@ -92,9 +85,6 @@ func (node *Node) evaluateXT(XT [][]float64, nodeCache *NodeCache) (y []float64,
 	// Store the result
 	if floats.HasNaN(y) {
 		return nil, errors.New("Slice contains NaNs")
-	}
-	if nodeCache != nil {
-		nodeCache.Set(node, y)
 	}
 	return
 }
@@ -135,27 +125,17 @@ func (node *Node) Simplify() {
 	node.Children = nil
 }
 
-// Implementation of the Tree interface from the tree package
+// IsTerminal indicates if a Node is a terminal Node or not.
+func (node Node) IsTerminal() bool { return node.NBranches() == 0 }
 
-// NBranches method is required to implement the Tree interface from the tree
-// package.
-func (node *Node) NBranches() int {
-	return len(node.Children)
-}
+// NBranches is required to implement tree.Tree.
+func (node *Node) NBranches() int { return len(node.Children) }
 
-// GetBranch method is required to implement to Tree interface from the tree
-// package.
-func (node *Node) GetBranch(i int) tree.Tree {
-	return node.Children[i]
-}
+// GetBranch is required to implement tree.Tree.
+func (node *Node) GetBranch(i int) tree.Tree { return node.Children[i] }
 
-// Swap method is required to implement to Tree interface from the tree package.
-func (node *Node) Swap(otherTree tree.Tree) {
-	*node, *otherTree.(*Node) = *otherTree.(*Node), *node
-}
+// Swap is required to implement tree.Tree.
+func (node *Node) Swap(otherTree tree.Tree) { *node, *otherTree.(*Node) = *otherTree.(*Node), *node }
 
-// ToString method is required to implement the Tree interface from the tree
-// package.
-func (node *Node) ToString() string {
-	return node.Operator.String()
-}
+// ToString is required to implement tree.Tree.
+func (node *Node) ToString() string { return node.Operator.String() }

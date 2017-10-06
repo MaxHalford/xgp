@@ -196,3 +196,8 @@ func LoadProgramFromJSON(path string) (Program, error) {
 	}
 	return program, nil
 }
+
+// ParseEquation parses an equation and returns a Program.
+func ParseEquation(eq string) Program {
+	return Program{}
+}

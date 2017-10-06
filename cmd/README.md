@@ -4,7 +4,7 @@
 
 ```sh
 cd xgp/cmd
-go run main.go fit ../examples/boston/train.csv -m mse
+go run main.go fit ../examples/boston/train.csv -m mae
 go run main.go predict ../examples/boston/test.csv
 ```
 

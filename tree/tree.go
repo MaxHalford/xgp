@@ -8,11 +8,26 @@ type Tree interface {
 }
 
 // rApply recursively applies a function to a Tree and it's branches.
-func rApply(tree Tree, f func(Tree)) {
-	f(tree)
-	for i := 0; i < tree.NBranches(); i++ {
-		rApply(tree.GetBranch(i), f)
+func rApply(tree Tree, f func(tree Tree, depth int) (stop bool)) {
+
+	var apply func(tree Tree, depth int) bool
+	apply = func(tree Tree, depth int) bool {
+		// Apply the function to the Tree and check if the recursion should stop
+		var stop = f(tree, depth)
+		if stop {
+			return stop
+		}
+		// Apply recursion to each branch
+		for i := 0; i < tree.NBranches(); i++ {
+			stop = apply(tree.GetBranch(i), depth+1)
+			if stop {
+				break
+			}
+		}
+		return false
 	}
+
+	apply(tree, 0)
 }
 
 // GetHeight returns the height of a tree. The height of a tree is the height of
@@ -29,8 +44,8 @@ func GetHeight(tree Tree) int {
 	return maxHeight + 1
 }
 
-// NNodes returns the number of nodes in a Tree.
+// GetNNodes returns the number of nodes in a Tree.
 func GetNNodes(tree Tree) (n int) {
-	rApply(tree, func(Tree) { n++ })
+	rApply(tree, func(Tree, int) bool { n++; return false })
 	return
 }

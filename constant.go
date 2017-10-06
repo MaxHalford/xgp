@@ -2,9 +2,17 @@ package xgp
 
 import (
 	"fmt"
+	"math/rand"
 
 	"gonum.org/v1/gonum/floats"
 )
+
+// newConstant returns a Constant whose value is sampled from [min, max].
+func newConstant(min, max float64, rng *rand.Rand) Constant {
+	return Constant{
+		Value: randFloat64(min, max, rng),
+	}
+}
 
 // A Constant holds a float64 value.
 type Constant struct {
