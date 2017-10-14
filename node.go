@@ -2,6 +2,7 @@ package xgp
 
 import (
 	"errors"
+	"fmt"
 	"math/rand"
 
 	"github.com/MaxHalford/xgp/tree"
@@ -84,6 +85,9 @@ func (node *Node) evaluateXT(XT [][]float64) (y []float64, err error) {
 	}
 	// Store the result
 	if floats.HasNaN(y) {
+		fmt.Println(node, node.IsTerminal())
+		fmt.Println(y)
+		panic("NaNs")
 		return nil, errors.New("Slice contains NaNs")
 	}
 	return
@@ -101,11 +105,12 @@ func (node *Node) String() string {
 }
 
 // Simplify a Node by removing unnecessary children. The algorithm starts at the
-// bottom of the tree from left to right.
-func (node *Node) Simplify() {
+// bottom of the tree from left to right. The method returns a boolean to
+// indicate if a simplification was performed or not.
+func (node *Node) Simplify() bool {
 	// A Node with no children can't be simplified
 	if node.NBranches() == 0 {
-		return
+		return false
 	}
 	var constChildren = true
 	for i, child := range node.Children {
@@ -118,11 +123,12 @@ func (node *Node) Simplify() {
 	}
 	// Stop if the Node has no children with Variable Operators
 	if !constChildren {
-		return
+		return false
 	}
 	// Replace the Node's Operator with a Constant.
 	node.Operator = Constant{Value: node.evaluateRow([]float64{})}
 	node.Children = nil
+	return true
 }
 
 // IsTerminal indicates if a Node is a terminal Node or not.
