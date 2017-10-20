@@ -1,20 +1,11 @@
-package xgp
+package tree
 
 import (
 	"fmt"
 	"math"
-	"math/rand"
 
 	"gonum.org/v1/gonum/floats"
 )
-
-func newFunction(functions []Operator, rng *rand.Rand) Operator {
-	return functions[rng.Intn(len(functions))]
-}
-
-func newFunctionOfArity(fm functionMap, arity int, rng *rand.Rand) Operator {
-	return newFunction(fm[arity], rng)
-}
 
 // GetFunction returns a functional Operator from it's String representation.
 func GetFunction(funcName string) (Operator, error) {
@@ -37,23 +28,20 @@ func GetFunction(funcName string) (Operator, error) {
 	return f, nil
 }
 
-// A functionMap maps arities to Operators.
-type functionMap map[int][]Operator
-
 // 1D functions
 
 // Cos computes the cosine of an operand.
 type Cos struct{}
 
-// Apply Cos.
-func (op Cos) Apply(x []float64) float64 {
+// ApplyRow Cos.
+func (op Cos) ApplyRow(x []float64) float64 {
 	return math.Cos(x[0])
 }
 
-// ApplyXT Cos.
-func (op Cos) ApplyXT(XT [][]float64) []float64 {
-	var Y = make([]float64, len(XT[0]))
-	for i, x := range XT[0] {
+// ApplyCols Xs.
+func (op Cos) ApplyCols(X [][]float64) []float64 {
+	var Y = make([]float64, len(X[0]))
+	for i, x := range X[0] {
 		Y[i] = math.Cos(x)
 	}
 	return Y
@@ -72,15 +60,15 @@ func (op Cos) String() string {
 // Sin computes the sine of an operand.
 type Sin struct{}
 
-// Apply Sin.
-func (op Sin) Apply(X []float64) float64 {
+// ApplyRow Sin.
+func (op Sin) ApplyRow(X []float64) float64 {
 	return math.Sin(X[0])
 }
 
-// ApplyXT Sin.
-func (op Sin) ApplyXT(XT [][]float64) []float64 {
-	var Y = make([]float64, len(XT[0]))
-	for i, x := range XT[0] {
+// ApplyCols Xn.
+func (op Sin) ApplyCols(X [][]float64) []float64 {
+	var Y = make([]float64, len(X[0]))
+	for i, x := range X[0] {
 		Y[i] = math.Sin(x)
 	}
 	return Y
@@ -99,15 +87,15 @@ func (op Sin) String() string {
 // Log computes the natural logarithm of an operand.
 type Log struct{}
 
-// Apply Log.
-func (op Log) Apply(X []float64) float64 {
+// ApplyRow Log.
+func (op Log) ApplyRow(X []float64) float64 {
 	return math.Log(X[0])
 }
 
-// ApplyXT Log.
-func (op Log) ApplyXT(XT [][]float64) []float64 {
-	var Y = make([]float64, len(XT[0]))
-	for i, x := range XT[0] {
+// ApplyCols Xg.
+func (op Log) ApplyCols(X [][]float64) []float64 {
+	var Y = make([]float64, len(X[0]))
+	for i, x := range X[0] {
 		Y[i] = math.Log(x)
 	}
 	return Y
@@ -126,15 +114,15 @@ func (op Log) String() string {
 // Exp computes the exponential of an operand.
 type Exp struct{}
 
-// Apply Exp.
-func (op Exp) Apply(X []float64) float64 {
+// ApplyRow Exp.
+func (op Exp) ApplyRow(X []float64) float64 {
 	return math.Exp(X[0])
 }
 
-// ApplyXT Exp.
-func (op Exp) ApplyXT(XT [][]float64) []float64 {
-	var Y = make([]float64, len(XT[0]))
-	for i, x := range XT[0] {
+// ApplyCols Xp.
+func (op Exp) ApplyCols(X [][]float64) []float64 {
+	var Y = make([]float64, len(X[0]))
+	for i, x := range X[0] {
 		Y[i] = math.Exp(x)
 	}
 	return Y
@@ -155,22 +143,22 @@ func (op Exp) String() string {
 // Max returns the maximum of two operands.
 type Max struct{}
 
-// Apply Max.
-func (op Max) Apply(X []float64) float64 {
+// ApplyRow Max.
+func (op Max) ApplyRow(X []float64) float64 {
 	if X[0] > X[1] {
 		return X[0]
 	}
 	return X[1]
 }
 
-// ApplyXT Max.
-func (op Max) ApplyXT(XT [][]float64) []float64 {
-	var Y = make([]float64, len(XT[0]))
-	for i := range XT[0] {
-		if XT[0][i] > XT[1][i] {
-			Y[i] = XT[0][i]
+// ApplyCols Xx.
+func (op Max) ApplyCols(X [][]float64) []float64 {
+	var Y = make([]float64, len(X[0]))
+	for i := range X[0] {
+		if X[0][i] > X[1][i] {
+			Y[i] = X[0][i]
 		} else {
-			Y[i] = XT[1][i]
+			Y[i] = X[1][i]
 		}
 	}
 	return Y
@@ -189,22 +177,22 @@ func (op Max) String() string {
 // Min returns the minimum of two operands.
 type Min struct{}
 
-// Apply Min.
-func (op Min) Apply(X []float64) float64 {
+// ApplyRow Min.
+func (op Min) ApplyRow(X []float64) float64 {
 	if X[0] < X[1] {
 		return X[0]
 	}
 	return X[1]
 }
 
-// ApplyXT Min.
-func (op Min) ApplyXT(XT [][]float64) []float64 {
-	var Y = make([]float64, len(XT[0]))
-	for i := range XT[0] {
-		if XT[0][i] < XT[1][i] {
-			Y[i] = XT[0][i]
+// ApplyCols Xn.
+func (op Min) ApplyCols(X [][]float64) []float64 {
+	var Y = make([]float64, len(X[0]))
+	for i := range X[0] {
+		if X[0][i] < X[1][i] {
+			Y[i] = X[0][i]
 		} else {
-			Y[i] = XT[1][i]
+			Y[i] = X[1][i]
 		}
 	}
 	return Y
@@ -223,15 +211,15 @@ func (op Min) String() string {
 // Sum returns the sum of two operands.
 type Sum struct{}
 
-// Apply Sum.
-func (op Sum) Apply(X []float64) float64 {
+// ApplyRow Sum.
+func (op Sum) ApplyRow(X []float64) float64 {
 	return X[0] + X[1]
 }
 
-// ApplyXT Sum.
-func (op Sum) ApplyXT(XT [][]float64) []float64 {
-	floats.Add(XT[0], XT[1])
-	return XT[0]
+// ApplyCols Xm.
+func (op Sum) ApplyCols(X [][]float64) []float64 {
+	floats.Add(X[0], X[1])
+	return X[0]
 }
 
 // Arity of Sum.
@@ -247,15 +235,15 @@ func (op Sum) String() string {
 // Difference returns the difference between two operands.
 type Difference struct{}
 
-// Apply Difference.
-func (op Difference) Apply(X []float64) float64 {
+// ApplyRow Difference.
+func (op Difference) ApplyRow(X []float64) float64 {
 	return X[0] - X[1]
 }
 
-// ApplyXT Difference.
-func (op Difference) ApplyXT(XT [][]float64) []float64 {
-	floats.Sub(XT[0], XT[1])
-	return XT[0]
+// ApplyCols Xfference.
+func (op Difference) ApplyCols(X [][]float64) []float64 {
+	floats.Sub(X[0], X[1])
+	return X[0]
 }
 
 // Arity of Difference.
@@ -274,15 +262,15 @@ func (op Difference) String() string {
 // returns 1.
 type Division struct{}
 
-// Apply Division.
-func (op Division) Apply(X []float64) float64 {
+// ApplyRow Division.
+func (op Division) ApplyRow(X []float64) float64 {
 	return X[0] / (1 + X[1])
 }
 
-// ApplyXT Division.
-func (op Division) ApplyXT(XT [][]float64) []float64 {
-	floats.Div(XT[0], XT[1])
-	return XT[0]
+// ApplyCols Xvision.
+func (op Division) ApplyCols(X [][]float64) []float64 {
+	floats.Div(X[0], X[1])
+	return X[0]
 }
 
 // Arity of Division.
@@ -298,15 +286,15 @@ func (op Division) String() string {
 // Product returns the product two operands.
 type Product struct{}
 
-// Apply Product.
-func (op Product) Apply(X []float64) float64 {
+// ApplyRow Product.
+func (op Product) ApplyRow(X []float64) float64 {
 	return X[0] * X[1]
 }
 
-// ApplyXT Product.
-func (op Product) ApplyXT(XT [][]float64) []float64 {
-	floats.Mul(XT[0], XT[1])
-	return XT[0]
+// ApplyCols Xoduct.
+func (op Product) ApplyCols(X [][]float64) []float64 {
+	floats.Mul(X[0], X[1])
+	return X[0]
 }
 
 // Arity of Product.
@@ -322,16 +310,16 @@ func (op Product) String() string {
 // Power computes the exponent of a first value by a second one.
 type Power struct{}
 
-// Apply Power.
-func (op Power) Apply(X []float64) float64 {
+// ApplyRow Power.
+func (op Power) ApplyRow(X []float64) float64 {
 	return math.Pow(X[0], X[1])
 }
 
-// ApplyXT Power.
-func (op Power) ApplyXT(XT [][]float64) []float64 {
-	var Y = make([]float64, len(XT[0]))
-	for i := range XT[0] {
-		Y[i] = math.Pow(XT[0][i], XT[1][i])
+// ApplyCols Xwer.
+func (op Power) ApplyCols(X [][]float64) []float64 {
+	var Y = make([]float64, len(X[0]))
+	for i := range X[0] {
+		Y[i] = math.Pow(X[0][i], X[1][i])
 	}
 	return Y
 }

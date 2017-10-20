@@ -1,4 +1,4 @@
-package xgp
+package tree
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestConstantApply(t *testing.T) {
+func TestConstantApplyRow(t *testing.T) {
 	var testCases = []struct {
 		c Constant
 		x []float64
@@ -30,7 +30,7 @@ func TestConstantApply(t *testing.T) {
 	}
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
-			var y = tc.c.Apply(tc.x)
+			var y = tc.c.ApplyRow(tc.x)
 			if y != tc.y {
 				t.Errorf("Expected %v, got %v", tc.y, y)
 			}
@@ -38,26 +38,26 @@ func TestConstantApply(t *testing.T) {
 	}
 }
 
-func TestConstantApplyXT(t *testing.T) {
+func TestConstantApplyCols(t *testing.T) {
 	var testCases = []struct {
-		c  Constant
-		XT [][]float64
-		Y  []float64
+		c Constant
+		X [][]float64
+		Y []float64
 	}{
 		{
-			c:  Constant{42},
-			XT: [][]float64{[]float64{}},
-			Y:  []float64{},
+			c: Constant{42},
+			X: [][]float64{[]float64{}},
+			Y: []float64{},
 		},
 		{
-			c:  Constant{42},
-			XT: [][]float64{[]float64{1, 2, 3}},
-			Y:  []float64{42, 42, 42},
+			c: Constant{42},
+			X: [][]float64{[]float64{1, 2, 3}},
+			Y: []float64{42, 42, 42},
 		},
 	}
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
-			var Y = tc.c.ApplyXT(tc.XT)
+			var Y = tc.c.ApplyCols(tc.X)
 			if !reflect.DeepEqual(Y, tc.Y) {
 				t.Errorf("Expected %v, got %v", tc.Y, Y)
 			}

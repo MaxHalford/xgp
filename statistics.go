@@ -2,27 +2,26 @@ package xgp
 
 import (
 	"github.com/MaxHalford/gago"
-	"github.com/MaxHalford/xgp/tree"
 )
 
-type Statistics struct {
-	AvgHeight float64
-	AvgNNodes float64
+type statistics struct {
+	avgHeight     float64
+	avgNOperators float64
 }
 
-func CollectStatistics(GA *gago.GA) Statistics {
+func collectStatistics(GA *gago.GA) statistics {
 	var (
-		stats Statistics
+		stats statistics
 		n     float64
 	)
 	for _, pop := range GA.Populations {
 		for _, indi := range pop.Individuals {
-			stats.AvgHeight += float64(tree.GetHeight(indi.Genome.(*Program).Root))
-			stats.AvgNNodes += float64(tree.GetNNodes(indi.Genome.(*Program).Root))
+			stats.avgHeight += float64(indi.Genome.(*Program).Tree.Height())
+			stats.avgNOperators += float64(indi.Genome.(*Program).Tree.NOperators())
 			n++
 		}
 	}
-	stats.AvgHeight /= n
-	stats.AvgNNodes /= n
+	stats.avgHeight /= n
+	stats.avgNOperators /= n
 	return stats
 }

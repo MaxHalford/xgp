@@ -25,24 +25,24 @@ type DirDisplay struct {
 }
 
 // Apply directory-style display.
-func (displayer DirDisplay) Apply(tree Tree) string {
+func (displayer DirDisplay) Apply(tree *Tree) string {
 	var (
-		disp       func(tree Tree, str string, depth int, carriage bool) string
+		disp       func(tree *Tree, str string, depth int, carriage bool) string
 		whitespace = strings.Repeat(" ", displayer.TabSize)
 	)
 
-	disp = func(tree Tree, str string, depth int, carriage bool) string {
-		str += strings.Repeat(whitespace, depth) + tree.ToString()
+	disp = func(tree *Tree, str string, depth int, carriage bool) string {
+		str += strings.Repeat(whitespace, depth) + tree.Operator.String()
 		if carriage {
 			str += "\n"
 		}
-		for i := tree.NBranches() - 1; i >= 0; i-- {
-			str = disp(tree.GetBranch(i), str, depth+1, i > 0)
+		for i := len(tree.Branches) - 1; i >= 0; i-- {
+			str = disp(tree.Branches[i], str, depth+1, i > 0)
 		}
 		return str
 	}
 
-	return disp(tree, "", 0, tree.NBranches() > 0)
+	return disp(tree, "", 0, len(tree.Branches) > 0)
 }
 
 // GraphvizDisplay outputs a Graphviz representation of a Tree. Each branch is
@@ -51,35 +51,35 @@ func (displayer DirDisplay) Apply(tree Tree) string {
 //
 //  digraph G {
 //      0 [label="root"];
-//  	0 -> 1
-// 		1 [label="branch 1"];
-//  	1 -> 2
+//      0 -> 1
+//      1 [label="branch 1"];
+//      1 -> 2
 //      2 [label="sub-branch 1.1
-//  	1 -> 3
+//      1 -> 3
 //      3 [label="sub-branch 1.2"];
-//  	0 -> 4
-// 		4 [label="branch 2"];
-//  	4 -> 5
+//      0 -> 4
+//      4 [label="branch 2"];
+//      4 -> 5
 //      5 [label="sub-branch 2.1
-//  	4 -> 6
+//      4 -> 6
 //      6 [label="sub-branch 2.2"];
 //  }
 //
 type GraphvizDisplay struct{}
 
 // Apply Graphviz display.
-func (displayer GraphvizDisplay) Apply(tree Tree) string {
+func (displayer GraphvizDisplay) Apply(tree *Tree) string {
 	var (
 		counter int
-		disp    func(tree Tree, str string) string
+		disp    func(tree *Tree, str string) string
 	)
-	disp = func(tree Tree, str string) string {
+	disp = func(tree *Tree, str string) string {
 		var idx = counter
-		str += fmt.Sprintf("\t%d [label=\"%s\"];\n", idx, tree.ToString())
-		for i := 0; i < tree.NBranches(); i++ {
+		str += fmt.Sprintf("\t%d [label=\"%s\"];\n", idx, tree.Operator.String())
+		for _, branch := range tree.Branches {
 			counter++
 			str += fmt.Sprintf("\t%d -> %d;\n", idx, counter)
-			str = disp(tree.GetBranch(i), str)
+			str = disp(branch, str)
 		}
 		return str
 	}
@@ -88,24 +88,24 @@ func (displayer GraphvizDisplay) Apply(tree Tree) string {
 	return str
 }
 
-// EquationDisplay outputs an equation-like representation of a Tree.
-type EquationDisplay struct{}
+// FormulaDisplay outputs an equation-like representation of a Tree.
+type FormulaDisplay struct{}
 
-// Apply EquationDisplay.
-func (displayer EquationDisplay) Apply(tree Tree) string {
-	switch tree.NBranches() {
+// Apply FormulaDisplay.
+func (displayer FormulaDisplay) Apply(tree *Tree) string {
+	switch len(tree.Branches) {
 	case 0:
-		return tree.ToString()
+		return tree.Operator.String()
 	case 1:
-		return fmt.Sprintf("%s(%s)", tree.ToString(), displayer.Apply(tree.GetBranch(0)))
+		return fmt.Sprintf("%s(%s)", tree.Operator.String(), displayer.Apply(tree.Branches[0]))
 	case 2:
 		return fmt.Sprintf(
 			"(%s)%s(%s)",
-			displayer.Apply(tree.GetBranch(0)),
-			tree.ToString(),
-			displayer.Apply(tree.GetBranch(1)),
+			displayer.Apply(tree.Branches[0]),
+			tree.Operator.String(),
+			displayer.Apply(tree.Branches[1]),
 		)
 	default:
-		return tree.ToString()
+		return tree.Operator.String()
 	}
 }

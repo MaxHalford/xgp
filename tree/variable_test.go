@@ -1,4 +1,4 @@
-package xgp
+package tree
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestVariableApply(t *testing.T) {
+func TestVariableApplyRow(t *testing.T) {
 	var testCases = []struct {
 		v Variable
 		x []float64
@@ -20,7 +20,7 @@ func TestVariableApply(t *testing.T) {
 	}
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
-			var y = tc.v.Apply(tc.x)
+			var y = tc.v.ApplyRow(tc.x)
 			if y != tc.y {
 				t.Errorf("Expected %v, got %v", tc.y, y)
 			}
@@ -28,26 +28,26 @@ func TestVariableApply(t *testing.T) {
 	}
 }
 
-func TestVariableApplyXT(t *testing.T) {
+func TestVariableApplyCols(t *testing.T) {
 	var testCases = []struct {
-		v  Variable
-		XT [][]float64
-		Y  []float64
+		v Variable
+		X [][]float64
+		Y []float64
 	}{
 		{
-			v:  Variable{0},
-			XT: [][]float64{[]float64{1, 2, 3}, []float64{4, 5, 6}},
-			Y:  []float64{1, 2, 3},
+			v: Variable{0},
+			X: [][]float64{[]float64{1, 2, 3}, []float64{4, 5, 6}},
+			Y: []float64{1, 2, 3},
 		},
 		{
-			v:  Variable{1},
-			XT: [][]float64{[]float64{1, 2, 3}, []float64{4, 5, 6}},
-			Y:  []float64{4, 5, 6},
+			v: Variable{1},
+			X: [][]float64{[]float64{1, 2, 3}, []float64{4, 5, 6}},
+			Y: []float64{4, 5, 6},
 		},
 	}
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
-			var Y = tc.v.ApplyXT(tc.XT)
+			var Y = tc.v.ApplyCols(tc.X)
 			if !reflect.DeepEqual(Y, tc.Y) {
 				t.Errorf("Expected %v, got %v", tc.Y, Y)
 			}

@@ -8,27 +8,29 @@ import (
 	"text/tabwriter"
 
 	"github.com/MaxHalford/gago"
+
 	"github.com/MaxHalford/xgp/boosting"
 	"github.com/MaxHalford/xgp/dataset"
 	"github.com/MaxHalford/xgp/metrics"
+	"github.com/MaxHalford/xgp/tree"
 )
 
 // An Estimator links all the different components together and can be used to
 // train Programs on a dataset.
 type Estimator struct {
 	Metric            metrics.Metric
+	Functions         []tree.Operator
+	TreeInitializer   tree.Initializer
 	ConstMin          float64
 	ConstMax          float64
-	PVariable         float64         // Probability of producing a Variable when creating a terminal Node
-	NodeInitializer   NodeInitializer // Method for producing new Program trees
-	Functions         []Operator
+	PVariable         float64
 	GA                *gago.GA
 	TuningGA          *gago.GA
 	Generations       int
 	TuningGenerations int
 	ParsimonyCoeff    float64
 
-	fm    functionMap
+	fm    map[int][]tree.Operator
 	train *dataset.Dataset
 }
 
@@ -93,8 +95,8 @@ func (est *Estimator) Fit(X [][]float64, Y []float64, verbose bool) error {
 	// Display initial statistics
 	var message = "[%d]\tBest fitness: %.5f\tMean size: %.2f\n"
 	if verbose {
-		var stats = CollectStatistics(est.GA)
-		fmt.Fprintf(writer, message, 0, est.GA.Best.Fitness, stats.AvgHeight)
+		var stats = collectStatistics(est.GA)
+		fmt.Fprintf(writer, message, 0, est.GA.Best.Fitness, stats.avgHeight)
 	}
 
 	// // Enhance the GA est.Generations times
@@ -155,63 +157,55 @@ func (est Estimator) Predict(X [][]float64) ([]float64, error) {
 // functionMap returns a map mapping an integer to Operators that are in the
 // Estimator's Functions and whose arity is equal to the integer. The result
 // is memoized for subsequent calls.
-func (est Estimator) functionMap() functionMap {
+func (est Estimator) functionMap() map[int][]tree.Operator {
 	// Check if functionMap has already been computed
 	if est.fm != nil {
 		return est.fm
 	}
 	// Convert the slice of Operators into a map of Operators based on the
 	// arities
-	est.fm = make(functionMap)
+	est.fm = make(map[int][]tree.Operator)
 	for _, f := range est.Functions {
 		var arity = f.Arity()
 		if _, ok := est.fm[arity]; ok {
 			est.fm[arity] = append(est.fm[arity], f)
 		} else {
-			est.fm[arity] = []Operator{f}
+			est.fm[arity] = []tree.Operator{f}
 		}
 	}
 	return est.fm
 }
 
-// newConstant returns a Constant whose value is sampled from a normal
-// distribution based on the Estimator's train's Y slice.
-func (est Estimator) newConstant(rng *rand.Rand) Constant {
-	return newConstant(est.ConstMin, est.ConstMax, rng)
+func (est Estimator) newConstant(rng *rand.Rand) tree.Constant {
+	return tree.Constant{Value: est.ConstMin + rng.Float64()*(est.ConstMax-est.ConstMin)}
 }
 
-// newVariable returns a Variable with an index in range [0, p) where p is the
-// number of explanatory variables in the Estimator's train dataset.
-func (est Estimator) newVariable(rng *rand.Rand) Variable {
-	return newVariable(est.train.NFeatures(), rng)
+func (est Estimator) newVariable(rng *rand.Rand) tree.Variable {
+	return tree.Variable{Index: rng.Intn(est.train.NFeatures())}
 }
 
-func (est Estimator) newFunction(rng *rand.Rand) Operator {
-	return newFunction(est.Functions, rng)
+func (est Estimator) newFunction(rng *rand.Rand) tree.Operator {
+	return est.Functions[rng.Intn(len(est.Functions))]
 }
 
-func (est Estimator) newFunctionOfArity(arity int, rng *rand.Rand) Operator {
-	return newFunctionOfArity(est.functionMap(), arity, rng)
-}
-
-// newOperator generates a random *Node. If terminal is true then a Constant or
-// a Variable is returned. If not a Function is returned.
-func (est Estimator) newOperator(terminal bool, rng *rand.Rand) Operator {
-	if terminal {
-		if rng.Float64() < est.PVariable {
-			return est.newVariable(rng)
-		}
-		return est.newConstant(rng)
-	}
-	return est.newFunction(rng)
+func (est Estimator) newFunctionOfArity(arity int, rng *rand.Rand) tree.Operator {
+	return est.fm[arity][rng.Intn(len(est.fm[arity]))]
 }
 
 // NewProgram can be used by gago to produce a new Genome.
 func (est *Estimator) NewProgram(rng *rand.Rand) gago.Genome {
-	var prog = Program{
-		Root:      est.NodeInitializer.Apply(est.newOperator, rng),
-		Estimator: est,
-	}
+	var (
+		opFactory = tree.OperatorFactory{
+			PVariable:   est.PVariable,
+			NewConstant: est.newConstant,
+			NewVariable: est.newVariable,
+			NewFunction: est.newFunction,
+		}
+		prog = Program{
+			Tree:      est.TreeInitializer.Apply(opFactory, rng),
+			Estimator: est,
+		}
+	)
 	if est.Metric.Classification() {
 		prog.DRS = &DynamicRangeSelection{}
 	}

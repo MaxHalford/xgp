@@ -4,38 +4,15 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"math/rand"
 	"text/tabwriter"
 )
 
 type Dataset struct {
 	X        [][]float64
-	xT       [][]float64
 	XNames   []string
 	Y        []float64
 	YName    string
 	ClassMap *ClassMap
-}
-
-// XT returns the transpose of X. The transpose is memoized for subsequent
-// calls.
-func (dataset *Dataset) XT() [][]float64 {
-	// Check if the transpose has already been computed
-	if dataset.xT != nil {
-		return dataset.xT
-	}
-	// Initialize xT with empty slices
-	dataset.xT = make([][]float64, len(dataset.X[0]))
-	for i := range dataset.xT {
-		dataset.xT[i] = make([]float64, len(dataset.X))
-	}
-	// Perform the transpose
-	for i, row := range dataset.X {
-		for j, cell := range row {
-			dataset.xT[j][i] = cell
-		}
-	}
-	return dataset.xT
 }
 
 func (dataset Dataset) NRows() int {
@@ -57,24 +34,6 @@ func (dataset Dataset) NClasses() (int, error) {
 	return len(dataset.ClassMap.Map), nil
 }
 
-func (dataset Dataset) Sample(k int, rng *rand.Rand) Dataset {
-	var (
-		indices = randomInts(k, 0, len(dataset.X), rng)
-		sample  = Dataset{
-			X:        make([][]float64, k),
-			XNames:   dataset.XNames,
-			Y:        make([]float64, k),
-			YName:    dataset.YName,
-			ClassMap: dataset.ClassMap,
-		}
-	)
-	for i, idx := range indices {
-		sample.X[i] = dataset.X[idx]
-		sample.Y[i] = dataset.Y[idx]
-	}
-	return sample
-}
-
 func (dataset Dataset) String() string {
 
 	// Determine the length of the longest column name
@@ -85,10 +44,10 @@ func (dataset Dataset) String() string {
 		}
 	}
 
-	var buffer bytes.Buffer
-	//w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, '.', tabwriter.AlignRight|tabwriter.Debug)
-
-	var w = new(tabwriter.Writer)
+	var (
+		buffer bytes.Buffer
+		w      = new(tabwriter.Writer)
+	)
 	w.Init(&buffer, 0, 8, 0, '\t', 0)
 
 	// Display the column names
@@ -108,7 +67,7 @@ func (dataset Dataset) String() string {
 			fmt.Fprintf(w, "\t%.3f", x)
 		}
 		// Display the target
-		if dataset.ClassMap.N == 0 {
+		if dataset.ClassMap == nil {
 			fmt.Fprintf(w, "\t%.3f", dataset.Y[i])
 		} else {
 			fmt.Fprintf(w, "\t%s", dataset.ClassMap.ReverseMap[dataset.Y[i]])

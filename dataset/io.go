@@ -19,14 +19,14 @@ func ReadCSV(path string, target string, classification bool) (*Dataset, error) 
 
 	// Read the headers
 	columns, err := r.Read()
-	if err == io.EOF {
+	if err != nil {
 		return nil, err
 	}
 
 	// Go through column names and determine which one is the target
 	var (
 		targetIdx = -1
-		nXCols    int
+		p         int
 	)
 	dataset.XNames = make([]string, len(columns)-1)
 	for i, column := range columns {
@@ -35,16 +35,19 @@ func ReadCSV(path string, target string, classification bool) (*Dataset, error) 
 			targetIdx = i
 			break
 		} else {
-			if nXCols == len(dataset.XNames) {
+			if p == len(dataset.XNames) {
 				break
 			}
-			dataset.XNames[nXCols] = column
-			nXCols++
+			dataset.XNames[p] = column
+			p++
 		}
 	}
 	if targetIdx == -1 {
 		return nil, fmt.Errorf("No column named '%s'", target)
 	}
+
+	// Initialize the columns
+	dataset.X = make([][]float64, p)
 
 	// Initialize an empty class map in case of classification
 	if classification {
@@ -58,13 +61,15 @@ func ReadCSV(path string, target string, classification bool) (*Dataset, error) 
 			break
 		}
 		// Parse the features as float64s
-		var x = make([]float64, len(record)-1)
 		for i, s := range record {
 			if i != targetIdx {
-				x[i], _ = strconv.ParseFloat(s, 64)
+				x, err := strconv.ParseFloat(s, 64)
+				if err != nil {
+					return nil, err
+				}
+				dataset.X[i] = append(dataset.X[i], x)
 			}
 		}
-		dataset.X = append(dataset.X, x)
 		// Parse the target
 		if classification {
 			dataset.Y = append(dataset.Y, dataset.ClassMap.Get(record[targetIdx]))

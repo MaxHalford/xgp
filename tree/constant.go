@@ -1,32 +1,24 @@
-package xgp
+package tree
 
 import (
 	"fmt"
-	"math/rand"
 
 	"gonum.org/v1/gonum/floats"
 )
-
-// newConstant returns a Constant whose value is sampled from [min, max].
-func newConstant(min, max float64, rng *rand.Rand) Constant {
-	return Constant{
-		Value: randFloat64(min, max, rng),
-	}
-}
 
 // A Constant holds a float64 value.
 type Constant struct {
 	Value float64
 }
 
-// Apply Constant.
-func (c Constant) Apply(x []float64) float64 {
+// ApplyRow Constant.
+func (c Constant) ApplyRow(x []float64) float64 {
 	return c.Value
 }
 
-// ApplyXT Constant.
-func (c Constant) ApplyXT(XT [][]float64) []float64 {
-	var C = make([]float64, len(XT[0]))
+// ApplyCols Constant.
+func (c Constant) ApplyCols(X [][]float64) []float64 {
+	var C = make([]float64, len(X[0]))
 	floats.AddConst(c.Value, C)
 	return C
 }

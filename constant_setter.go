@@ -1,10 +1,12 @@
 package xgp
 
-// A ConstantSetter can replace a Node's Operator with a Constant.
+import "github.com/MaxHalford/xgp/tree"
+
+// A ConstantSetter can replace a tree's Operator with a Constant.
 type ConstantSetter func(value float64)
 
-func (node *Node) newConstantSetter() ConstantSetter {
+func newConstantSetter(t *tree.Tree) ConstantSetter {
 	return func(value float64) {
-		node.Operator = Constant{Value: value}
+		t.Operator = tree.Constant{Value: value}
 	}
 }

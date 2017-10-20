@@ -6,102 +6,8 @@ import (
 	"strconv"
 )
 
-// A serialNode can be serialized and holds information that can be used to
-// initialize a Node.
-type serialNode struct {
-	OpType   string       `json:"op_type"`
-	OpValue  string       `json:"op_value"`
-	Children []serialNode `json:"children"`
-}
-
-// serializeNode recursively transforms a *Node into a serialNode.
-func serializeNode(node *Node) (serialNode, error) {
-	var serial = serialNode{
-		Children: make([]serialNode, node.NBranches()),
-	}
-	switch node.Operator.(type) {
-	case Constant:
-		serial.OpType = "constant"
-		serial.OpValue = strconv.FormatFloat(node.Operator.(Constant).Value, 'f', -1, 64)
-	case Variable:
-		serial.OpType = "variable"
-		serial.OpValue = strconv.Itoa(node.Operator.(Variable).Index)
-	default:
-		serial.OpType = "function"
-		serial.OpValue = node.Operator.String()
-	}
-	for i, child := range node.Children {
-		var serialChild, err = serializeNode(child)
-		if err != nil {
-			return serial, err
-		}
-		serial.Children[i] = serialChild
-	}
-	return serial, nil
-}
-
-// parseSerialNode recursively transforms a serialNode into a *Node.
-func parseSerialNode(serial serialNode) (*Node, error) {
-	var node = &Node{
-		Children: make([]*Node, len(serial.Children)),
-	}
-	switch serial.OpType {
-	case "constant":
-		var val, err = strconv.ParseFloat(serial.OpValue, 64)
-		if err != nil {
-			return nil, err
-		}
-		node.Operator = Constant{val}
-	case "variable":
-		var idx, err = strconv.Atoi(serial.OpValue)
-		if err != nil {
-			return nil, err
-		}
-		node.Operator = Variable{idx}
-	default:
-		var function, err = GetFunction(serial.OpValue)
-		if err != nil {
-			return nil, err
-		}
-		node.Operator = function
-	}
-	for i, child := range serial.Children {
-		var nodeChild, err = parseSerialNode(child)
-		if err != nil {
-			return node, err
-		}
-		node.Children[i] = nodeChild
-	}
-	return node, nil
-}
-
-// MarshalJSON serializes a *Node into JSON bytes. A serialNode is used as an
-// intermediary.
-func (node *Node) MarshalJSON() ([]byte, error) {
-	var serial, err = serializeNode(node)
-	if err != nil {
-		return nil, err
-	}
-	return json.Marshal(&serial)
-}
-
-// UnmarshalJSON parses JSON bytes into a *Node. A serialNode is used as an
-// intermediary.
-func (node *Node) UnmarshalJSON(bytes []byte) error {
-	var serial serialNode
-	if err := json.Unmarshal(bytes, &serial); err != nil {
-		return err
-	}
-	var parsedNode, err = parseSerialNode(serial)
-	if err != nil {
-		return err
-	}
-	*node = *parsedNode
-	return nil
-}
-
 // A serialDRS can be serialized and holds information that can be used to
-// initialize a Node.
+// initialize a tree.
 type serialDRS struct {
 	CutPoints []float64         `json:"cut_points"`
 	RangeMap  map[string]string `json:"range_map"`
@@ -195,9 +101,4 @@ func LoadProgramFromJSON(path string) (Program, error) {
 		return program, err
 	}
 	return program, nil
-}
-
-// ParseEquation parses an equation and returns a Program.
-func ParseEquation(eq string) Program {
-	return Program{}
 }

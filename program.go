@@ -8,24 +8,22 @@ import (
 	"github.com/MaxHalford/xgp/tree"
 )
 
-// A Program holds a tree composed of Nodes and also holds a reference to an
-// Estimator. A Program is simply an abstraction of top of a Node that allows
-// not having to store the Estimator reference in each Node.
+// A Program is simply an abstraction of top of a Tree.
 type Program struct {
-	Root      *Node                  `json:"root"`
+	Tree      *tree.Tree             `json:"tree"`
 	Estimator *Estimator             `json:"-"`
 	DRS       *DynamicRangeSelection `json:"drs"`
 }
 
 // String representation of a Program.
 func (prog Program) String() string {
-	return prog.Root.String()
+	return prog.Tree.String()
 }
 
 // Clone a Program.
 func (prog Program) clone() *Program {
 	var clone = &Program{
-		Root:      prog.Root.clone(),
+		Tree:      prog.Tree.Clone(),
 		Estimator: prog.Estimator,
 	}
 	if prog.DRS != nil {
@@ -36,7 +34,7 @@ func (prog Program) clone() *Program {
 
 // PredictRow predicts the output of some features.
 func (prog Program) PredictRow(x []float64) (float64, error) {
-	var y = prog.Root.evaluateRow(x)
+	var y = prog.Tree.EvaluateRow(x)
 	if prog.DRS != nil {
 		return prog.DRS.PredictRow(y), nil
 	}
@@ -44,8 +42,8 @@ func (prog Program) PredictRow(x []float64) (float64, error) {
 }
 
 // Predict predicts the output of a slice of features.
-func (prog Program) Predict(XT [][]float64) (yPred []float64, err error) {
-	yPred, err = prog.Root.evaluateXT(XT)
+func (prog Program) Predict(X [][]float64) (yPred []float64, err error) {
+	yPred, err = prog.Tree.EvaluateCols(X)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +56,7 @@ func (prog Program) Predict(XT [][]float64) (yPred []float64, err error) {
 // Evaluate is required to implement gago.Genome.
 func (prog *Program) Evaluate() float64 {
 	// Run the training set through the Program
-	var yPred, err = prog.Root.evaluateXT(prog.Estimator.train.XT())
+	var yPred, err = prog.Tree.EvaluateCols(prog.Estimator.train.X)
 	// If an error occurred during evaluation return +∞
 	if err != nil {
 		return math.Inf(1)
@@ -76,20 +74,30 @@ func (prog *Program) Evaluate() float64 {
 	}
 	// Apply the parsimony coefficient
 	if prog.Estimator.ParsimonyCoeff != 0 {
-		fitness += prog.Estimator.ParsimonyCoeff * float64(tree.GetHeight(prog.Root))
+		fitness += prog.Estimator.ParsimonyCoeff * float64(prog.Tree.Height())
 	}
 	return fitness
 }
 
 // Mutate is required to implement gago.Genome.
 func (prog *Program) Mutate(rng *rand.Rand) {
-	PointMutation{0.2}.Apply(prog, rng)
+	var newOp = func(op tree.Operator, rng *rand.Rand) tree.Operator {
+		switch op.(type) {
+		case tree.Constant:
+			return prog.Estimator.newConstant(rng)
+		case tree.Variable:
+			return prog.Estimator.newVariable(rng)
+		default:
+			return prog.Estimator.newFunctionOfArity(op.Arity(), rng)
+		}
+	}
+	tree.PointMutation{NewOperator: newOp, P: 0.2}.Apply(prog.Tree, rng)
 }
 
 // Crossover is required to implement gago.Genome.
 func (prog Program) Crossover(prog2 gago.Genome, rng *rand.Rand) (gago.Genome, gago.Genome) {
 	var (
-		subTreeCrossover = SubTreeCrossover{
+		subTreeCrossover = tree.SubTreeCrossover{
 			PConstant: 0.1,
 			PVariable: 0.1,
 			PFunction: 0.9,
@@ -97,7 +105,7 @@ func (prog Program) Crossover(prog2 gago.Genome, rng *rand.Rand) (gago.Genome, g
 		offspring1 = prog.clone()
 		offspring2 = prog2.(*Program).clone()
 	)
-	subTreeCrossover.Apply(offspring1, offspring2, rng)
+	subTreeCrossover.Apply(offspring1.Tree, offspring2.Tree, rng)
 	return offspring1, offspring2
 }
 

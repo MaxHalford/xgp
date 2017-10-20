@@ -2,16 +2,18 @@ package xgp
 
 import (
 	"testing"
+
+	"github.com/MaxHalford/xgp/tree"
 )
 
 func TestNewProgramTuner(t *testing.T) {
 	var (
 		prog = Program{
-			Root: &Node{
-				Operator: Sum{},
-				Children: []*Node{
-					&Node{Operator: Constant{1}},
-					&Node{Operator: Constant{2}},
+			Tree: &tree.Tree{
+				Operator: tree.Sum{},
+				Branches: []*tree.Tree{
+					&tree.Tree{Operator: tree.Constant{1}},
+					&tree.Tree{Operator: tree.Constant{2}},
 				},
 			},
 		}
@@ -51,11 +53,11 @@ func TestNewProgramTuner(t *testing.T) {
 func TestSetProgConstants(t *testing.T) {
 	var (
 		prog = Program{
-			Root: &Node{
-				Operator: Sum{},
-				Children: []*Node{
-					&Node{Operator: Constant{1}},
-					&Node{Operator: Constant{2}},
+			Tree: &tree.Tree{
+				Operator: tree.Sum{},
+				Branches: []*tree.Tree{
+					&tree.Tree{Operator: tree.Constant{1}},
+					&tree.Tree{Operator: tree.Constant{2}},
 				},
 			},
 		}
@@ -67,9 +69,9 @@ func TestSetProgConstants(t *testing.T) {
 	}
 	progTuner.setProgConstants()
 	// Check with the Program's Constants
-	for i, child := range progTuner.Program.Root.Children {
-		if child.Operator.(Constant).Value != prog.Root.Children[i].Operator.(Constant).Value+1 {
-			t.Errorf("Expected %v, got %v", prog.Root.Children[i], child.Operator)
+	for i, branch := range progTuner.Program.Tree.Branches {
+		if branch.Operator.(tree.Constant).Value != prog.Tree.Branches[i].Operator.(tree.Constant).Value+1 {
+			t.Errorf("Expected %v, got %v", prog.Tree.Branches[i], branch.Operator)
 		}
 	}
 }
@@ -77,22 +79,22 @@ func TestSetProgConstants(t *testing.T) {
 func TestJitterConstants(t *testing.T) {
 	var (
 		prog = Program{
-			Root: &Node{
-				Operator: Sum{},
-				Children: []*Node{
-					&Node{Operator: Constant{1}},
-					&Node{Operator: Constant{2}},
+			Tree: &tree.Tree{
+				Operator: tree.Sum{},
+				Branches: []*tree.Tree{
+					&tree.Tree{Operator: tree.Constant{1}},
+					&tree.Tree{Operator: tree.Constant{2}},
 				},
 			},
 		}
 		progTuner = newProgramTuner(&prog)
 	)
 	// Jitter Constants
-	progTuner.jitterConstants(makeRNG())
+	progTuner.jitterConstants(newRand())
 	// Compare with the Program's Constants
 	for i, c := range progTuner.ConstValues {
-		if c == prog.Root.Children[i].Operator.(Constant).Value {
-			t.Errorf("Expected %v and %v to be different", prog.Root.Children[i], c)
+		if c == prog.Tree.Branches[i].Operator.(tree.Constant).Value {
+			t.Errorf("Expected %v and %v to be different", prog.Tree.Branches[i], c)
 		}
 	}
 }

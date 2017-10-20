@@ -3,6 +3,8 @@ package xgp
 import (
 	"fmt"
 	"testing"
+
+	"github.com/MaxHalford/xgp/tree"
 )
 
 func TestPredictRow(t *testing.T) {
@@ -14,11 +16,11 @@ func TestPredictRow(t *testing.T) {
 		{
 			row: []float64{1, 1},
 			program: Program{
-				Root: &Node{
-					Operator: Sum{},
-					Children: []*Node{
-						&Node{Operator: Variable{0}},
-						&Node{Operator: Variable{1}},
+				Tree: &tree.Tree{
+					Operator: tree.Sum{},
+					Branches: []*tree.Tree{
+						&tree.Tree{Operator: tree.Variable{0}},
+						&tree.Tree{Operator: tree.Variable{1}},
 					},
 				},
 			},
@@ -49,11 +51,11 @@ func TestPredict(t *testing.T) {
 				[]float64{1, 3},
 			},
 			program: Program{
-				Root: &Node{
-					Operator: Sum{},
-					Children: []*Node{
-						&Node{Operator: Variable{0}},
-						&Node{Operator: Variable{1}},
+				Tree: &tree.Tree{
+					Operator: tree.Sum{},
+					Branches: []*tree.Tree{
+						&tree.Tree{Operator: tree.Variable{0}},
+						&tree.Tree{Operator: tree.Variable{1}},
 					},
 				},
 			},

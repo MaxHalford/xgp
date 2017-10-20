@@ -1,4 +1,4 @@
-package xgp
+package tree
 
 import (
 	"testing"
@@ -6,13 +6,13 @@ import (
 
 func TestSubTreeCrossover(t *testing.T) {
 	var (
-		rng   = makeRNG()
-		prog1 = randProg(rng)
-		prog2 = randProg(rng)
+		rng   = newRand()
+		left  = randTree(rng)
+		right = randTree(rng)
 	)
 	// fmt.Println(prog1)
 	// fmt.Println(prog2)
-	SubTreeCrossover{}.Apply(&prog1, &prog2, rng)
+	SubTreeCrossover{}.Apply(left, right, rng)
 	// fmt.Println(prog1)
 	// fmt.Println(prog2)
 }

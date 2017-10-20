@@ -7,12 +7,12 @@ import (
 	"gonum.org/v1/gonum/floats"
 )
 
-func PickSubTree(tree Tree, weight func(tree Tree) float64, minDepth, maxDepth int, rng *rand.Rand) (Tree, int) {
+func pickSubTree(tree Tree, weight func(tree *Tree) float64, minDepth, maxDepth int, rng *rand.Rand) (*Tree, int) {
 	// Assign weight to each Tree and calculate the total weight
 	var (
 		weights      []float64
 		totalWeight  float64
-		assignWeight = func(tree Tree, depth int) (stop bool) {
+		assignWeight = func(tree *Tree, depth int) (stop bool) {
 			var w float64
 			if depth < minDepth || (depth > maxDepth && maxDepth >= 0) {
 				w = 0
@@ -24,7 +24,7 @@ func PickSubTree(tree Tree, weight func(tree Tree) float64, minDepth, maxDepth i
 			return
 		}
 	)
-	rApply(tree, assignWeight)
+	tree.rApply(assignWeight)
 	// Cumulatively sum the weights
 	var cumsum = make([]float64, len(weights))
 	floats.CumSum(cumsum, weights)
@@ -37,9 +37,9 @@ func PickSubTree(tree Tree, weight func(tree Tree) float64, minDepth, maxDepth i
 	)
 	// Extract the sub-tree at position i
 	var (
-		subTree     Tree
+		subTree     *Tree
 		i           int
-		findSubTree = func(tree Tree, depth int) (stop bool) {
+		findSubTree = func(tree *Tree, depth int) (stop bool) {
 			if i < pos {
 				i++
 				return
@@ -49,6 +49,6 @@ func PickSubTree(tree Tree, weight func(tree Tree) float64, minDepth, maxDepth i
 			return true
 		}
 	)
-	rApply(tree, findSubTree)
+	tree.rApply(findSubTree)
 	return subTree, posDepth
 }

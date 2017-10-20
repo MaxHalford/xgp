@@ -5,42 +5,9 @@ import (
 	"os"
 	"reflect"
 	"testing"
+
+	"github.com/MaxHalford/xgp/tree"
 )
-
-func TestNodeJSONEncodeDecode(t *testing.T) {
-	var initialNode = &Node{
-		Operator: Sum{},
-		Children: []*Node{
-			&Node{Operator: Constant{42}},
-			&Node{Operator: Variable{1}},
-		},
-	}
-
-	// Serialize the initial Node
-	var bytes, err = json.Marshal(initialNode)
-	if err != nil {
-		t.Errorf("Expected nil, got %s", err.Error())
-	}
-
-	// Parse the bytes into a new Node
-	var newNode *Node
-	err = json.Unmarshal(bytes, &newNode)
-	if err != nil {
-		t.Errorf("Expected nil, got %s", err.Error())
-	}
-
-	// Compare the new Node with the initial Node
-	var check func(n1, n2 *Node)
-	check = func(n1, n2 *Node) {
-		if n1.Operator.String() != n2.Operator.String() {
-			t.Errorf("Operator mismatch: %s != %s", n1.Operator.String(), n2.Operator.String())
-		}
-		for i := range n1.Children {
-			check(n1.Children[i], n2.Children[i])
-		}
-	}
-	check(newNode, initialNode)
-}
 
 func TestDRSJSONEncodeDecode(t *testing.T) {
 	var initialDRS = &DynamicRangeSelection{
@@ -54,7 +21,7 @@ func TestDRSJSONEncodeDecode(t *testing.T) {
 		t.Errorf("Expected nil, got '%s'", err.Error())
 	}
 
-	// Parse the bytes into a new Node
+	// Parse the bytes into a new tree
 	var newDRS *DynamicRangeSelection
 	err = json.Unmarshal(bytes, &newDRS)
 	if err != nil {
@@ -69,11 +36,11 @@ func TestDRSJSONEncodeDecode(t *testing.T) {
 
 func TestProgramJSONPersistence(t *testing.T) {
 	var initialProgram = Program{
-		Root: &Node{
-			Operator: Sum{},
-			Children: []*Node{
-				&Node{Operator: Constant{42}},
-				&Node{Operator: Variable{1}},
+		Tree: &tree.Tree{
+			Operator: tree.Sum{},
+			Branches: []*tree.Tree{
+				&tree.Tree{Operator: tree.Constant{42}},
+				&tree.Tree{Operator: tree.Variable{1}},
 			},
 		},
 		DRS: &DynamicRangeSelection{
@@ -97,16 +64,16 @@ func TestProgramJSONPersistence(t *testing.T) {
 	}
 
 	// Compare the new Program with the initial Program
-	var check func(n1, n2 *Node)
-	check = func(n1, n2 *Node) {
+	var check func(n1, n2 *tree.Tree)
+	check = func(n1, n2 *tree.Tree) {
 		if n1.Operator.String() != n2.Operator.String() {
 			t.Errorf("Operator mismatch: %s != %s", n1.Operator.String(), n2.Operator.String())
 		}
-		for i := range n1.Children {
-			check(n1.Children[i], n2.Children[i])
+		for i := range n1.Branches {
+			check(n1.Branches[i], n2.Branches[i])
 		}
 	}
-	check(newProgram.Root, initialProgram.Root)
+	check(newProgram.Tree, initialProgram.Tree)
 
 	// Compare the DRSs
 	if !reflect.DeepEqual(*newProgram.DRS, *initialProgram.DRS) {

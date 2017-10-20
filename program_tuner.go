@@ -4,6 +4,7 @@ import (
 	"math/rand"
 
 	"github.com/MaxHalford/gago"
+	"github.com/MaxHalford/xgp/tree"
 )
 
 // A ProgramTuner optimizes a Program by tuning the Program's Constants.
@@ -15,24 +16,27 @@ type ProgramTuner struct {
 
 // String representation of a ProgramTuner.
 func (progTuner ProgramTuner) String() string {
-	return progTuner.Program.Root.String()
+	return progTuner.Program.String()
 }
 
 // newProgramTuner returns a ProgramTuner from a Program.
 func newProgramTuner(prog *Program) ProgramTuner {
 	var (
-		consts       []float64
-		constSetters []ConstantSetter
-		addConst     = func(node *Node) {
-			if c, ok := node.Operator.(Constant); ok {
-				consts = append(consts, c.Value)
-				constSetters = append(constSetters, node.newConstantSetter())
+		nConsts      = prog.Tree.NConstants()
+		consts       = make([]float64, nConsts)
+		constSetters = make([]ConstantSetter, nConsts)
+		i            int
+		addConst     = func(t *tree.Tree) {
+			if c, ok := t.Operator.(tree.Constant); ok {
+				consts[i] = c.Value
+				constSetters[i] = newConstantSetter(t)
+				i++
 			}
 		}
 		progTuner = ProgramTuner{Program: prog.clone()}
 	)
 	// Extract all the Constants from the Program
-	progTuner.Program.Root.RecApply(addConst)
+	progTuner.Program.Tree.RecApply(addConst)
 	progTuner.ConstValues = consts
 	progTuner.ConstSetters = constSetters
 	return progTuner
