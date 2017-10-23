@@ -38,7 +38,7 @@ func (op Cos) ApplyRow(x []float64) float64 {
 	return math.Cos(x[0])
 }
 
-// ApplyCols Xs.
+// ApplyCols Cos.
 func (op Cos) ApplyCols(X [][]float64) []float64 {
 	var Y = make([]float64, len(X[0]))
 	for i, x := range X[0] {
@@ -65,7 +65,7 @@ func (op Sin) ApplyRow(X []float64) float64 {
 	return math.Sin(X[0])
 }
 
-// ApplyCols Xn.
+// ApplyCols Sin.
 func (op Sin) ApplyCols(X [][]float64) []float64 {
 	var Y = make([]float64, len(X[0]))
 	for i, x := range X[0] {
@@ -92,7 +92,7 @@ func (op Log) ApplyRow(X []float64) float64 {
 	return math.Log(X[0])
 }
 
-// ApplyCols Xg.
+// ApplyCols Log.
 func (op Log) ApplyCols(X [][]float64) []float64 {
 	var Y = make([]float64, len(X[0]))
 	for i, x := range X[0] {
@@ -119,7 +119,7 @@ func (op Exp) ApplyRow(X []float64) float64 {
 	return math.Exp(X[0])
 }
 
-// ApplyCols Xp.
+// ApplyCols Exp.
 func (op Exp) ApplyCols(X [][]float64) []float64 {
 	var Y = make([]float64, len(X[0]))
 	for i, x := range X[0] {
@@ -151,7 +151,7 @@ func (op Max) ApplyRow(X []float64) float64 {
 	return X[1]
 }
 
-// ApplyCols Xx.
+// ApplyCols Max.
 func (op Max) ApplyCols(X [][]float64) []float64 {
 	var Y = make([]float64, len(X[0]))
 	for i := range X[0] {
@@ -185,7 +185,7 @@ func (op Min) ApplyRow(X []float64) float64 {
 	return X[1]
 }
 
-// ApplyCols Xn.
+// ApplyCols Min.
 func (op Min) ApplyCols(X [][]float64) []float64 {
 	var Y = make([]float64, len(X[0]))
 	for i := range X[0] {
@@ -216,7 +216,7 @@ func (op Sum) ApplyRow(X []float64) float64 {
 	return X[0] + X[1]
 }
 
-// ApplyCols Xm.
+// ApplyCols Sum.
 func (op Sum) ApplyCols(X [][]float64) []float64 {
 	floats.Add(X[0], X[1])
 	return X[0]
@@ -240,7 +240,7 @@ func (op Difference) ApplyRow(X []float64) float64 {
 	return X[0] - X[1]
 }
 
-// ApplyCols Xfference.
+// ApplyCols Difference.
 func (op Difference) ApplyCols(X [][]float64) []float64 {
 	floats.Sub(X[0], X[1])
 	return X[0]
@@ -256,10 +256,8 @@ func (op Difference) String() string {
 	return "-"
 }
 
-// Division returns the division of two operands. The left operand is the
-// numerator and the right operand is the denominator. The division is protected
-// so that if the denominator's value is in range [-0.001, 0.001] the operator
-// returns 1.
+// Division returns the protected division of two operands. The left operand is
+// the numerator and the right operand is the denominator.
 type Division struct{}
 
 // ApplyRow Division.
@@ -267,8 +265,9 @@ func (op Division) ApplyRow(X []float64) float64 {
 	return X[0] / (1 + X[1])
 }
 
-// ApplyCols Xvision.
+// ApplyCols Division.
 func (op Division) ApplyCols(X [][]float64) []float64 {
+	floats.AddConst(1, X[1])
 	floats.Div(X[0], X[1])
 	return X[0]
 }
@@ -291,7 +290,7 @@ func (op Product) ApplyRow(X []float64) float64 {
 	return X[0] * X[1]
 }
 
-// ApplyCols Xoduct.
+// ApplyCols Product.
 func (op Product) ApplyCols(X [][]float64) []float64 {
 	floats.Mul(X[0], X[1])
 	return X[0]
@@ -315,7 +314,7 @@ func (op Power) ApplyRow(X []float64) float64 {
 	return math.Pow(X[0], X[1])
 }
 
-// ApplyCols Xwer.
+// ApplyCols Power.
 func (op Power) ApplyCols(X [][]float64) []float64 {
 	var Y = make([]float64, len(X[0]))
 	for i := range X[0] {

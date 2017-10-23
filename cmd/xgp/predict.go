@@ -55,7 +55,7 @@ var predictCmd = &cobra.Command{
 			return err
 		}
 
-		yPred, err := prog.Predict(test.XT())
+		yPred, err := prog.Predict(test.X)
 		if err != nil {
 			return err
 		}

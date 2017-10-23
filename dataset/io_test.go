@@ -3,6 +3,7 @@ package dataset
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"reflect"
 	"testing"
 )
@@ -42,6 +43,7 @@ func TestReadCSV(t *testing.T) {
 			if !reflect.DeepEqual(dataset, tc.dataset) {
 				t.Errorf("Expected\n%s, got\n%s", tc.dataset, dataset)
 			}
+			os.Remove(path)
 		})
 	}
 }

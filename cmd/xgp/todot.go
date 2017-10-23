@@ -36,7 +36,7 @@ var toDOTCmd = &cobra.Command{
 			return err
 		}
 		// Make the Graphviz representation
-		var str = tree.GraphvizDisplay{}.Apply(program.Root)
+		var str = tree.GraphvizDisplay{}.Apply(program.Tree)
 		// Output in the shell
 		if toDOTShell {
 			fmt.Println(str)

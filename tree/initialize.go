@@ -26,7 +26,7 @@ type Initializer interface {
 	Apply(of OperatorFactory, rng *rand.Rand) *Tree
 }
 
-// FullInitializer generates trees where all the leaves are the same depth.
+// FullInitializer generates Trees with node depths equal to Height.
 type FullInitializer struct {
 	Height int
 }
@@ -46,17 +46,18 @@ func (init FullInitializer) Apply(of OperatorFactory, rng *rand.Rand) *Tree {
 	return tree
 }
 
-// GrowInitializer generates trees where all the leaves have at most a
-// certain depth.
+// GrowInitializer generates Trees with node depths in [MinHeight, MaxHeight].
 type GrowInitializer struct {
+	MinHeight int
 	MaxHeight int
-	PLeaf     float64 // Probability of producing a leaf
+	PLeaf     float64
 }
 
 // Apply GrowInitializer.
 func (init GrowInitializer) Apply(of OperatorFactory, rng *rand.Rand) *Tree {
 	var (
-		op   = of.New(init.MaxHeight == 0 || rng.Float64() < init.PLeaf, rng)
+		leaf = init.MinHeight <= 0 && (init.MaxHeight == 0 || rng.Float64() < init.PLeaf)
+		op   = of.New(leaf, rng)
 		tree = &Tree{
 			Operator: op,
 			Branches: make([]*Tree, op.Arity()),
@@ -64,6 +65,7 @@ func (init GrowInitializer) Apply(of OperatorFactory, rng *rand.Rand) *Tree {
 	)
 	for i := range tree.Branches {
 		tree.Branches[i] = GrowInitializer{
+			MinHeight: init.MinHeight - 1,
 			MaxHeight: init.MaxHeight - 1,
 			PLeaf:     init.PLeaf,
 		}.Apply(of, rng)
@@ -71,8 +73,8 @@ func (init GrowInitializer) Apply(of OperatorFactory, rng *rand.Rand) *Tree {
 	return tree
 }
 
-// RampedHaldAndHalfInitializer randomly chooses GrowtreeInitializer or
-// FulltreeInitializer with a random height in [MinHeight, MaxHeight].
+// RampedHaldAndHalfInitializer randomly applies GrowTreeInitializer or
+// FullTreeInitializer.
 type RampedHaldAndHalfInitializer struct {
 	MinHeight int
 	MaxHeight int
@@ -81,14 +83,14 @@ type RampedHaldAndHalfInitializer struct {
 
 // Apply RampedHaldAndHalfInitializer.
 func (init RampedHaldAndHalfInitializer) Apply(of OperatorFactory, rng *rand.Rand) *Tree {
-	// Randomly pick a height
-	var height = randInt(init.MinHeight, init.MaxHeight, rng)
-	// Randomly apply full initialization or grow initialization
 	if rng.Float64() < 0.5 {
-		return FullInitializer{Height: height}.Apply(of, rng)
+		return FullInitializer{
+			Height: randInt(init.MinHeight, init.MaxHeight, rng),
+		}.Apply(of, rng)
 	}
 	return GrowInitializer{
-		MaxHeight: height,
+		MinHeight: init.MinHeight,
+		MaxHeight: init.MaxHeight,
 		PLeaf:     init.PLeaf,
 	}.Apply(of, rng)
 }

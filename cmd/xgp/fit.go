@@ -7,6 +7,7 @@ import (
 	"github.com/MaxHalford/xgp"
 	"github.com/MaxHalford/xgp/dataset"
 	"github.com/MaxHalford/xgp/metrics"
+	"github.com/MaxHalford/xgp/tree"
 	"github.com/fatih/color"
 	"github.com/gosuri/uiprogress"
 	"github.com/spf13/cobra"
@@ -33,7 +34,7 @@ func init() {
 	fitCmd.Flags().IntVarP(&fitClass, "class", "c", 1, "Which class to apply the metric to if applicable")
 	fitCmd.Flags().StringVarP(&fitFuncsString, "functions", "f", "+,-,*,/", "Allowed functions")
 	fitCmd.Flags().IntVarP(&fitGenerations, "generations", "g", 30, "Number of generations")
-	fitCmd.Flags().IntVarP(&fitMaxHeight, "max_height", "u", 6, "Max program height used in ramped half-and-half initialization")
+	fitCmd.Flags().IntVarP(&fitMaxHeight, "max_height", "u", 4, "Max program height used in ramped half-and-half initialization")
 	fitCmd.Flags().StringVarP(&fitMetricName, "metric", "m", "mae", "Metric to use, this determines if the task is classification or regression")
 	fitCmd.Flags().IntVarP(&fitMinHeight, "min_height", "l", 2, "Min program height used in ramped half-and-half initialization")
 	fitCmd.Flags().StringVarP(&fitOutputName, "output", "o", "program.json", "Path where to save the output program")
@@ -106,7 +107,7 @@ var fitCmd = &cobra.Command{
 			ConstMin:  -10,
 			ConstMax:  10,
 			PVariable: fitPVariable,
-			NodeInitializer: xgp.RampedHaldAndHalfInitializer{
+			TreeInitializer: tree.RampedHaldAndHalfInitializer{
 				MinHeight: fitMinHeight,
 				MaxHeight: fitMaxHeight,
 				PLeaf:     fitPLeaf,

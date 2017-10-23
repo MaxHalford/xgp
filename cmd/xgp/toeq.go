@@ -29,7 +29,7 @@ var toEq = &cobra.Command{
 			return err
 		}
 		// Make the equation representation
-		var str = tree.EquationDisplay{}.Apply(program.Root)
+		var str = tree.FormulaDisplay{}.Apply(program.Tree)
 		// Output in the shell
 		fmt.Println(str)
 		return nil

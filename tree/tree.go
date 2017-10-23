@@ -1,11 +1,7 @@
 package tree
 
 import (
-	"errors"
-	"fmt"
 	"math/rand"
-
-	"gonum.org/v1/gonum/floats"
 )
 
 // A Tree holds an Operator and leaf trees called branches.
@@ -105,31 +101,23 @@ func (tree Tree) EvaluateRow(x []float64) float64 {
 }
 
 // EvaluateCols blabla
-func (tree *Tree) EvaluateCols(X [][]float64) (y []float64, err error) {
+func (tree *Tree) EvaluateCols(X [][]float64) ([]float64, error) {
 	// Simplify the tree to remove unnecessary evaluation parts
 	tree.simplify()
-	// Either the tree is a leaf tree
+	// The Tree has no branches
 	if len(tree.Branches) == 0 {
-		y = tree.Operator.ApplyCols(X)
-	} else {
-		// Either the tree has branches
-		var evals = make([][]float64, len(tree.Branches))
-		for i, branch := range tree.Branches {
-			evals[i], err = branch.EvaluateCols(X)
-			if err != nil {
-				return nil, err
-			}
+		return tree.Operator.ApplyCols(X), nil
+	}
+	// The Tree has branches
+	var evals = make([][]float64, len(tree.Branches))
+	for i, branch := range tree.Branches {
+		var eval, err = branch.EvaluateCols(X)
+		if err != nil {
+			return nil, err
 		}
-		y = tree.Operator.ApplyCols(evals)
+		evals[i] = eval
 	}
-	// Store the result
-	if floats.HasNaN(y) {
-		fmt.Println(tree)
-		fmt.Println(y)
-		panic("NaNs")
-		return nil, errors.New("Slice contains NaNs")
-	}
-	return
+	return tree.Operator.ApplyCols(evals), nil
 }
 
 // setOperator replaces the Operator of a tree.

@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/MaxHalford/xgp"
+	"github.com/MaxHalford/xgp/tree"
 	"github.com/urfave/cli"
 )
 
@@ -16,13 +16,13 @@ func fileExists(file string) error {
 	return nil
 }
 
-func parseStringFuncs(str string) ([]xgp.Operator, error) {
+func parseStringFuncs(str string) ([]tree.Operator, error) {
 	var (
 		strs  = strings.Split(str, ",")
-		funcs = make([]xgp.Operator, len(strs))
+		funcs = make([]tree.Operator, len(strs))
 	)
 	for i, s := range strs {
-		var f, err = xgp.GetFunction(s)
+		var f, err = tree.GetFunction(s)
 		if err != nil {
 			return nil, err
 		}

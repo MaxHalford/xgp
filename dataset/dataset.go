@@ -16,11 +16,11 @@ type Dataset struct {
 }
 
 func (dataset Dataset) NRows() int {
-	return len(dataset.X)
+	return len(dataset.X[0])
 }
 
 func (dataset Dataset) NFeatures() int {
-	return len(dataset.X[0])
+	return len(dataset.X)
 }
 
 func (dataset Dataset) Shape() (int, int) {

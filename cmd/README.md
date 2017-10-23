@@ -4,8 +4,8 @@
 
 ```sh
 cd xgp/cmd
-go run main.go fit ../examples/boston/train.csv -m mae
-go run main.go predict ../examples/boston/test.csv
+go run main.go fit ../examples/polynomial/train.csv -m mae
+go run main.go predict ../examples/polynomial/test.csv
 ```
 
 ```sh
