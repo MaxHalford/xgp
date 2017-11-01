@@ -1,7 +1,7 @@
 <div align="center">
   <!-- Logo -->
   <img src="https://docs.google.com/drawings/d/e/2PACX-1vSLdt85rEf3SQUBkpuWfXOclyUY7rdZ7RBoTuNIyCc3-liSpurbL3i7QfrzWBFr2LfwTfoAf_1i4Qwe/pub?w=378&h=223"/>
-  <p>xgp is a machine learning tool based on [genetic programming](https://www.wikiwand.com/en/Genetic_programming).</p>
+  <p>xgp is a machine learning tool based on <a href="https://www.wikiwand.com/en/Genetic_programming">genetic programming</a></p>
 </div>
 
 
