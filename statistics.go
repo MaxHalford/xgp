@@ -9,7 +9,7 @@ type statistics struct {
 	avgNOperators float64
 }
 
-func collectStatistics(GA *gago.GA) statistics {
+func collectStats(GA *gago.GA) statistics {
 	var (
 		stats statistics
 		n     float64

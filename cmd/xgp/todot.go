@@ -19,10 +19,10 @@ var (
 func init() {
 	RootCmd.AddCommand(toDOTCmd)
 
-	toDOTCmd.Flags().StringVarP(&toDOTOutputName, "output", "o", "program.dot", "Path for the output file")
-	toDOTCmd.Flags().StringVarP(&toDOTProgramName, "program", "p", "program.json", "Path to the program")
-	toDOTCmd.Flags().BoolVarP(&toDOTSave, "save", "c", false, "Save to a file or not")
-	toDOTCmd.Flags().BoolVarP(&toDOTShell, "shell", "t", true, "Output in the terminal or not")
+	toDOTCmd.Flags().StringVarP(&toDOTOutputName, "output", "o", "program.dot", "path for the output file")
+	toDOTCmd.Flags().StringVarP(&toDOTProgramName, "program", "p", "program.json", "path to the program")
+	toDOTCmd.Flags().BoolVarP(&toDOTSave, "save", "c", false, "save to a file or not")
+	toDOTCmd.Flags().BoolVarP(&toDOTShell, "shell", "t", true, "output in the terminal or not")
 }
 
 var toDOTCmd = &cobra.Command{

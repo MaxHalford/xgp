@@ -9,7 +9,7 @@ import (
 func TestFullInitializer(t *testing.T) {
 	var (
 		of = OperatorFactory{
-			PVariable:   0,
+			PConstant:   1,
 			NewConstant: func(rng *rand.Rand) Constant { return Constant{1} },
 			NewFunction: func(rng *rand.Rand) Operator { return Sum{} },
 		}
@@ -47,7 +47,7 @@ func TestFullInitializer(t *testing.T) {
 func TestGrowInitializer(t *testing.T) {
 	var (
 		of = OperatorFactory{
-			PVariable:   0,
+			PConstant:   1,
 			NewConstant: func(rng *rand.Rand) Constant { return Constant{1} },
 			NewFunction: func(rng *rand.Rand) Operator { return Sum{} },
 		}
@@ -103,7 +103,7 @@ func TestGrowInitializer(t *testing.T) {
 				initializer = GrowInitializer{
 					MinHeight: tc.minHeight,
 					MaxHeight: tc.maxHeight,
-					PLeaf:     tc.pLeaf,
+					PTerminal: tc.pLeaf,
 				}
 				tree = initializer.Apply(of, rng)
 			)

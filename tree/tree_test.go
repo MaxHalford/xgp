@@ -14,7 +14,7 @@ func randTree(rng *rand.Rand) *Tree {
 		init  = FullInitializer{Height: randInt(3, 5, rng)}
 		funcs = []Operator{Cos{}, Sin{}, Sum{}, Difference{}, Product{}, Division{}}
 		of    = OperatorFactory{
-			PVariable:   0.5,
+			PConstant:   0.5,
 			NewConstant: func(rng *rand.Rand) Constant { return Constant{randFloat64(-5, 5, rng)} },
 			NewVariable: func(rng *rand.Rand) Variable { return Variable{randInt(0, 5, rng)} },
 			NewFunction: func(rng *rand.Rand) Operator { return funcs[rng.Intn(len(funcs))] },

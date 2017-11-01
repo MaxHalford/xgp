@@ -1,71 +1,47 @@
 package xgp
 
 import (
-	"math"
-
 	"github.com/MaxHalford/gago"
 	"github.com/MaxHalford/xgp"
 	"github.com/MaxHalford/xgp/dataset"
 	"github.com/MaxHalford/xgp/metrics"
 	"github.com/MaxHalford/xgp/tree"
-	"github.com/fatih/color"
-	"github.com/gosuri/uiprogress"
 	"github.com/spf13/cobra"
 )
 
 var (
-	fitClass             int
+	fitEvalMetricName    string
 	fitFuncsString       string
 	fitGenerations       int
+	fitLossMetricName    string
 	fitMaxHeight         int
-	fitMetricName        string
 	fitMinHeight         int
 	fitOutputName        string
-	fitPLeaf             float64
-	fitPVariable         float64
+	fitParsimonyCoeff    float64
+	fitPTerminal         float64
+	fitPConstant         float64
 	fitRounds            int
 	fitTargetCol         string
 	fitTuningGenerations int
+	fitVerbose           bool
 )
 
 func init() {
 	RootCmd.AddCommand(fitCmd)
 
-	fitCmd.Flags().IntVarP(&fitClass, "class", "c", 1, "Which class to apply the metric to if applicable")
-	fitCmd.Flags().StringVarP(&fitFuncsString, "functions", "f", "+,-,*,/", "Allowed functions")
-	fitCmd.Flags().IntVarP(&fitGenerations, "generations", "g", 30, "Number of generations")
-	fitCmd.Flags().IntVarP(&fitMaxHeight, "max_height", "u", 4, "Max program height used in ramped half-and-half initialization")
-	fitCmd.Flags().StringVarP(&fitMetricName, "metric", "m", "mae", "Metric to use, this determines if the task is classification or regression")
-	fitCmd.Flags().IntVarP(&fitMinHeight, "min_height", "l", 2, "Min program height used in ramped half-and-half initialization")
-	fitCmd.Flags().StringVarP(&fitOutputName, "output", "o", "program.json", "Path where to save the output program")
-	fitCmd.Flags().Float64VarP(&fitPLeaf, "p_leaf", "p", 0.3, "Probability of generating a leaf node in ramped half-and-half initialization")
-	fitCmd.Flags().Float64VarP(&fitPVariable, "p_variable", "v", 0.5, "Probability of picking a variable and not a constant when generating leaf nodes")
-	fitCmd.Flags().IntVarP(&fitRounds, "rounds", "r", 1, "Number of boosting rounds")
-	fitCmd.Flags().StringVarP(&fitTargetCol, "target_col", "y", "y", "Name of the target column in the training set")
-	fitCmd.Flags().IntVarP(&fitTuningGenerations, "t_generations", "t", 30, "Number of tuning generations")
-}
-
-func monitorProgress(ch <-chan float64, done chan bool) {
-	uiprogress.Start()
-	var (
-		bar         = uiprogress.AddBar(cap(ch))
-		green       = color.New(color.FgGreen).SprintfFunc()
-		bestFitness = math.Inf(1)
-	)
-	bar.AppendCompleted()
-	bar.PrependElapsed()
-	bar.PrependFunc(func(b *uiprogress.Bar) string {
-		return green("Best fitness => %.5f", bestFitness)
-	})
-	for i := 0; i < cap(ch); i++ {
-		var fitness = <-ch
-		bar.Incr()
-		if fitness < bestFitness {
-			bestFitness = fitness
-		}
-	}
-	uiprogress.Stop()
-	done <- true
+	fitCmd.Flags().StringVarP(&fitEvalMetricName, "eval_metric", "e", "", "metric used for monitoring progress, defaults to fit_metric if not provided")
+	fitCmd.Flags().StringVarP(&fitLossMetricName, "loss_metric", "l", "mae", "metric used for scoring program, determines the task to perform")
+	fitCmd.Flags().StringVarP(&fitFuncsString, "functions", "f", "sum,sub,mul,div,pow,cos,sin", "allowed operators")
+	fitCmd.Flags().IntVarP(&fitGenerations, "generations", "g", 30, "number of generations")
+	fitCmd.Flags().IntVarP(&fitMaxHeight, "max_height", "b", 6, "max program height used in ramped half-and-half initialization")
+	fitCmd.Flags().IntVarP(&fitMinHeight, "min_height", "a", 3, "min program height used in ramped half-and-half initialization")
+	fitCmd.Flags().StringVarP(&fitOutputName, "output", "j", "program.json", "path where to save the best program as a JSON file")
+	fitCmd.Flags().Float64VarP(&fitParsimonyCoeff, "parsimony", "p", 0, "parsimony coefficient by which a program's height is multiplied to decrease it's fitness")
+	fitCmd.Flags().Float64VarP(&fitPTerminal, "p_terminal", "t", 0.5, "probability of generating a terminal branch in ramped half-and-half initialization")
+	fitCmd.Flags().Float64VarP(&fitPConstant, "p_constant", "c", 0.5, "probability of picking a constant and not a constant when generating terminal nodes")
+	fitCmd.Flags().IntVarP(&fitRounds, "rounds", "r", 1, "number of boosting rounds")
+	fitCmd.Flags().StringVarP(&fitTargetCol, "target_col", "y", "y", "name of the target column in the training set")
+	fitCmd.Flags().BoolVarP(&fitVerbose, "verbose", "v", true, "monitor progress or not")
 }
 
 var fitCmd = &cobra.Command{
@@ -80,13 +56,25 @@ var fitCmd = &cobra.Command{
 			return err
 		}
 
-		// Determine the metric to use
-		metric, err := metrics.GetMetric(fitMetricName, fitClass)
+		// Determine the fitness and evaluation metrics to use
+		lossMetric, err := metrics.GetMetric(fitLossMetricName, 1)
 		if err != nil {
 			return err
 		}
-		if metric.BiggerIsBetter() {
-			metric = metrics.NegativeMetric{Metric: metric}
+		var evalMetric metrics.Metric
+		// Default the evaluation metric to the fitness metric if it's nil
+		if fitEvalMetricName == "" {
+			evalMetric = lossMetric
+		} else {
+			metric, err := metrics.GetMetric(fitEvalMetricName, 1)
+			if err != nil {
+				return err
+			}
+			evalMetric = metric
+		}
+		// The convention is to use a fitness metric which has to be minimized
+		if lossMetric.BiggerIsBetter() {
+			lossMetric = metrics.NegativeMetric{Metric: lossMetric}
 		}
 
 		// Determine the functions to use
@@ -96,25 +84,27 @@ var fitCmd = &cobra.Command{
 		}
 
 		// Load the training set in memory
-		train, err := dataset.ReadCSV(file, fitTargetCol, metric.Classification())
+		train, err := dataset.ReadCSV(file, fitTargetCol, lossMetric.Classification())
 		if err != nil {
 			return err
 		}
 
 		// Instantiate an Estimator
-		estimator := xgp.Estimator{
-			Metric:    metric,
-			ConstMin:  -10,
-			ConstMax:  10,
-			PVariable: fitPVariable,
+		var estimator = xgp.Estimator{
+			EvalMetric: evalMetric,
+			LossMetric: lossMetric,
+			ConstMin:   -10,
+			ConstMax:   10,
+			PConstant:  fitPConstant,
 			TreeInitializer: tree.RampedHaldAndHalfInitializer{
 				MinHeight: fitMinHeight,
 				MaxHeight: fitMaxHeight,
-				PLeaf:     fitPLeaf,
+				PTerminal: fitPTerminal,
 			},
 			Functions:         functions,
 			Generations:       fitGenerations,
 			TuningGenerations: fitTuningGenerations,
+			ParsimonyCoeff:    fitParsimonyCoeff,
 		}
 
 		// Set the initial GA
@@ -130,33 +120,21 @@ var fitCmd = &cobra.Command{
 			},
 		}
 
-		err = estimator.Fit(train.X, train.Y, true)
+		// Fit the estimator
+		err = estimator.Fit(train.X, train.Y, train.XNames, train.YName, fitVerbose)
+		if err != nil {
+			return err
+		}
 
-		// // No boosting
-		// if fitRounds <= 1 {
-		// 	color.Blue("Training without boosting")
-		// 	// Monitor progress
-		// 	var done = make(chan bool)
-		// 	go monitorProgress(estimator.ProgressChan, done)
-		// 	// Fit the Estimator
-		// 	err = estimator.Fit(train.X, train.Y)
-		// 	if err != nil {
-		// 		return err
-		// 	}
-		// 	// Save the best Program
-		// 	<-done
-		// 	color.Blue("Saving best program to '%s'...", fitOutputName)
-		// 	var bestProg, _ = estimator.BestProgram()
-
-		// 	fmt.Println(tree.GetNNodes(bestProg.Root))
-
-		// 	err = xgp.SaveProgramToJSON(*bestProg, fitOutputName)
-		// 	if err != nil {
-		// 		return err
-		// 	}
-		// 	return nil
-		// }
-
+		// Save the best Program
+		bestProg, err := estimator.BestProgram()
+		if err != nil {
+			return err
+		}
+		err = xgp.SaveProgramToJSON(*bestProg, fitOutputName)
+		if err != nil {
+			return err
+		}
 		return nil
 	},
 }

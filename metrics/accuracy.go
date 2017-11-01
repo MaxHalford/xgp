@@ -47,6 +47,11 @@ func (metric Accuracy) BiggerIsBetter() bool {
 	return true
 }
 
+// NeedsProbabilities method of Accuracy.
+func (metric Accuracy) NeedsProbabilities() bool {
+	return false
+}
+
 // String method of Accuracy.
 func (metric Accuracy) String() string {
 	return "accuracy"

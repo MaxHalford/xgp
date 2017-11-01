@@ -1,23 +1,23 @@
 package dataset
 
-type ClassMap struct {
+type classMap struct {
 	Map        map[string]float64
 	ReverseMap map[float64]string
-	N          float64
+	N          int
 }
 
-func (cm *ClassMap) Get(c string) float64 {
+func (cm *classMap) Get(c string) float64 {
 	if v, ok := cm.Map[c]; ok {
 		return v
 	}
-	cm.Map[c] = cm.N
-	cm.ReverseMap[cm.N] = c
 	cm.N++
+	cm.Map[c] = float64(cm.N)
+	cm.ReverseMap[float64(cm.N)] = c
 	return cm.Map[c]
 }
 
-func MakeClassMap() *ClassMap {
-	return &ClassMap{
+func makeClassMap() *classMap {
+	return &classMap{
 		Map:        make(map[string]float64),
 		ReverseMap: make(map[float64]string),
 	}

@@ -7,5 +7,6 @@ type Metric interface {
 	Apply(yTrue, yPred, weights []float64) (float64, error)
 	Classification() bool
 	BiggerIsBetter() bool
+	NeedsProbabilities() bool
 	String() string
 }

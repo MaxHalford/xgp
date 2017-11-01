@@ -4,7 +4,7 @@ import "math/rand"
 
 // An OperatorFactory produces new Operators.
 type OperatorFactory struct {
-	PVariable   float64
+	PConstant   float64
 	NewConstant func(rng *rand.Rand) Constant
 	NewVariable func(rng *rand.Rand) Variable
 	NewFunction func(rng *rand.Rand) Operator
@@ -13,10 +13,10 @@ type OperatorFactory struct {
 // New returns an Operator.
 func (of OperatorFactory) New(terminal bool, rng *rand.Rand) Operator {
 	if terminal {
-		if rng.Float64() < of.PVariable {
-			return of.NewVariable(rng)
+		if rng.Float64() < of.PConstant {
+			return of.NewConstant(rng)
 		}
-		return of.NewConstant(rng)
+		return of.NewVariable(rng)
 	}
 	return of.NewFunction(rng)
 }
@@ -50,13 +50,13 @@ func (init FullInitializer) Apply(of OperatorFactory, rng *rand.Rand) *Tree {
 type GrowInitializer struct {
 	MinHeight int
 	MaxHeight int
-	PLeaf     float64
+	PTerminal float64
 }
 
 // Apply GrowInitializer.
 func (init GrowInitializer) Apply(of OperatorFactory, rng *rand.Rand) *Tree {
 	var (
-		leaf = init.MinHeight <= 0 && (init.MaxHeight == 0 || rng.Float64() < init.PLeaf)
+		leaf = init.MinHeight <= 0 && (init.MaxHeight == 0 || rng.Float64() < init.PTerminal)
 		op   = of.New(leaf, rng)
 		tree = &Tree{
 			Operator: op,
@@ -67,7 +67,7 @@ func (init GrowInitializer) Apply(of OperatorFactory, rng *rand.Rand) *Tree {
 		tree.Branches[i] = GrowInitializer{
 			MinHeight: init.MinHeight - 1,
 			MaxHeight: init.MaxHeight - 1,
-			PLeaf:     init.PLeaf,
+			PTerminal: init.PTerminal,
 		}.Apply(of, rng)
 	}
 	return tree
@@ -78,7 +78,7 @@ func (init GrowInitializer) Apply(of OperatorFactory, rng *rand.Rand) *Tree {
 type RampedHaldAndHalfInitializer struct {
 	MinHeight int
 	MaxHeight int
-	PLeaf     float64 // Probability of producing a leaf for GrowtreeInitializer
+	PTerminal float64 // Probability of producing a leaf for GrowtreeInitializer
 }
 
 // Apply RampedHaldAndHalfInitializer.
@@ -91,6 +91,6 @@ func (init RampedHaldAndHalfInitializer) Apply(of OperatorFactory, rng *rand.Ran
 	return GrowInitializer{
 		MinHeight: init.MinHeight,
 		MaxHeight: init.MaxHeight,
-		PLeaf:     init.PLeaf,
+		PTerminal: init.PTerminal,
 	}.Apply(of, rng)
 }

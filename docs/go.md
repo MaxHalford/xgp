@@ -8,11 +8,6 @@ Once you have [installed Go](https://golang.org/dl/), you can install the `xgp` 
 go get -u github.com/MaxHalford/xgp
 ```
 
-The following Go dependencies will be installed alongside:
-
-- [gonum/gonum](https://github.com/gonum/gonum)
-- [MaxHalford/gago](https://github.com/MaxHalford/gago)
-
 ## Usage
 
 Although the full API is available on godoc, you will (and should) be using the `Fit` and `Predict` methods from `Estimator` struct; which is in fact what is done by the CLI and the client libraries.

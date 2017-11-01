@@ -23,7 +23,6 @@ func TestReadCSV(t *testing.T) {
 				X:      [][]float64{[]float64{1, -1}, []float64{2, -2}},
 				XNames: []string{"x0", "x1"},
 				Y:      []float64{3, -3},
-				YName:  "y",
 			},
 		},
 	}

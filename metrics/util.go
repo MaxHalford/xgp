@@ -1,7 +1,6 @@
 package metrics
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -15,6 +14,7 @@ func GetMetric(metricName string, class int) (Metric, error) {
 	var (
 		klass      = float64(class)
 		metric, ok = map[string]Metric{
+			BinaryLogLoss{}.String():     BinaryLogLoss{},
 			Accuracy{}.String():          Accuracy{},
 			BinaryPrecision{}.String():   BinaryPrecision{Class: klass},
 			MacroPrecision{}.String():    MacroPrecision{},
@@ -41,31 +41,12 @@ func GetMetric(metricName string, class int) (Metric, error) {
 	return metric, nil
 }
 
-// A NegativeMetric returns the negative output of a given Metric.
-type NegativeMetric struct {
-	Metric Metric
-}
-
-// Apply NegativeMetric.
-func (metric NegativeMetric) Apply(yTrue, yPred, weights []float64) (float64, error) {
-	var output, err = metric.Metric.Apply(yTrue, yPred, weights)
-	if err != nil {
-		return 0, err
+func clip(f, min, max float64) float64 {
+	if f < min {
+		return min
 	}
-	return -output, nil
-}
-
-// Classification method of NegativeMetric.
-func (metric NegativeMetric) Classification() bool {
-	return metric.Metric.Classification()
-}
-
-// BiggerIsBetter method of NegativeMetric.
-func (metric NegativeMetric) BiggerIsBetter() bool {
-	return !metric.Metric.BiggerIsBetter()
-}
-
-// String method of NegativeMetric.
-func (metric NegativeMetric) String() string {
-	return fmt.Sprintf("neg_%s", metric.Metric.String())
+	if f > max {
+		return max
+	}
+	return f
 }

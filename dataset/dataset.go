@@ -2,7 +2,6 @@ package dataset
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"text/tabwriter"
 )
@@ -11,8 +10,7 @@ type Dataset struct {
 	X        [][]float64
 	XNames   []string
 	Y        []float64
-	YName    string
-	ClassMap *ClassMap
+	classMap *classMap
 }
 
 func (dataset Dataset) NRows() int {
@@ -27,11 +25,11 @@ func (dataset Dataset) Shape() (int, int) {
 	return dataset.NRows(), dataset.NFeatures() + 1
 }
 
-func (dataset Dataset) NClasses() (int, error) {
-	if dataset.ClassMap == nil {
-		return 0, errors.New("Target is not discrete")
+func (dataset Dataset) NClasses() int {
+	if dataset.classMap == nil {
+		return 0
 	}
-	return len(dataset.ClassMap.Map), nil
+	return dataset.classMap.N
 }
 
 func (dataset Dataset) String() string {
@@ -55,7 +53,7 @@ func (dataset Dataset) String() string {
 	for _, name := range dataset.XNames {
 		fmt.Fprint(w, fmt.Sprintf("\t%s", name))
 	}
-	fmt.Fprint(w, fmt.Sprintf("\t%s\n", dataset.YName))
+	fmt.Fprint(w, fmt.Sprintf("\ttarget\n"))
 
 	// Iterate over the rows
 	var n = dataset.NRows()
@@ -67,10 +65,10 @@ func (dataset Dataset) String() string {
 			fmt.Fprintf(w, "\t%.3f", x)
 		}
 		// Display the target
-		if dataset.ClassMap == nil {
+		if dataset.classMap == nil {
 			fmt.Fprintf(w, "\t%.3f", dataset.Y[i])
 		} else {
-			fmt.Fprintf(w, "\t%s", dataset.ClassMap.ReverseMap[dataset.Y[i]])
+			fmt.Fprintf(w, "\t%s", dataset.classMap.ReverseMap[dataset.Y[i]])
 		}
 		// Only add a carriage return if the current class is not the last one
 		if i < n-1 {
@@ -82,15 +80,4 @@ func (dataset Dataset) String() string {
 
 	w.Flush()
 	return buffer.String()
-}
-
-// NewDatasetXY returns a Dataset from a set of features X and a target Y.
-func NewDatasetXY(X [][]float64, Y []float64, classification bool) (*Dataset, error) {
-	return &Dataset{
-		X:        X,
-		XNames:   []string{},
-		Y:        Y,
-		YName:    "y",
-		ClassMap: &ClassMap{},
-	}, nil
 }

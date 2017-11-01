@@ -88,11 +88,14 @@ func (displayer GraphvizDisplay) Apply(tree *Tree) string {
 	return str
 }
 
-// FormulaDisplay outputs an equation-like representation of a Tree.
-type FormulaDisplay struct{}
+// CodeDisplay outputs an code-like representation of a Tree.
+//
+// pow(sum(X[0], X[1]), cos(2))
+//
+type CodeDisplay struct{}
 
-// Apply FormulaDisplay.
-func (displayer FormulaDisplay) Apply(tree *Tree) string {
+// Apply CodeDisplay.
+func (displayer CodeDisplay) Apply(tree *Tree) string {
 	switch len(tree.Branches) {
 	case 0:
 		return tree.Operator.String()
@@ -100,9 +103,9 @@ func (displayer FormulaDisplay) Apply(tree *Tree) string {
 		return fmt.Sprintf("%s(%s)", tree.Operator.String(), displayer.Apply(tree.Branches[0]))
 	case 2:
 		return fmt.Sprintf(
-			"(%s)%s(%s)",
-			displayer.Apply(tree.Branches[0]),
+			"%s(%s, %s)",
 			tree.Operator.String(),
+			displayer.Apply(tree.Branches[0]),
 			displayer.Apply(tree.Branches[1]),
 		)
 	default:

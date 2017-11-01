@@ -6,24 +6,21 @@ import (
 	"github.com/MaxHalford/xgp"
 	"github.com/MaxHalford/xgp/dataset"
 	"github.com/MaxHalford/xgp/metrics"
-	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
 var (
-	predictClass       int
-	predictMetricName  string
-	predictProgramName string
-	predictTargetCol   string
+	predictEvalMetricName string
+	predictProgramName    string
+	predictTargetCol      string
 )
 
 func init() {
 	RootCmd.AddCommand(predictCmd)
 
-	predictCmd.Flags().IntVarP(&predictClass, "class", "c", 1, "Which class to apply the metric to if applicable")
-	predictCmd.Flags().StringVarP(&predictMetricName, "metric", "m", "mse", "Metric to use")
-	predictCmd.Flags().StringVarP(&predictProgramName, "program", "p", "program.json", "Path to the program")
-	predictCmd.Flags().StringVarP(&predictTargetCol, "target_col", "y", "y", "Name of the target column")
+	predictCmd.Flags().StringVarP(&predictEvalMetricName, "metric", "e", "mae", "metric to evaluate predictions")
+	predictCmd.Flags().StringVarP(&predictProgramName, "program", "p", "program.json", "path to the program")
+	predictCmd.Flags().StringVarP(&predictTargetCol, "target_col", "y", "y", "name of the target column")
 }
 
 var predictCmd = &cobra.Command{
@@ -38,7 +35,7 @@ var predictCmd = &cobra.Command{
 		}
 
 		// Determine the metric to use
-		metric, err := metrics.GetMetric(predictMetricName, predictClass)
+		metric, err := metrics.GetMetric(predictEvalMetricName, 1)
 		if err != nil {
 			return err
 		}
@@ -55,16 +52,20 @@ var predictCmd = &cobra.Command{
 			return err
 		}
 
-		yPred, err := prog.Predict(test.X)
+		// Make predictions
+		yPred, err := prog.Predict(test.X, metric.NeedsProbabilities())
 		if err != nil {
 			return err
 		}
+
 		fmt.Println(yPred)
+
+		// Calculate score
 		score, err := metric.Apply(test.Y, yPred, nil)
 		if err != nil {
 			return err
 		}
-		color.Green("Test score: %.5f\n", score)
+		fmt.Printf("Test score: %.5f\n", score)
 
 		return nil
 	},

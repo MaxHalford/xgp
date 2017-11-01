@@ -11,8 +11,9 @@ import (
 // A Program is simply an abstraction of top of a Tree.
 type Program struct {
 	Tree      *tree.Tree             `json:"tree"`
-	Estimator *Estimator             `json:"-"`
+	Task      Task                   `json:"task"`
 	DRS       *DynamicRangeSelection `json:"drs"`
+	Estimator *Estimator             `json:"-"`
 }
 
 // String representation of a Program.
@@ -24,6 +25,7 @@ func (prog Program) String() string {
 func (prog Program) clone() *Program {
 	var clone = &Program{
 		Tree:      prog.Tree.Clone(),
+		Task:      prog.Task,
 		Estimator: prog.Estimator,
 	}
 	if prog.DRS != nil {
@@ -32,42 +34,38 @@ func (prog Program) clone() *Program {
 	return clone
 }
 
-// PredictRow predicts the output of some features.
-func (prog Program) PredictRow(x []float64) (float64, error) {
-	var y = prog.Tree.EvaluateRow(x)
-	if prog.DRS != nil {
-		return prog.DRS.PredictRow(y), nil
-	}
-	return y, nil
-}
-
 // Predict predicts the output of a slice of features.
-func (prog Program) Predict(X [][]float64) (yPred []float64, err error) {
-	yPred, err = prog.Tree.EvaluateCols(X)
+func (prog Program) Predict(X [][]float64, predictProba bool) (yPred []float64, err error) {
+	yPred, err = prog.Tree.EvaluateCols(X, nil)
 	if err != nil {
 		return nil, err
 	}
-	if prog.DRS != nil {
+	// Binary classification
+	if prog.Task.binaryClassification() {
+		if predictProba {
+			return sigmoid(yPred), nil
+		}
+		return binary(yPred), nil
+	}
+	// Multi-class classification
+	if prog.Task.multiClassClassification() {
 		return prog.DRS.Predict(yPred), nil
 	}
+	// Regression
 	return yPred, nil
 }
 
 // Evaluate is required to implement gago.Genome.
 func (prog *Program) Evaluate() float64 {
 	// Run the training set through the Program
-	var yPred, err = prog.Tree.EvaluateCols(prog.Estimator.train.X)
+	var yPred, err = prog.Predict(prog.Estimator.train.X, prog.Task.Metric.NeedsProbabilities())
 	// If an error occurred during evaluation return +∞
 	if err != nil {
 		return math.Inf(1)
 	}
-	// Use dynamic range selection if applicable
-	if prog.DRS != nil {
-		prog.DRS.Fit(prog.Estimator.train.Y, yPred)
-		yPred = prog.DRS.Predict(yPred)
-	}
 	// Use the Metric defined in the Estimator
-	var fitness, _ = prog.Estimator.Metric.Apply(prog.Estimator.train.Y, yPred, nil)
+	var fitness, _ = prog.Task.Metric.Apply(prog.Estimator.train.Y, yPred, nil)
+	prog.Estimator.setBest(prog, fitness)
 	// If the Metric returned a NaN return +∞
 	if math.IsNaN(fitness) {
 		return math.Inf(1)

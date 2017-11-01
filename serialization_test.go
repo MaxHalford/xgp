@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/MaxHalford/xgp/metrics"
 	"github.com/MaxHalford/xgp/tree"
 )
 
@@ -46,6 +47,9 @@ func TestProgramJSONPersistence(t *testing.T) {
 		DRS: &DynamicRangeSelection{
 			cutPoints: []float64{0, 1, 2},
 			rangeMap:  map[float64]float64{0: -1, 1: 1, 2: -1},
+		},
+		Task: Task{
+			Metric: metrics.MeanAbsoluteError{},
 		},
 	}
 

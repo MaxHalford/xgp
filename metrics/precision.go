@@ -34,6 +34,11 @@ func (metric BinaryPrecision) BiggerIsBetter() bool {
 	return true
 }
 
+// NeedsProbabilities method of BinaryPrecision.
+func (metric BinaryPrecision) NeedsProbabilities() bool {
+	return false
+}
+
 // String method of BinaryPrecision.
 func (metric BinaryPrecision) String() string {
 	return "precision"
@@ -78,6 +83,11 @@ func (metric MicroPrecision) BiggerIsBetter() bool {
 	return true
 }
 
+// NeedsProbabilities method of MicroPrecision.
+func (metric MicroPrecision) NeedsProbabilities() bool {
+	return false
+}
+
 // String method of MicroPrecision.
 func (metric MicroPrecision) String() string {
 	return "micro_precision"
@@ -109,6 +119,11 @@ func (metric MacroPrecision) Classification() bool {
 // BiggerIsBetter method of MacroPrecision.
 func (metric MacroPrecision) BiggerIsBetter() bool {
 	return true
+}
+
+// NeedsProbabilities method of MacroPrecision.
+func (metric MacroPrecision) NeedsProbabilities() bool {
+	return false
 }
 
 // String method of MacroPrecision.
@@ -150,6 +165,11 @@ func (metric WeightedPrecision) Classification() bool {
 // BiggerIsBetter method of WeightedPrecision.
 func (metric WeightedPrecision) BiggerIsBetter() bool {
 	return true
+}
+
+// NeedsProbabilities method of WeightedPrecision.
+func (metric WeightedPrecision) NeedsProbabilities() bool {
+	return false
 }
 
 // String method of WeightedPrecision.

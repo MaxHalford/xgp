@@ -229,7 +229,7 @@ func (op Sum) Arity() int {
 
 // String representation of String.
 func (op Sum) String() string {
-	return "+"
+	return "sum"
 }
 
 // Difference returns the difference between two operands.
@@ -253,7 +253,7 @@ func (op Difference) Arity() int {
 
 // String representation of Difference.
 func (op Difference) String() string {
-	return "-"
+	return "sub"
 }
 
 // Division returns the protected division of two operands. The left operand is
@@ -279,7 +279,7 @@ func (op Division) Arity() int {
 
 // String representation of Division.
 func (op Division) String() string {
-	return "/"
+	return "div"
 }
 
 // Product returns the product two operands.
@@ -303,7 +303,7 @@ func (op Product) Arity() int {
 
 // String representation of Product.
 func (op Product) String() string {
-	return "*"
+	return "mul"
 }
 
 // Power computes the exponent of a first value by a second one.
@@ -330,5 +330,5 @@ func (op Power) Arity() int {
 
 // String representation of Power.
 func (op Power) String() string {
-	return "^"
+	return "pow"
 }

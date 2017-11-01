@@ -10,6 +10,11 @@ type Tree struct {
 	Branches []*Tree
 }
 
+// String representation of a tree.
+func (tree *Tree) String() string {
+	return CodeDisplay{}.Apply(tree)
+}
+
 // rApply recursively applies a function to a Tree and it's branches.
 func (tree *Tree) rApply(f func(tree *Tree, depth int) (stop bool)) {
 	var apply func(tree *Tree, depth int) bool
@@ -101,7 +106,14 @@ func (tree Tree) EvaluateRow(x []float64) float64 {
 }
 
 // EvaluateCols blabla
-func (tree *Tree) EvaluateCols(X [][]float64) ([]float64, error) {
+func (tree *Tree) EvaluateCols(X [][]float64, cache *Cache) ([]float64, error) {
+	// Check the cache
+	if cache != nil {
+		var yPred = cache.Get(tree.String())
+		if yPred != nil {
+			return yPred, nil
+		}
+	}
 	// Simplify the tree to remove unnecessary evaluation parts
 	tree.simplify()
 	// The Tree has no branches
@@ -111,23 +123,23 @@ func (tree *Tree) EvaluateCols(X [][]float64) ([]float64, error) {
 	// The Tree has branches
 	var evals = make([][]float64, len(tree.Branches))
 	for i, branch := range tree.Branches {
-		var eval, err = branch.EvaluateCols(X)
+		var eval, err = branch.EvaluateCols(X, cache)
 		if err != nil {
 			return nil, err
 		}
 		evals[i] = eval
 	}
-	return tree.Operator.ApplyCols(evals), nil
+	var yPred = tree.Operator.ApplyCols(evals)
+	// Add the results to the cache
+	if cache != nil {
+		cache.Set(tree.String(), yPred)
+	}
+	return yPred, nil
 }
 
 // setOperator replaces the Operator of a tree.
 func (tree *Tree) setOperator(op Operator, rng *rand.Rand) {
 	tree.Operator = op
-}
-
-// String representation of a tree.
-func (tree *Tree) String() string {
-	return FormulaDisplay{}.Apply(tree)
 }
 
 // Simplify a tree by removing unnecessary branches. The algorithm starts at the

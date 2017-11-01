@@ -40,6 +40,11 @@ func (metric BinaryF1Score) BiggerIsBetter() bool {
 	return true
 }
 
+// NeedsProbabilities method of BinaryF1Score.
+func (metric BinaryF1Score) NeedsProbabilities() bool {
+	return false
+}
+
 // String method of BinaryF1Score.
 func (metric BinaryF1Score) String() string {
 	return "f1_score"
@@ -72,6 +77,11 @@ func (metric MicroF1Score) BiggerIsBetter() bool {
 	return true
 }
 
+// NeedsProbabilities method of MicroF1Score.
+func (metric MicroF1Score) NeedsProbabilities() bool {
+	return false
+}
+
 // String method of MicroF1Score.
 func (metric MicroF1Score) String() string {
 	return "micro_f1_score"
@@ -102,6 +112,11 @@ func (metric MacroF1Score) Classification() bool {
 // BiggerIsBetter method of MacroF1Score.
 func (metric MacroF1Score) BiggerIsBetter() bool {
 	return true
+}
+
+// NeedsProbabilities method of MacroF1Score.
+func (metric MacroF1Score) NeedsProbabilities() bool {
+	return false
 }
 
 // String method of MacroF1Score.
@@ -143,6 +158,11 @@ func (metric WeightedF1Score) Classification() bool {
 // BiggerIsBetter method of WeightedF1Score.
 func (metric WeightedF1Score) BiggerIsBetter() bool {
 	return true
+}
+
+// NeedsProbabilities method of WeightedF1Score.
+func (metric WeightedF1Score) NeedsProbabilities() bool {
+	return false
 }
 
 // String method of WeightedF1Score.

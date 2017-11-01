@@ -34,6 +34,11 @@ func (metric BinaryRecall) BiggerIsBetter() bool {
 	return true
 }
 
+// NeedsProbabilities method of BinaryRecall.
+func (metric BinaryRecall) NeedsProbabilities() bool {
+	return false
+}
+
 // String method of BinaryRecall.
 func (metric BinaryRecall) String() string {
 	return "recall"
@@ -78,6 +83,11 @@ func (metric MicroRecall) BiggerIsBetter() bool {
 	return true
 }
 
+// NeedsProbabilities method of MicroRecall.
+func (metric MicroRecall) NeedsProbabilities() bool {
+	return false
+}
+
 // String method of MicroRecall.
 func (metric MicroRecall) String() string {
 	return "micro_recall"
@@ -109,6 +119,11 @@ func (metric MacroRecall) Classification() bool {
 // BiggerIsBetter method of MacroRecall.
 func (metric MacroRecall) BiggerIsBetter() bool {
 	return true
+}
+
+// NeedsProbabilities method of MacroRecall.
+func (metric MacroRecall) NeedsProbabilities() bool {
+	return false
 }
 
 // String method of MacroRecall.
@@ -150,6 +165,11 @@ func (metric WeightedRecall) Classification() bool {
 // BiggerIsBetter method of WeightedRecall.
 func (metric WeightedRecall) BiggerIsBetter() bool {
 	return true
+}
+
+// NeedsProbabilities method of WeightedRecall.
+func (metric WeightedRecall) NeedsProbabilities() bool {
+	return false
 }
 
 // String method of WeightedRecall.

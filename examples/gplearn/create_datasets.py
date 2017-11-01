@@ -5,9 +5,9 @@ from sklearn import model_selection
 
 if __name__ == '__main__':
 
-    x0 = np.linspace(-20, 20, 500)
-    x1 = np.linspace(-40, 40, 500)
-    y = x0 ** 2 + x1 ** 2 + 10
+    x0 = np.arange(-1, 1, 0.1)
+    x1 = np.arange(-1, 1, 0.1)
+    y = x0 ** 2 - x1 ** 2 + x1 - 1
 
     df = pd.DataFrame({
         'x0': x0,

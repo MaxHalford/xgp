@@ -1,12 +1,12 @@
 from sklearn import datasets
 
-from xgp import classifier
+import regressor
 
 
-X, y = datasets.load_diabetes(return_X_y=True)
+X, y = datasets.load_boston(return_X_y=True)
 
-clf = classifier.XGPClassifier()
+clf = regressor.XGPRegressor()
 clf.fit(X, y)
-yPred = clf.predict(X)
+y_pred = clf.predict(X)
 
-print(yPred)
+print(y_pred)

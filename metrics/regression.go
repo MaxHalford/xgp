@@ -44,6 +44,11 @@ func (metric MeanAbsoluteError) BiggerIsBetter() bool {
 	return false
 }
 
+// NeedsProbabilities method of MeanAbsoluteError.
+func (metric MeanAbsoluteError) NeedsProbabilities() bool {
+	return false
+}
+
 // String method of MeanAbsoluteError.
 func (metric MeanAbsoluteError) String() string {
 	return "mae"
@@ -104,6 +109,11 @@ func (metric R2) Classification() bool {
 
 // BiggerIsBetter method of R2.
 func (metric R2) BiggerIsBetter() bool {
+	return false
+}
+
+// NeedsProbabilities method of R2.
+func (metric R2) NeedsProbabilities() bool {
 	return false
 }
 

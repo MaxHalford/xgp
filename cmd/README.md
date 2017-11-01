@@ -4,12 +4,19 @@
 
 ```sh
 cd xgp/cmd
-go run main.go fit ../examples/polynomial/train.csv -m mae
-go run main.go predict ../examples/polynomial/test.csv
+go run main.go fit ../examples/gplearn/train.csv -l mae
+go run main.go predict ../examples/gplearn/test.csv -e mae
 ```
 
 ```sh
 cd xgp/cmd
-go run main.go fit ../examples/iris/train.csv -m accuracy -y target
-go run main.go predict ../examples/iris/test.csv -m accuracy -y target
+go run main.go fit ../examples/iris/train.csv -l accuracy
+go run main.go predict ../examples/iris/test.csv -e accuracy
+```
+
+
+```sh
+cd xgp/cmd
+go run main.go fit ../examples/titanic/train.csv -l f1_score -y Survived
+go run main.go predict ../examples/titanic/val.csv -e f1_score
 ```

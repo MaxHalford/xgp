@@ -1,4 +1,4 @@
-*.csv
+examples/*/*.csv
 *.dot
 *.json
 *.h
