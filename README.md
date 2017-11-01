@@ -7,8 +7,8 @@
 
 If you want to use xgp in a data science pipeline then you probably want to use it in one of the following ways:
 
-- [Command-line interface (CLI)](cmd/README.md)
-- [Python package](python-package/README.md)
+- [Command-line interface (CLI)](cmd)
+- [Python package](python-package)
 
 You can also simply install the `xgp` Go package and use it from within your Go code.
 
