@@ -227,7 +227,7 @@ func (op Sum) Arity() int {
 	return 2
 }
 
-// String representation of String.
+// String representation of Sum.
 func (op Sum) String() string {
 	return "sum"
 }

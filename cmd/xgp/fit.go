@@ -61,8 +61,9 @@ var fitCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		var evalMetric metrics.Metric
+
 		// Default the evaluation metric to the fitness metric if it's nil
+		var evalMetric metrics.Metric
 		if fitEvalMetricName == "" {
 			evalMetric = lossMetric
 		} else {
@@ -72,13 +73,14 @@ var fitCmd = &cobra.Command{
 			}
 			evalMetric = metric
 		}
+
 		// The convention is to use a fitness metric which has to be minimized
 		if lossMetric.BiggerIsBetter() {
 			lossMetric = metrics.NegativeMetric{Metric: lossMetric}
 		}
 
 		// Determine the functions to use
-		functions, err := parseStringFuncs(fitFuncsString)
+		functions, err := tree.ParseStringFuncs(fitFuncsString)
 		if err != nil {
 			return err
 		}
@@ -121,7 +123,7 @@ var fitCmd = &cobra.Command{
 		}
 
 		// Fit the estimator
-		err = estimator.Fit(train.X, train.Y, train.XNames, train.YName, fitVerbose)
+		err = estimator.Fit(train.X, train.Y, train.XNames, fitVerbose)
 		if err != nil {
 			return err
 		}

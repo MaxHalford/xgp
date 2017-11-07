@@ -91,7 +91,9 @@ def fit(X: np.ndarray,
         c_longlong, # tuning_generations
         c_bool # verbose
     ]
-    return xgp.Fit(
+    xgp.Fit.restype = c_char_p
+
+    program_bytes = xgp.Fit(
         numpy_to_float64_slice(np.transpose(X)),
         numpy_to_float64_slice(y),
         str_list_to_string_slice(X_names),
@@ -111,12 +113,14 @@ def fit(X: np.ndarray,
         verbose
     )
 
+    return program_bytes.decode()
 
-def predict(X: np.ndarray, predict_proba: bool) -> np.ndarray:
-    """Refers to the Predict method in main.go"""
-    xgp = cdll.LoadLibrary('./xgp.so')
-    xgp.Predict.argtypes = [GoFloat64Matrix, c_bool]
-    xgp.Predict.restype = GoFloat64Slice
-    y_pred = xgp.Predict(numpy_to_float64_slice(np.transpose(X)), predict_proba)
-    print(y_pred)
-    return y_pred
+
+# def predict(X: np.ndarray, predict_proba: bool) -> np.ndarray:
+#     """Refers to the Predict method in main.go"""
+#     xgp = cdll.LoadLibrary('./xgp.so')
+#     xgp.Predict.argtypes = [GoFloat64Matrix, c_bool]
+#     #xgp.Predict.restype = GoFloat64Slice
+#     y_pred = xgp.Predict(numpy_to_float64_slice(np.transpose(X)), predict_proba)
+#     print(y_pred)
+#     return y_pred

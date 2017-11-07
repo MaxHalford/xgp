@@ -3,5 +3,5 @@
 ## Installation
 
 ```sh
-go build -o xgp.so -buildmode=c-shared *.go
+go build -buildmode=c-shared -o xgp.so *.go
 ```
