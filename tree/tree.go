@@ -150,21 +150,38 @@ func (tree *Tree) simplify() bool {
 	if len(tree.Branches) == 0 {
 		return false
 	}
-	var constBranches = true
-	for i, branch := range tree.Branches {
+	var (
+		constBranches = true
+		varBranches   = true
+	)
+	for _, branch := range tree.Branches {
 		// Call the function recursively first so as to start from the bottom
-		tree.Branches[i].simplify()
-		// Check if the tree has a branch that isn't a Constant
-		if _, ok := branch.Operator.(Constant); !ok {
+		branch.simplify()
+		// Check the type of the branch's operator
+		switch branch.Operator.(type) {
+		case Constant:
+			varBranches = false
+		case Variable:
+			constBranches = false
+		default:
+			varBranches = false
 			constBranches = false
 		}
 	}
-	// Stop if the tree has no branches with Variable Operators
-	if !constBranches {
-		return false
+	// If the branches are all Constants then a simplification can be made
+	if constBranches {
+		tree.Operator = Constant{Value: tree.EvaluateRow([]float64{})}
+		tree.Branches = nil
+		return true
 	}
-	// Replace the tree's Operator with a Constant.
-	tree.Operator = Constant{Value: tree.EvaluateRow([]float64{})}
-	tree.Branches = nil
-	return true
+	// If the branches are all Variables then a simplification can be made if
+	// the mother Operator is of type Difference
+	if varBranches {
+		if _, ok := tree.Operator.(Difference); ok {
+			tree.Operator = Constant{Value: 0}
+			tree.Branches = nil
+			return true
+		}
+	}
+	return false
 }

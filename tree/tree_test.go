@@ -102,6 +102,42 @@ func TestTreeSimplify(t *testing.T) {
 				},
 			},
 		},
+		{
+			tree: &Tree{
+				Operator: Difference{},
+				Branches: []*Tree{
+					&Tree{Operator: Variable{0}},
+					&Tree{Operator: Variable{0}},
+				},
+			},
+			prunedTree: &Tree{
+				Operator: Constant{0},
+			},
+		},
+		{
+			tree: &Tree{
+				Operator: Sum{},
+				Branches: []*Tree{
+					&Tree{
+						Operator: Sum{},
+						Branches: []*Tree{
+							&Tree{Operator: Constant{1}},
+							&Tree{Operator: Constant{2}},
+						},
+					},
+					&Tree{
+						Operator: Sum{},
+						Branches: []*Tree{
+							&Tree{Operator: Constant{3}},
+							&Tree{Operator: Constant{4}},
+						},
+					},
+				},
+			},
+			prunedTree: &Tree{
+				Operator: Constant{10},
+			},
+		},
 	}
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
