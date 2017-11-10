@@ -1,3 +1,5 @@
+import random
+
 import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.base import RegressorMixin
@@ -9,7 +11,7 @@ class XGPRegressor(BaseEstimator, RegressorMixin):
 
     def __init__(self, const_max=5, const_min=-5, funcs_string='sum,sub,mul,div', generations=30,
                  loss_metric='mae', max_height=6, min_height=3, parsimony_coeff=0, p_constant=0.5,
-                 p_terminal=0.3, rounds=1, tuning_generations=10):
+                 p_terminal=0.3, random_state=None, rounds=1, tuning_generations=10):
 
         self.const_max = const_max
         self.const_min = const_min
@@ -21,6 +23,7 @@ class XGPRegressor(BaseEstimator, RegressorMixin):
         self.parsimony_coeff = parsimony_coeff
         self.p_constant = p_constant
         self.p_terminal = p_terminal
+        self.random_state = random_state
         self.rounds = rounds
         self.tuning_generations = tuning_generations
 
@@ -42,6 +45,7 @@ class XGPRegressor(BaseEstimator, RegressorMixin):
             p_constant=self.p_constant,
             p_terminal=self.p_terminal,
             rounds=self.rounds,
+            seed=self.random_state if self.random_state else random.randrange(2 ** 64),
             tuning_generations=self.tuning_generations,
             verbose=fit_params.get('verbose', False)
         )

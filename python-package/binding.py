@@ -69,6 +69,7 @@ def fit(X: np.ndarray,
         p_terminal: float,
         rounds: int,
         tuning_generations: int,
+        seed: int,
         verbose: bool):
     """Refers to the Fit method in main.go"""
     xgp = cdll.LoadLibrary('./xgp.so')
@@ -89,6 +90,7 @@ def fit(X: np.ndarray,
         c_double, # p_terminal
         c_longlong, # rounds
         c_longlong, # tuning_generations
+        c_longlong, # seed
         c_bool # verbose
     ]
     xgp.Fit.restype = c_char_p
@@ -110,6 +112,7 @@ def fit(X: np.ndarray,
         p_terminal,
         rounds,
         tuning_generations,
+        seed,
         verbose
     )
 

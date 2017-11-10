@@ -6,6 +6,8 @@ package main
 // PyObject* Py_String(char *pystring);
 import "C"
 import (
+	"math/rand"
+
 	"github.com/MaxHalford/gago"
 	"github.com/MaxHalford/xgp"
 	"github.com/MaxHalford/xgp/metrics"
@@ -29,6 +31,7 @@ func Fit(
 	pTerminal float64,
 	pConstant float64,
 	rounds int,
+	seed int64,
 	tuningGenerations int,
 	verbose bool,
 ) *C.char {
@@ -62,6 +65,9 @@ func Fit(
 		panic(err)
 	}
 
+	// Determine the random number generator
+	var rng = rand.New(rand.NewSource(seed))
+
 	var estimator = xgp.Estimator{
 		EvalMetric: evalMetric,
 		LossMetric: lossMetric,
@@ -83,13 +89,14 @@ func Fit(
 	estimator.GA = &gago.GA{
 		NewGenome: estimator.NewProgram,
 		NPops:     1,
-		PopSize:   100,
+		PopSize:   300,
 		Model: gago.ModGenerational{
 			Selector: gago.SelTournament{
 				NContestants: 3,
 			},
 			MutRate: 0.5,
 		},
+		RNG: rng,
 	}
 
 	// Fit the Estimator

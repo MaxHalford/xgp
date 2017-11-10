@@ -1,12 +1,16 @@
 package xgp
 
 import (
+	"math/rand"
+	"time"
+
 	"github.com/MaxHalford/gago"
+	"github.com/spf13/cobra"
+
 	"github.com/MaxHalford/xgp"
 	"github.com/MaxHalford/xgp/dataset"
 	"github.com/MaxHalford/xgp/metrics"
 	"github.com/MaxHalford/xgp/tree"
-	"github.com/spf13/cobra"
 )
 
 var (
@@ -21,6 +25,7 @@ var (
 	fitPTerminal         float64
 	fitPConstant         float64
 	fitRounds            int
+	fitSeed              int64
 	fitTargetCol         string
 	fitTuningGenerations int
 	fitVerbose           bool
@@ -40,6 +45,7 @@ func init() {
 	fitCmd.Flags().Float64VarP(&fitPTerminal, "p_terminal", "t", 0.5, "probability of generating a terminal branch in ramped half-and-half initialization")
 	fitCmd.Flags().Float64VarP(&fitPConstant, "p_constant", "c", 0.5, "probability of picking a constant and not a constant when generating terminal nodes")
 	fitCmd.Flags().IntVarP(&fitRounds, "rounds", "r", 1, "number of boosting rounds")
+	fitCmd.Flags().Int64VarP(&fitSeed, "seed", "s", 0, "seed for random number generation")
 	fitCmd.Flags().StringVarP(&fitTargetCol, "target_col", "y", "y", "name of the target column in the training set")
 	fitCmd.Flags().BoolVarP(&fitVerbose, "verbose", "v", true, "monitor progress or not")
 }
@@ -85,6 +91,14 @@ var fitCmd = &cobra.Command{
 			return err
 		}
 
+		// Determine the random number generator
+		var rng *rand.Rand
+		if fitSeed == 0 {
+			rng = rand.New(rand.NewSource(time.Now().UnixNano()))
+		} else {
+			rng = rand.New(rand.NewSource(fitSeed))
+		}
+
 		// Load the training set in memory
 		train, err := dataset.ReadCSV(file, fitTargetCol, lossMetric.Classification())
 		if err != nil {
@@ -120,6 +134,7 @@ var fitCmd = &cobra.Command{
 				},
 				MutRate: 0.5,
 			},
+			RNG: rng,
 		}
 
 		// Fit the estimator
