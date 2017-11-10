@@ -1,9 +1,5 @@
 package tree
 
-import (
-	"math/rand"
-)
-
 // A Tree holds an Operator and leaf trees called branches.
 type Tree struct {
 	Operator Operator
@@ -135,11 +131,6 @@ func (tree *Tree) EvaluateCols(X [][]float64, cache *Cache) ([]float64, error) {
 		cache.Set(tree.String(), yPred)
 	}
 	return yPred, nil
-}
-
-// setOperator replaces the Operator of a tree.
-func (tree *Tree) setOperator(op Operator, rng *rand.Rand) {
-	tree.Operator = op
 }
 
 // Simplify a tree by removing unnecessary branches. The algorithm starts at the

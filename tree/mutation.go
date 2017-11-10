@@ -17,7 +17,7 @@ type PointMutation struct {
 func (mut PointMutation) Apply(tree *Tree, rng *rand.Rand) {
 	var f = func(tree *Tree, depth int) (stop bool) {
 		if rng.Float64() < mut.P {
-			tree.setOperator(mut.NewOperator(tree.Operator, rng), rng)
+			tree.Operator = mut.NewOperator(tree.Operator, rng)
 		}
 		return
 	}
