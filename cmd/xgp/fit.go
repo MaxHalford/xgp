@@ -17,7 +17,9 @@ var (
 	fitMaxHeight         int
 	fitMinHeight         int
 	fitOutputName        string
+	fitNPops             int
 	fitParsimonyCoeff    float64
+	fitPopSize           int
 	fitPTerminal         float64
 	fitPConstant         float64
 	fitRounds            int
@@ -39,8 +41,10 @@ func init() {
 	fitCmd.Flags().IntVarP(&fitMaxHeight, "max_height", "", 6, "max program height used in ramped half-and-half initialization")
 	fitCmd.Flags().IntVarP(&fitMinHeight, "min_height", "", 3, "min program height used in ramped half-and-half initialization")
 	fitCmd.Flags().StringVarP(&fitOutputName, "output", "", "program.json", "path where to save the best program as a JSON file")
+	fitCmd.Flags().IntVarP(&fitNPops, "n_pops", "", 1, "number of populations to use in the GA")
 	fitCmd.Flags().Float64VarP(&fitParsimonyCoeff, "parsimony", "", 0, "parsimony coefficient by which a program's height is multiplied to decrease it's fitness")
 	fitCmd.Flags().Float64VarP(&fitPTerminal, "p_terminal", "", 0.5, "probability of generating a terminal branch in ramped half-and-half initialization")
+	fitCmd.Flags().IntVarP(&fitPopSize, "pop_size", "", 100, "number of individuals to use for each population in the GA")
 	fitCmd.Flags().Float64VarP(&fitPConstant, "p_constant", "", 0.5, "probability of picking a constant and not a constant when generating terminal nodes")
 	fitCmd.Flags().IntVarP(&fitRounds, "rounds", "", 1, "number of boosting rounds")
 	fitCmd.Flags().Int64VarP(&fitSeed, "seed", "", 0, "seed for random number generation")
@@ -61,13 +65,15 @@ var fitCmd = &cobra.Command{
 			fitConstMin,
 			fitEvalMetricName,
 			fitFuncsString,
+			fitGenerations,
 			fitLossMetricName,
 			fitMaxHeight,
 			fitMinHeight,
-			fitGenerations,
+			fitNPops,
 			fitParsimonyCoeff,
 			fitPConstant,
 			fitPTerminal,
+			fitPopSize,
 			fitSeed,
 			fitTuningGenerations,
 		)

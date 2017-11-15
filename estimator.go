@@ -238,13 +238,15 @@ func NewEstimator(
 	constMin float64,
 	evalMetric string,
 	funcs string,
+	generations int,
 	lossMetric string,
 	maxHeight int,
 	minHeight int,
-	generations int,
+	nPops int,
 	parsimonyCoeff float64,
 	pConstant float64,
 	pTerminal float64,
+	popSize int,
 	seed int64,
 	tuningGenerations int,
 ) (*Estimator, error) {
@@ -307,8 +309,8 @@ func NewEstimator(
 	// Set the initial GA
 	estimator.GA = &gago.GA{
 		NewGenome: estimator.newProgram,
-		NPops:     1,
-		PopSize:   1000,
+		NPops:     nPops,
+		PopSize:   popSize,
 		Model: gago.ModGenerational{
 			Selector: gago.SelTournament{
 				NContestants: 3,

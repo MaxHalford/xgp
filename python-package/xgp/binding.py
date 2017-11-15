@@ -64,9 +64,11 @@ def fit(X: np.ndarray,
         loss_metric_name: str,
         max_height: int,
         min_height: int,
+        n_pops: int,
         parsimony_coeff: float,
         p_constant: float,
         p_terminal: float,
+        pop_size: int,
         rounds: int,
         tuning_generations: int,
         seed: int,
@@ -85,9 +87,11 @@ def fit(X: np.ndarray,
         GoString, # loss_metric_name
         c_longlong, # max_height
         c_longlong, # min_height
+        c_longlong, # n_pops
         c_double, # parsimony_coeff
         c_double, # p_constant
         c_double, # p_terminal
+        c_longlong, # pop_size
         c_longlong, # rounds
         c_longlong, # tuning_generations
         c_longlong, # seed
@@ -107,9 +111,11 @@ def fit(X: np.ndarray,
         GoString(bytes(loss_metric_name, 'utf-8'), len(loss_metric_name)),
         max_height,
         min_height,
+        n_pops,
         parsimony_coeff,
         p_constant,
         p_terminal,
+        pop_size,
         rounds,
         tuning_generations,
         seed,
