@@ -4,4 +4,7 @@ examples/*/*.csv
 *.h
 *.so
 *.pyc
+*.prof
+*.pdf
+*.test
 .cache

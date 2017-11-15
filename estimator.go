@@ -20,18 +20,18 @@ import (
 // An Estimator links all the different components together and can be used to
 // train Programs on a dataset.
 type Estimator struct {
-	LossMetric        metrics.Metric
-	EvalMetric        metrics.Metric // Defaults to LossMetric if nil
-	Functions         []tree.Operator
-	TreeInitializer   tree.Initializer
 	ConstMin          float64
 	ConstMax          float64
+	EvalMetric        metrics.Metric // Defaults to LossMetric if nil
+	LossMetric        metrics.Metric
+	Functions         []tree.Operator
+	Generations       int
+	ParsimonyCoeff    float64
+	TreeInitializer   tree.Initializer
 	PConstant         float64
 	GA                *gago.GA
 	TuningGA          *gago.GA
-	Generations       int
 	TuningGenerations int
-	ParsimonyCoeff    float64
 	CacheDuration     int
 
 	bestProgram *Program
@@ -198,7 +198,7 @@ func (est Estimator) newFunctionOfArity(arity int, rng *rand.Rand) tree.Operator
 }
 
 // NewProgram can be used by gago to produce a new Genome.
-func (est *Estimator) NewProgram(rng *rand.Rand) gago.Genome {
+func (est *Estimator) newProgram(rng *rand.Rand) gago.Genome {
 	var (
 		opFactory = tree.OperatorFactory{
 			PConstant:   est.PConstant,
@@ -221,12 +221,102 @@ func (est *Estimator) NewProgram(rng *rand.Rand) gago.Genome {
 	return &prog
 }
 
-// NewProgramTuner can be used by gago to produce a new Genome.
-func (est *Estimator) NewProgramTuner(rng *rand.Rand) gago.Genome {
+// newProgramTuner can be used by gago to produce a new Genome.
+func (est *Estimator) newProgramTuner(rng *rand.Rand) gago.Genome {
 	var (
-		bestProg  = est.GA.Best.Genome.(*Program)
+		bestProg  = est.GA.HallOfFame[0].Genome.(*Program)
 		progTuner = newProgramTuner(bestProg)
 	)
 	progTuner.jitterConstants(rng)
 	return &progTuner
+}
+
+// NewEstimator instantiates an Estimator. This method should be prefered over
+// directly instantiating an Estimator.
+func NewEstimator(
+	constMax float64,
+	constMin float64,
+	evalMetric string,
+	funcs string,
+	lossMetric string,
+	maxHeight int,
+	minHeight int,
+	generations int,
+	parsimonyCoeff float64,
+	pConstant float64,
+	pTerminal float64,
+	seed int64,
+	tuningGenerations int,
+) (*Estimator, error) {
+
+	// Determine the loss metric to use
+	loss, err := metrics.GetMetric(lossMetric, 1)
+	if err != nil {
+		return nil, err
+	}
+
+	// Default the evaluation metric to the fitness metric if it's nil
+	var eval metrics.Metric
+	if evalMetric == "" {
+		eval = loss
+	} else {
+		metric, err := metrics.GetMetric(evalMetric, 1)
+		if err != nil {
+			return nil, err
+		}
+		eval = metric
+	}
+
+	// The convention is to use a fitness metric which has to be minimized
+	if loss.BiggerIsBetter() {
+		loss = metrics.NegativeMetric{Metric: loss}
+	}
+
+	// Determine the functions to use
+	fs, err := tree.ParseStringFuncs(funcs)
+	if err != nil {
+		return nil, err
+	}
+
+	// Determine the random number generator
+	var rng *rand.Rand
+	if seed == 0 {
+		rng = rand.New(rand.NewSource(time.Now().UnixNano()))
+	} else {
+		rng = rand.New(rand.NewSource(seed))
+	}
+
+	// Instantiate an Estimator
+	var estimator = &Estimator{
+		EvalMetric: eval,
+		LossMetric: loss,
+		ConstMin:   constMin,
+		ConstMax:   constMax,
+		PConstant:  pConstant,
+		TreeInitializer: tree.RampedHaldAndHalfInitializer{
+			MinHeight: minHeight,
+			MaxHeight: maxHeight,
+			PTerminal: pTerminal,
+		},
+		Functions:         fs,
+		Generations:       generations,
+		TuningGenerations: tuningGenerations,
+		ParsimonyCoeff:    parsimonyCoeff,
+	}
+
+	// Set the initial GA
+	estimator.GA = &gago.GA{
+		NewGenome: estimator.newProgram,
+		NPops:     1,
+		PopSize:   1000,
+		Model: gago.ModGenerational{
+			Selector: gago.SelTournament{
+				NContestants: 3,
+			},
+			MutRate: 0.5,
+		},
+		RNG: rng,
+	}
+
+	return estimator, nil
 }

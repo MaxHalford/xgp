@@ -19,7 +19,7 @@ type SubTreeCrossover struct {
 // Apply SubTreeCrossover.
 func (cross SubTreeCrossover) Apply(left, right *Tree, rng *rand.Rand) {
 	var (
-		weight = func(tree *Tree) float64 {
+		weight = func(tree Tree) float64 {
 			switch tree.Operator.(type) {
 			case Constant:
 				return cross.PConstant

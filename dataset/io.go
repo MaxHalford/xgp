@@ -31,9 +31,12 @@ func NewFromXY(X [][]float64, Y []float64, XNames []string, classification bool)
 func ReadCSV(path string, target string, classification bool) (*Dataset, error) {
 	var (
 		dataset = &Dataset{}
-		f, _    = os.Open(path)
-		r       = csv.NewReader(bufio.NewReader(f))
+		f, err  = os.Open(path)
 	)
+	if err != nil {
+		return nil, err
+	}
+	var r = csv.NewReader(bufio.NewReader(f))
 	defer f.Close()
 
 	// Read the headers

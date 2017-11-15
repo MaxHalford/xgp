@@ -13,3 +13,10 @@ pip install mkdocs mkdocs-material pygments
 cd /path/to/xgp
 mkdocs serve
 ```
+
+## Performance
+
+```sh
+go test -bench . -cpuprofile=cpu.prof
+go tool pprof -pdf xgp.test cpu.prof > profile.pdf
+```

@@ -6,11 +6,7 @@ package main
 // PyObject* Py_String(char *pystring);
 import "C"
 import (
-	"math/rand"
-
-	"github.com/MaxHalford/gago"
 	"github.com/MaxHalford/xgp"
-	"github.com/MaxHalford/xgp/metrics"
 	"github.com/MaxHalford/xgp/tree"
 )
 
@@ -36,68 +32,21 @@ func Fit(
 	verbose bool,
 ) *C.char {
 
-	// Determine the fitness and evaluation metrics to use
-	lossMetric, err := metrics.GetMetric(lossMetricName, 1)
-	if err != nil {
-		panic(err)
-	}
-
-	// Default the evaluation metric to the fitness metric if it's nil
-	var evalMetric metrics.Metric
-	if evalMetricName == "" {
-		evalMetric = lossMetric
-	} else {
-		metric, err := metrics.GetMetric(evalMetricName, 1)
-		if err != nil {
-			panic(err)
-		}
-		evalMetric = metric
-	}
-
-	// The convention is to use a fitness metric which has to be minimized
-	if lossMetric.BiggerIsBetter() {
-		lossMetric = metrics.NegativeMetric{Metric: lossMetric}
-	}
-
-	// Determine the functions to use
-	functions, err := tree.ParseStringFuncs(funcsString)
-	if err != nil {
-		panic(err)
-	}
-
-	// Determine the random number generator
-	var rng = rand.New(rand.NewSource(seed))
-
-	var estimator = xgp.Estimator{
-		EvalMetric: evalMetric,
-		LossMetric: lossMetric,
-		ConstMin:   constMin,
-		ConstMax:   constMax,
-		PConstant:  pConstant,
-		TreeInitializer: tree.RampedHaldAndHalfInitializer{
-			MinHeight: minHeight,
-			MaxHeight: maxHeight,
-			PTerminal: pTerminal,
-		},
-		Functions:         functions,
-		Generations:       generations,
-		TuningGenerations: tuningGenerations,
-		ParsimonyCoeff:    parsimonyCoeff,
-	}
-
-	// Set the initial GA
-	estimator.GA = &gago.GA{
-		NewGenome: estimator.NewProgram,
-		NPops:     1,
-		PopSize:   300,
-		Model: gago.ModGenerational{
-			Selector: gago.SelTournament{
-				NContestants: 3,
-			},
-			MutRate: 0.5,
-		},
-		RNG: rng,
-	}
+	var estimator, err = xgp.NewEstimator(
+		constMax,
+		constMin,
+		evalMetricName,
+		funcsString,
+		lossMetricName,
+		maxHeight,
+		minHeight,
+		generations,
+		parsimonyCoeff,
+		pConstant,
+		pTerminal,
+		seed,
+		tuningGenerations,
+	)
 
 	// Fit the Estimator
 	err = estimator.Fit(X, Y, XNames, verbose)

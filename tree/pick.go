@@ -7,7 +7,7 @@ import (
 	"gonum.org/v1/gonum/floats"
 )
 
-func pickSubTree(tree Tree, weight func(tree *Tree) float64, minDepth, maxDepth int, rng *rand.Rand) (*Tree, int) {
+func pickSubTree(tree Tree, weight func(tree Tree) float64, minDepth, maxDepth int, rng *rand.Rand) (*Tree, int) {
 	// Assign weight to each Tree and calculate the total weight
 	var (
 		weights      []float64
@@ -17,7 +17,7 @@ func pickSubTree(tree Tree, weight func(tree *Tree) float64, minDepth, maxDepth 
 			if depth < minDepth || (depth > maxDepth && maxDepth >= 0) {
 				w = 0
 			} else {
-				w = weight(tree) + 1
+				w = weight(*tree) + 1
 			}
 			weights = append(weights, w)
 			totalWeight += w

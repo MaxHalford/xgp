@@ -34,7 +34,7 @@ type HoistMutation struct {
 // Apply HoistMutation.
 func (mut HoistMutation) Apply(tree *Tree, rng *rand.Rand) {
 	var (
-		weight = func(tree *Tree) float64 {
+		weight = func(tree Tree) float64 {
 			switch tree.Operator.(type) {
 			case Constant:
 				return mut.PConstant

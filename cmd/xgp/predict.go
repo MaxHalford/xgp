@@ -28,11 +28,6 @@ var predictCmd = &cobra.Command{
 	Short: "Predicts a dataset with a program",
 	Long:  "Predicts a dataset with a program",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		// Check if the file exists
-		var file = args[0]
-		if err := fileExists(file); err != nil {
-			return err
-		}
 
 		// Determine the metric to use
 		metric, err := metrics.GetMetric(predictEvalMetricName, 1)
@@ -41,7 +36,7 @@ var predictCmd = &cobra.Command{
 		}
 
 		// Load the test set in memory
-		test, err := dataset.ReadCSV(file, predictTargetCol, metric.Classification())
+		test, err := dataset.ReadCSV(args[0], predictTargetCol, metric.Classification())
 		if err != nil {
 			return err
 		}
