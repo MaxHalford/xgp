@@ -25,30 +25,27 @@ func pickSubTree(tree Tree, weight func(tree Tree) float64, minDepth, maxDepth i
 		}
 	)
 	tree.rApply(assignWeight)
-	// Cumulatively sum the weights
+	// Calculate the cumulative sum of the weights
 	var cumsum = make([]float64, len(weights))
 	floats.CumSum(cumsum, weights)
 	// Sample a random number in [0, cumsum[-1])
 	var r = rng.Float64() * cumsum[len(cumsum)-1]
 	// Find i where cumsum[i-1] < r < cumsum[i]
 	var (
-		pos      = sort.SearchFloat64s(cumsum, r)
-		posDepth int
-	)
-	// Extract the sub-tree at position i
-	var (
-		subTree     *Tree
-		i           int
-		findSubTree = func(tree *Tree, depth int) (stop bool) {
+		pos          = sort.SearchFloat64s(cumsum, r)
+		subTree      *Tree
+		subTreeDepth int
+		i            int
+		findSubTree  = func(tree *Tree, depth int) (stop bool) {
 			if i < pos {
 				i++
 				return
 			}
 			subTree = tree
-			posDepth = depth
+			subTreeDepth = depth
 			return true
 		}
 	)
 	tree.rApply(findSubTree)
-	return subTree, posDepth
+	return subTree, subTreeDepth
 }
