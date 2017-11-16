@@ -87,8 +87,8 @@ func (tree *Tree) Clone() *Tree {
 	}
 }
 
-// EvaluateRow blabla
-func (tree Tree) EvaluateRow(x []float64) float64 {
+// evaluateRow blabla
+func (tree Tree) evaluateRow(x []float64) float64 {
 	// Either the tree is a leaf tree
 	if len(tree.Branches) == 0 {
 		return tree.Operator.ApplyRow(x)
@@ -96,27 +96,32 @@ func (tree Tree) EvaluateRow(x []float64) float64 {
 	// Either the tree has branches trees
 	var evals = make([]float64, len(tree.Branches))
 	for i, branch := range tree.Branches {
-		evals[i] = branch.EvaluateRow(x)
+		evals[i] = branch.evaluateRow(x)
 	}
 	return tree.Operator.ApplyRow(evals)
 }
 
 // EvaluateCols blabla
-func (tree *Tree) EvaluateCols(X [][]float64, cache *Cache) ([]float64, error) {
-	// Check the cache
-	if cache != nil {
-		var yPred = cache.Get(tree.String())
-		if yPred != nil {
-			return yPred, nil
-		}
-	}
+func (tree *Tree) EvaluateCols(X [][]float64, cache *Cache) (yPred []float64, err error) {
 	// Simplify the tree to remove unnecessary evaluation parts
 	tree.simplify()
-	// The Tree has no branches
-	if len(tree.Branches) == 0 {
-		return tree.Operator.ApplyCols(X), nil
+	// Check the cache
+	if cache != nil {
+		var str = tree.String()
+		// If the result is in the cache then it can be returned
+		yPred = cache.Get(str)
+		if yPred != nil {
+			return
+		}
+		// If the result is not in the cache then it can be added to
+		defer cache.Set(str, yPred)
 	}
-	// The Tree has branches
+	// If the Tree has no branches then it can be evaluated directly
+	if len(tree.Branches) == 0 {
+		yPred = tree.Operator.ApplyCols(X)
+		return
+	}
+	// If the Tree has branches then they have to be evaluated first
 	var evals = make([][]float64, len(tree.Branches))
 	for i, branch := range tree.Branches {
 		var eval, err = branch.EvaluateCols(X, cache)
@@ -125,12 +130,8 @@ func (tree *Tree) EvaluateCols(X [][]float64, cache *Cache) ([]float64, error) {
 		}
 		evals[i] = eval
 	}
-	var yPred = tree.Operator.ApplyCols(evals)
-	// Add the results to the cache
-	if cache != nil {
-		cache.Set(tree.String(), yPred)
-	}
-	return yPred, nil
+	yPred = tree.Operator.ApplyCols(evals)
+	return
 }
 
 // Simplify a tree by removing unnecessary branches. The algorithm starts at the
@@ -161,7 +162,7 @@ func (tree *Tree) simplify() bool {
 	}
 	// If the branches are all Constants then a simplification can be made
 	if constBranches {
-		tree.Operator = Constant{Value: tree.EvaluateRow([]float64{})}
+		tree.Operator = Constant{Value: tree.evaluateRow([]float64{})}
 		tree.Branches = nil
 		return true
 	}
@@ -169,9 +170,11 @@ func (tree *Tree) simplify() bool {
 	// the mother Operator is of type Difference
 	if varBranches {
 		if _, ok := tree.Operator.(Difference); ok {
-			tree.Operator = Constant{Value: 0}
-			tree.Branches = nil
-			return true
+			if tree.Branches[0].Operator.(Variable).Index == tree.Branches[1].Operator.(Variable).Index {
+				tree.Operator = Constant{Value: 0}
+				tree.Branches = nil
+				return true
+			}
 		}
 	}
 	return false
