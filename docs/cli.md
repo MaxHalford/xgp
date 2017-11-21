@@ -12,7 +12,7 @@ export GOPATH="$HOME/go"
 export PATH="$PATH:$GOPATH/bin"
 ```
 
-Now you can install the koza command-line interface with the following command.
+Now you can install the `koza` command-line interface with the following command.
 
 ```sh
 go get -u github.com/MaxHalford/koza/cmd
@@ -22,7 +22,7 @@ go get -u github.com/MaxHalford/koza/cmd
 
 
 !!! tip
-    Whichever the command, you may run `koza <command> -h` to get help with it.
+    Run `koza <command> -h` to get help with a command.
 
 ### fit
 
