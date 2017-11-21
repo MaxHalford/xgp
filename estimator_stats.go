@@ -1,4 +1,4 @@
-package xgp
+package koza
 
 // AvgProgramHeight returns the average Program height.
 func (est Estimator) AvgProgramHeight() float64 {

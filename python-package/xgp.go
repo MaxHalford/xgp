@@ -6,8 +6,7 @@ package main
 // PyObject* Py_String(char *pystring);
 import "C"
 import (
-	"github.com/MaxHalford/xgp"
-	"github.com/MaxHalford/xgp/tree"
+	"github.com/MaxHalford/koza/tree"
 )
 
 //export Fit
@@ -38,7 +37,7 @@ func Fit(
 	verbose bool,
 ) *C.char {
 
-	var estimator, err = xgp.NewEstimator(
+	var estimator, err = koza.NewEstimator(
 		constMax,
 		constMin,
 		evalMetricName,

@@ -1,4 +1,4 @@
-package xgp
+package koza
 
 import (
 	"encoding/json"
@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/MaxHalford/xgp/metrics"
-	"github.com/MaxHalford/xgp/tree"
+	"github.com/MaxHalford/koza/metrics"
+	"github.com/MaxHalford/koza/tree"
 )
 
 func TestDRSJSONEncodeDecode(t *testing.T) {

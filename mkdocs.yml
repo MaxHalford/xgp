@@ -1,12 +1,12 @@
 # Project information
-site_name: xgp
+site_name: koza
 site_description: 'Genetic programming tool for classification and regression'
 site_author: 'Max Halford'
-site_url: 'https://maxhalford.github.io/xgp'
+site_url: 'https://maxhalford.github.io/koza'
 
 # Repository
-repo_name: 'MaxHalford/xgp'
-repo_url: 'https://github.com/MaxHalford/xgp'
+repo_name: 'MaxHalford/koza'
+repo_url: 'https://github.com/MaxHalford/koza'
 
 # Copyright
 copyright: 'Copyright &copy; 2017 Max Halford'

@@ -1,11 +1,11 @@
-package xgp
+package koza
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/MaxHalford/xgp/metrics"
-	"github.com/MaxHalford/xgp/tree"
+	"github.com/MaxHalford/koza/metrics"
+	"github.com/MaxHalford/koza/tree"
 )
 
 func TestPredict(t *testing.T) {

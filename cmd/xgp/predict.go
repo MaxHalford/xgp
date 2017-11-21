@@ -1,11 +1,10 @@
-package xgp
+package koza
 
 import (
 	"fmt"
 
-	"github.com/MaxHalford/xgp"
-	"github.com/MaxHalford/xgp/dataset"
-	"github.com/MaxHalford/xgp/metrics"
+	"github.com/MaxHalford/koza/dataset"
+	"github.com/MaxHalford/koza/metrics"
 	"github.com/spf13/cobra"
 )
 
@@ -42,7 +41,7 @@ var predictCmd = &cobra.Command{
 		}
 
 		// Load the program
-		prog, err := xgp.LoadProgramFromJSON(predictProgramName)
+		prog, err := koza.LoadProgramFromJSON(predictProgramName)
 		if err != nil {
 			return err
 		}

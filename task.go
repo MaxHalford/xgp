@@ -1,6 +1,6 @@
-package xgp
+package koza
 
-import "github.com/MaxHalford/xgp/metrics"
+import "github.com/MaxHalford/koza/metrics"
 
 // A Task contains information a Program needs to know in order to at least
 // make predictions.

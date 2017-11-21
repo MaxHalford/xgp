@@ -1,17 +1,17 @@
 <div align="center">
   <!-- Logo -->
   <img src="https://docs.google.com/drawings/d/e/2PACX-1vSLdt85rEf3SQUBkpuWfXOclyUY7rdZ7RBoTuNIyCc3-liSpurbL3i7QfrzWBFr2LfwTfoAf_1i4Qwe/pub?w=378&h=223"/>
-  <p>xgp is a machine learning tool based on <a href="https://www.wikiwand.com/en/Genetic_programming">genetic programming</a></p>
+  <p>koza is a machine learning tool based on <a href="https://www.wikiwand.com/en/Genetic_programming">genetic programming</a></p>
 </div>
 
 
-If you want to use xgp in a data science pipeline then you probably want to use it in one of the following ways:
+If you want to use koza in a data science pipeline then you probably want to use it in one of the following ways:
 
 - [Command-line interface (CLI)](cmd)
 - [Python package](python-package)
 
-You can also simply install the `xgp` Go package and use it from within your Go code.
+You can also simply install the `koza` Go package and use it from within your Go code.
 
 ```sh
-go get -u github.com/MaxHalford/xgp
+go get -u github.com/MaxHalford/koza
 ```

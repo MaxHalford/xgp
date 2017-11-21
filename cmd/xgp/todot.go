@@ -1,11 +1,10 @@
-package xgp
+package koza
 
 import (
 	"fmt"
 	"os"
 
-	"github.com/MaxHalford/xgp"
-	"github.com/MaxHalford/xgp/tree"
+	"github.com/MaxHalford/koza/tree"
 	"github.com/spf13/cobra"
 )
 
@@ -31,7 +30,7 @@ var toDOTCmd = &cobra.Command{
 	Long:  "Produces a DOT language representation of a program",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// Load the program
-		program, err := xgp.LoadProgramFromJSON(toDOTProgramName)
+		program, err := koza.LoadProgramFromJSON(toDOTProgramName)
 		if err != nil {
 			return err
 		}

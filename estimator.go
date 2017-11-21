@@ -1,4 +1,4 @@
-package xgp
+package koza
 
 import (
 	"errors"
@@ -12,9 +12,9 @@ import (
 
 	"github.com/MaxHalford/gago"
 
-	"github.com/MaxHalford/xgp/dataset"
-	"github.com/MaxHalford/xgp/metrics"
-	"github.com/MaxHalford/xgp/tree"
+	"github.com/MaxHalford/koza/dataset"
+	"github.com/MaxHalford/koza/metrics"
+	"github.com/MaxHalford/koza/tree"
 )
 
 type crossover struct {

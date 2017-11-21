@@ -1,9 +1,9 @@
-package xgp
+package koza
 
 import (
 	"testing"
 
-	"github.com/MaxHalford/xgp/dataset"
+	"github.com/MaxHalford/koza/dataset"
 )
 
 func BenchmarkFit(b *testing.B) {

@@ -1,7 +1,7 @@
 package main
 
-import "github.com/MaxHalford/xgp/cmd/xgp"
+import "github.com/MaxHalford/koza/cmd/koza"
 
 func main() {
-	xgp.Execute()
+	koza.Execute()
 }

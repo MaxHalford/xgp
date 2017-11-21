@@ -1,11 +1,11 @@
-package xgp
+package koza
 
 import (
 	"encoding/json"
 	"io/ioutil"
 	"strconv"
 
-	"github.com/MaxHalford/xgp/metrics"
+	"github.com/MaxHalford/koza/metrics"
 )
 
 // A serialDRS can be serialized and holds information that can be used to

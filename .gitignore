@@ -1,4 +1,5 @@
 examples/*/*.csv
+site/
 *.dot
 *.json
 *.h

@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from xgp import binding
+from koza import binding
 
 
 class TestBinding(unittest.TestCase):

@@ -10,7 +10,7 @@ from sklearn import pipeline
 from sklearn import preprocessing
 from sklearn import tree
 
-from xgp import regressor
+from koza import regressor
 
 
 train = pd.read_csv('../examples/boston/train.csv')

@@ -1,4 +1,4 @@
-package xgp
+package koza
 
 import "math"
 

@@ -1,10 +1,9 @@
-package xgp
+package koza
 
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/MaxHalford/xgp"
-	"github.com/MaxHalford/xgp/dataset"
+	"github.com/MaxHalford/koza/dataset"
 )
 
 var (
@@ -68,7 +67,7 @@ var fitCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		// Instantiate an Estimator
-		var estimator, err = xgp.NewEstimator(
+		var estimator, err = koza.NewEstimator(
 			fitConstMax,
 			fitConstMin,
 			fitEvalMetricName,
@@ -110,7 +109,7 @@ var fitCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		err = xgp.SaveProgramToJSON(*bestProg, fitOutputName)
+		err = koza.SaveProgramToJSON(*bestProg, fitOutputName)
 		if err != nil {
 			return err
 		}

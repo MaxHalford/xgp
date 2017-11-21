@@ -12,24 +12,24 @@ export GOPATH="$HOME/go"
 export PATH="$PATH:$GOPATH/bin"
 ```
 
-Now you can install the xgp command-line interface with the following command.
+Now you can install the koza command-line interface with the following command.
 
 ```sh
-go get -u github.com/MaxHalford/xgp/cmd
+go get -u github.com/MaxHalford/koza/cmd
 ```
 
 ## Commands
 
 
 !!! tip
-    Whichever the command, you may run `xgp <command> -h` to get help with it.
+    Whichever the command, you may run `koza <command> -h` to get help with it.
 
 ### fit
 
 #### Basic example
 
 ```sh
-xgp fit train.csv
+koza fit train.csv
 ```
 
 #### Full example
@@ -40,7 +40,7 @@ xgp fit train.csv
 #### Basic example
 
 ```sh
-xgp predict test.csv
+koza predict test.csv
 ```
 
 #### Full example

@@ -10,7 +10,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='xgp',
+    name='koza',
     version='0.0.1',
     description='A machine learning tool based on genetic programming',
     long_description=long_description,
@@ -33,8 +33,8 @@ setup(
     keywords='Genetic programming',
     packages=find_packages(exclude=['tests']),
     python_requires='>=3',
-    build_golang={'root': 'github.com/MaxHalford/xgp'},
-    ext_modules=[Extension('xgp', ['xgp.go'])],
+    build_golang={'root': 'github.com/MaxHalford/koza'},
+    ext_modules=[Extension('koza', ['koza.go'])],
     setup_requires=['setuptools-golang'],
     install_requires=['numpy', 'sklearn'],
     extras_require={

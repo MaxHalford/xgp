@@ -1,10 +1,10 @@
-package xgp
+package koza
 
 import (
 	"math/rand"
 
 	"github.com/MaxHalford/gago"
-	"github.com/MaxHalford/xgp/tree"
+	"github.com/MaxHalford/koza/tree"
 )
 
 // A ProgramTuner optimizes a Program by tuning the Program's Constants.

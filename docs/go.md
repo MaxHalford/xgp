@@ -2,10 +2,10 @@
 
 ## Installation
 
-Once you have [installed Go](https://golang.org/dl/), you can install the `xgp` package with the following one-liner.
+Once you have [installed Go](https://golang.org/dl/), you can install the `koza` package with the following one-liner.
 
 ```sh
-go get -u github.com/MaxHalford/xgp
+go get -u github.com/MaxHalford/koza
 ```
 
 ## Usage
@@ -18,4 +18,4 @@ err := estimator.Fit(X [][]float64, Y []float64)
 yPred, err := estimator.Predict(X [][]float64)
 ```
 
-The `Estimator` struct fields has many fields you can set, most of which are accessible via the CLI and client libraries. Check the [parameters page](parameters.md) for more information.
+The `Estimator` struct fields has many fields you can set, most of which are accessible via the CLI and client libraries. Check the [parameters page](training-parameters.md) for more information.

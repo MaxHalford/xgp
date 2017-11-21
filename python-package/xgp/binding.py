@@ -78,8 +78,8 @@ def fit(X: np.ndarray,
         seed: int,
         verbose: bool):
     """Refers to the Fit method in main.go"""
-    xgp = cdll.LoadLibrary('./xgp.so')
-    xgp.Fit.argtypes = [
+    koza = cdll.LoadLibrary('./koza.so')
+    koza.Fit.argtypes = [
         GoFloat64Matrix, # X
         GoFloat64Slice, # y
         GoStringSlice, # X_names
@@ -106,9 +106,9 @@ def fit(X: np.ndarray,
         c_bool # verbose
     ]
 
-    xgp.Fit.restype = c_char_p
+    koza.Fit.restype = c_char_p
 
-    program_bytes = xgp.Fit(
+    program_bytes = koza.Fit(
         numpy_to_float64_slice(np.transpose(X)),
         numpy_to_float64_slice(y),
         str_list_to_string_slice(X_names),
@@ -140,9 +140,9 @@ def fit(X: np.ndarray,
 
 # def predict(X: np.ndarray, predict_proba: bool) -> np.ndarray:
 #     """Refers to the Predict method in main.go"""
-#     xgp = cdll.LoadLibrary('./xgp.so')
-#     xgp.Predict.argtypes = [GoFloat64Matrix, c_bool]
-#     #xgp.Predict.restype = GoFloat64Slice
-#     y_pred = xgp.Predict(numpy_to_float64_slice(np.transpose(X)), predict_proba)
+#     koza = cdll.LoadLibrary('./koza.so')
+#     koza.Predict.argtypes = [GoFloat64Matrix, c_bool]
+#     #koza.Predict.restype = GoFloat64Slice
+#     y_pred = koza.Predict(numpy_to_float64_slice(np.transpose(X)), predict_proba)
 #     print(y_pred)
 #     return y_pred

@@ -1,10 +1,9 @@
-package xgp
+package koza
 
 import (
 	"fmt"
 
-	"github.com/MaxHalford/xgp"
-	"github.com/MaxHalford/xgp/tree"
+	"github.com/MaxHalford/koza/tree"
 	"github.com/spf13/cobra"
 )
 
@@ -24,7 +23,7 @@ var toCode = &cobra.Command{
 	Long:  "Produces a code-like representation of a program",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// Load the program
-		program, err := xgp.LoadProgramFromJSON(toCodeProgramName)
+		program, err := koza.LoadProgramFromJSON(toCodeProgramName)
 		if err != nil {
 			return err
 		}

@@ -1,7 +1,7 @@
-package xgp
+package koza
 
 import (
-	"github.com/MaxHalford/xgp/tree"
+	"github.com/MaxHalford/koza/tree"
 )
 
 // A Program is simply an abstraction of top of a Tree.

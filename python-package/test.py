@@ -10,7 +10,7 @@ from sklearn import pipeline
 from sklearn import preprocessing
 from sklearn import tree
 
-from xgp import regressor
+from koza import regressor
 
 
 X, y = datasets.load_boston(return_X_y=True)
