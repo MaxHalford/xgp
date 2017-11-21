@@ -11,7 +11,10 @@ import (
 // purposes.
 func randTree(rng *rand.Rand) *Tree {
 	var (
-		init  = FullInitializer{Height: randInt(3, 5, rng)}
+		init = RampedHaldAndHalfInitializer{
+			FullInitializer{},
+			GrowInitializer{0.5},
+		}
 		funcs = []Operator{Cos{}, Sin{}, Sum{}, Difference{}, Product{}, Division{}}
 		of    = OperatorFactory{
 			PConstant:   0.5,
@@ -20,7 +23,7 @@ func randTree(rng *rand.Rand) *Tree {
 			NewFunction: func(rng *rand.Rand) Operator { return funcs[rng.Intn(len(funcs))] },
 		}
 	)
-	return init.Apply(of, rng)
+	return init.Apply(3, 5, of, rng)
 }
 
 func TestHeight(t *testing.T) {
@@ -136,6 +139,30 @@ func TestTreeSimplify(t *testing.T) {
 			},
 			prunedTree: &Tree{
 				Operator: Constant{10},
+			},
+		},
+		{
+			tree: &Tree{
+				Operator: Division{},
+				Branches: []*Tree{
+					&Tree{Operator: Variable{42}},
+					&Tree{Operator: Variable{42}},
+				},
+			},
+			prunedTree: &Tree{
+				Operator: Constant{1},
+			},
+		},
+		{
+			tree: &Tree{
+				Operator: Difference{},
+				Branches: []*Tree{
+					&Tree{Operator: Variable{42}},
+					&Tree{Operator: Variable{42}},
+				},
+			},
+			prunedTree: &Tree{
+				Operator: Constant{0},
 			},
 		},
 	}

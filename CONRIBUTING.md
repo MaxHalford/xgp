@@ -20,3 +20,7 @@ mkdocs serve
 go test -bench . -cpuprofile=cpu.prof
 go tool pprof -pdf xgp.test cpu.prof > profile.pdf
 ```
+
+## Useful to know
+
+Most of the behavior of xgp can be determined by the user. However for various reasons some fields/numbers have to be hard-coded. When this is done the habit I took is to annotate the line of code with a `// MAGIC` comment. In some cases this is due to bad design and should be fixed.

@@ -6,31 +6,19 @@ import (
 
 // A Crossover mixes two Programs in-place.
 type Crossover interface {
-	Apply(left, right *Tree, rng *rand.Rand)
+	Apply(tree1, tree2 *Tree, rng *rand.Rand)
 }
 
 // SubTreeCrossover applies sub-tree crossover to two Tree.
 type SubTreeCrossover struct {
-	PConstant float64
-	PVariable float64
-	PFunction float64
+	Picker Picker
 }
 
 // Apply SubTreeCrossover.
-func (cross SubTreeCrossover) Apply(left, right *Tree, rng *rand.Rand) {
-	var (
-		weight = func(tree Tree) float64 {
-			switch tree.Operator.(type) {
-			case Constant:
-				return cross.PConstant
-			case Variable:
-				return cross.PVariable
-			default:
-				return cross.PFunction
-			}
-		}
-		subTree1, _ = pickSubTree(*left, weight, 0, -1, rng)
-		subTree2, _ = pickSubTree(*right, weight, 0, -1, rng)
-	)
-	*subTree1 = *subTree2
+func (cross SubTreeCrossover) Apply(tree1, tree2 *Tree, rng *rand.Rand) {
+	// var (
+	// 	subTree1, _ = cross.Picker.Apply(tree1, 0, -1, rng)
+	// 	subTree2, _ = cross.Picker.Apply(tree2, 0, -1, rng)
+	// )
+	// *subTree1, *subTree2 = *subTree2, *subTree1
 }

@@ -60,17 +60,21 @@ def fit(X: np.ndarray,
         const_min: float,
         eval_metric_name: str,
         funcs_string: str,
-        generations: int,
+        n_generations: int,
         loss_metric_name: str,
         max_height: int,
         min_height: int,
         n_pops: int,
         parsimony_coeff: float,
         p_constant: float,
+        p_hoist_mutation: float,
+        p_point_mutation: float,
+        p_subtree_crossover: float,
+        p_subtree_mutation: float,
         p_terminal: float,
-        pop_size: int,
-        rounds: int,
-        tuning_generations: int,
+        population_size: int,
+        n_rounds: int,
+        tuning_n_generations: int,
         seed: int,
         verbose: bool):
     """Refers to the Fit method in main.go"""
@@ -83,20 +87,25 @@ def fit(X: np.ndarray,
         c_double, # const_min
         GoString, # eval_metric_name
         GoString, # funcs_string
-        c_longlong, # generations
         GoString, # loss_metric_name
         c_longlong, # max_height
         c_longlong, # min_height
+        c_longlong, # n_generations
         c_longlong, # n_pops
+        c_longlong, # n_rounds
         c_double, # parsimony_coeff
         c_double, # p_constant
+        c_double, # p_hoist_mutation
+        c_double, # p_point_mutation
+        c_double, # p_subtree_crossover
+        c_double, # p_subtree_mutation
         c_double, # p_terminal
-        c_longlong, # pop_size
-        c_longlong, # rounds
-        c_longlong, # tuning_generations
+        c_longlong, # population_size
         c_longlong, # seed
+        c_longlong, # tuning_n_generations
         c_bool # verbose
     ]
+
     xgp.Fit.restype = c_char_p
 
     program_bytes = xgp.Fit(
@@ -107,18 +116,22 @@ def fit(X: np.ndarray,
         const_min,
         GoString(bytes(eval_metric_name, 'utf-8'), len(eval_metric_name)),
         GoString(bytes(funcs_string, 'utf-8'), len(funcs_string)),
-        generations,
         GoString(bytes(loss_metric_name, 'utf-8'), len(loss_metric_name)),
         max_height,
         min_height,
+        n_generations,
         n_pops,
+        n_rounds,
         parsimony_coeff,
         p_constant,
+        p_hoist_mutation,
+        p_point_mutation,
+        p_subtree_crossover,
+        p_subtree_mutation,
         p_terminal,
-        pop_size,
-        rounds,
-        tuning_generations,
+        population_size,
         seed,
+        tuning_n_generations,
         verbose
     )
 

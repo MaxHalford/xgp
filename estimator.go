@@ -17,17 +17,30 @@ import (
 	"github.com/MaxHalford/xgp/tree"
 )
 
+type crossover struct {
+	p      float64
+	method tree.Crossover
+}
+
+type mutator struct {
+	p      float64
+	method tree.Mutator
+}
+
 // An Estimator links all the different components together and can be used to
-// train Programs on a dataset.
+// train Programs on a dataset. You shouldn't instantiate this struct directly,
+// instead you should use the NewEstimator method.
 type Estimator struct {
 	ConstMin          float64
 	ConstMax          float64
 	EvalMetric        metrics.Metric // Defaults to LossMetric if nil
 	LossMetric        metrics.Metric
-	Functions         []tree.Operator
+	Functions         []tree.Operator // Should be kept in sync with fm
 	Generations       int
 	ParsimonyCoeff    float64
 	TreeInitializer   tree.Initializer
+	MaxHeight         int
+	MinHeight         int
 	PConstant         float64
 	GA                *gago.GA
 	TuningGA          *gago.GA
@@ -35,19 +48,21 @@ type Estimator struct {
 	CacheDuration     int
 
 	bestProgram *Program
-	bestLoss    float64
+	bestFitness float64
+	crossovers  []crossover
+	mutators    []mutator
 	mutex       sync.Mutex
 	cache       *tree.Cache
 	fm          map[int][]tree.Operator
 	train       *dataset.Dataset
 }
 
-// BestProgram set an Estimator's bestProgram and bestLoss in a safe way.
-func (est *Estimator) setBest(prog *Program, score float64) {
+// BestProgram set an Estimator's bestProgram and bestFitness in a safe way.
+func (est *Estimator) setBest(prog *Program, fitness float64) {
 	est.mutex.Lock()
-	if score < est.bestLoss {
+	if fitness < est.bestFitness {
 		est.bestProgram = prog.clone()
-		est.bestLoss = score
+		est.bestFitness = fitness
 	}
 	est.mutex.Unlock()
 }
@@ -72,13 +87,22 @@ func (est *Estimator) Fit(X [][]float64, Y []float64, XNames []string, verbose b
 	}
 	est.train = train
 
-	// Check the task is not multi-class classification
+	// Check that the task to perform is not multi-class classification
 	if est.LossMetric.Classification() && est.train.NClasses() > 2 {
 		return errors.New("Multi-class classification is not supported")
 	}
 
-	// Initialize the Estimator
-	est.initialize()
+	// Initialize the best fitness and program
+	est.bestFitness = math.Inf(1)
+	est.bestProgram = nil
+
+	// Initialize the GA
+	est.GA.Initialize()
+
+	// Initialize the cache
+	if est.CacheDuration > 0 {
+		est.cache = tree.NewCache()
+	}
 
 	// Measure the progress through time
 	var (
@@ -138,6 +162,7 @@ func (est *Estimator) Fit(X [][]float64, Y []float64, XNames []string, verbose b
 	if err != nil {
 		return err
 	}
+	fmt.Println(best.Tree)
 	if verbose {
 		fmt.Printf("Best program: %s\n", best)
 	}
@@ -158,29 +183,6 @@ func (est Estimator) Predict(X [][]float64, predictProba bool) ([]float64, error
 	return yPred, nil
 }
 
-// Initialize an Estimator.
-func (est *Estimator) initialize() error {
-	// Initialize the best loss to +∞
-	est.bestLoss = math.Inf(1)
-	// Build fm which maps arities to functions
-	est.fm = make(map[int][]tree.Operator)
-	for _, f := range est.Functions {
-		var arity = f.Arity()
-		if _, ok := est.fm[arity]; ok {
-			est.fm[arity] = append(est.fm[arity], f)
-		} else {
-			est.fm[arity] = []tree.Operator{f}
-		}
-	}
-	// Initialize the GA
-	est.GA.Initialize()
-	// Initialize the cache
-	if est.CacheDuration > 0 {
-		est.cache = tree.NewCache()
-	}
-	return nil
-}
-
 func (est Estimator) newConstant(rng *rand.Rand) tree.Constant {
 	return tree.Constant{Value: est.ConstMin + rng.Float64()*(est.ConstMax-est.ConstMin)}
 }
@@ -197,24 +199,37 @@ func (est Estimator) newFunctionOfArity(arity int, rng *rand.Rand) tree.Operator
 	return est.fm[arity][rng.Intn(len(est.fm[arity]))]
 }
 
-// NewProgram can be used by gago to produce a new Genome.
+func (est Estimator) mutateOperator(op tree.Operator, rng *rand.Rand) tree.Operator {
+	switch op.(type) {
+	case tree.Constant:
+		return tree.Constant{Value: op.(tree.Constant).Value * rng.NormFloat64()}
+	case tree.Variable:
+		return est.newVariable(rng)
+	default:
+		return est.newFunctionOfArity(op.Arity(), rng)
+	}
+}
+
+func (est Estimator) newTree(minHeight, maxHeight int, rng *rand.Rand) *tree.Tree {
+	var of = tree.OperatorFactory{
+		PConstant:   est.PConstant,
+		NewConstant: est.newConstant,
+		NewVariable: est.newVariable,
+		NewFunction: est.newFunction,
+	}
+	return est.TreeInitializer.Apply(minHeight, maxHeight, of, rng)
+}
+
+// newProgram can be used by gago to produce a new Genome.
 func (est *Estimator) newProgram(rng *rand.Rand) gago.Genome {
-	var (
-		opFactory = tree.OperatorFactory{
-			PConstant:   est.PConstant,
-			NewConstant: est.newConstant,
-			NewVariable: est.newVariable,
-			NewFunction: est.newFunction,
-		}
-		prog = Program{
-			Tree: est.TreeInitializer.Apply(opFactory, rng),
-			Task: Task{
-				Metric:   est.LossMetric,
-				NClasses: est.train.NClasses(),
-			},
-			Estimator: est,
-		}
-	)
+	var prog = Program{
+		Tree: est.newTree(est.MinHeight, est.MaxHeight, rng),
+		Task: Task{
+			Metric:   est.LossMetric,
+			NClasses: est.train.NClasses(),
+		},
+		Estimator: est,
+	}
 	if est.LossMetric.Classification() {
 		prog.DRS = &DynamicRangeSelection{}
 	}
@@ -245,6 +260,10 @@ func NewEstimator(
 	nPops int,
 	parsimonyCoeff float64,
 	pConstant float64,
+	pHoistMutation float64,
+	pPointMutation float64,
+	pSubTreeCrossover float64,
+	pSubTreeMutation float64,
 	pTerminal float64,
 	popSize int,
 	seed int64,
@@ -280,7 +299,28 @@ func NewEstimator(
 		return nil, err
 	}
 
-	// Determine the random number generator
+	// Instantiate an Estimator
+	var estimator = &Estimator{
+		ConstMin:       constMin,
+		ConstMax:       constMax,
+		EvalMetric:     eval,
+		Functions:      fs,
+		Generations:    generations,
+		LossMetric:     loss,
+		MaxHeight:      maxHeight,
+		MinHeight:      minHeight,
+		ParsimonyCoeff: parsimonyCoeff,
+		PConstant:      pConstant,
+		TreeInitializer: tree.RampedHaldAndHalfInitializer{
+			FullInitializer: tree.FullInitializer{},
+			GrowInitializer: tree.GrowInitializer{
+				PTerminal: pTerminal,
+			},
+		},
+		TuningGenerations: tuningGenerations,
+	}
+
+	// Determine the random number generator of the GA
 	var rng *rand.Rand
 	if seed == 0 {
 		rng = rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -288,36 +328,75 @@ func NewEstimator(
 		rng = rand.New(rand.NewSource(seed))
 	}
 
-	// Instantiate an Estimator
-	var estimator = &Estimator{
-		EvalMetric: eval,
-		LossMetric: loss,
-		ConstMin:   constMin,
-		ConstMax:   constMax,
-		PConstant:  pConstant,
-		TreeInitializer: tree.RampedHaldAndHalfInitializer{
-			MinHeight: minHeight,
-			MaxHeight: maxHeight,
-			PTerminal: pTerminal,
-		},
-		Functions:         fs,
-		Generations:       generations,
-		TuningGenerations: tuningGenerations,
-		ParsimonyCoeff:    parsimonyCoeff,
-	}
-
 	// Set the initial GA
 	estimator.GA = &gago.GA{
 		NewGenome: estimator.newProgram,
 		NPops:     nPops,
 		PopSize:   popSize,
-		Model: gago.ModGenerational{
-			Selector: gago.SelTournament{
+		Model: gaModel{
+			selector: gago.SelTournament{
 				NContestants: 3,
 			},
-			MutRate: 0.5,
+			pMutate:    pHoistMutation + pPointMutation + pSubTreeMutation,
+			pCrossover: pSubTreeCrossover,
 		},
 		RNG: rng,
+	}
+
+	// Build fm which maps arities to functions
+	estimator.fm = make(map[int][]tree.Operator)
+	for _, f := range estimator.Functions {
+		var arity = f.Arity()
+		if _, ok := estimator.fm[arity]; ok {
+			estimator.fm[arity] = append(estimator.fm[arity], f)
+		} else {
+			estimator.fm[arity] = []tree.Operator{f}
+		}
+	}
+
+	// Choose a picker
+	var picker = tree.WeightedPicker{
+		PConstant: 0.1, // MAGIC
+		PVariable: 0.1, // MAGIC
+		PFunction: 0.8, // MAGIC
+	}
+
+	// Set crossover methods
+	estimator.crossovers = []crossover{
+		crossover{
+			p: pSubTreeCrossover,
+			method: tree.SubTreeCrossover{
+				Picker: picker,
+			},
+		},
+	}
+
+	// Set mutation methods
+	estimator.mutators = []mutator{
+		mutator{
+			p: pPointMutation,
+			method: tree.PointMutation{
+				Picker: picker,
+				MutateOperator: func(op tree.Operator, rng *rand.Rand) tree.Operator {
+					return estimator.mutateOperator(op, rng)
+				},
+			},
+		},
+		mutator{
+			p: pHoistMutation,
+			method: tree.HoistMutation{
+				Picker: picker,
+			},
+		},
+		mutator{
+			p: pSubTreeMutation,
+			method: tree.SubTreeMutation{
+				Picker: picker,
+				NewTree: func(minHeight, maxHeight int, rng *rand.Rand) *tree.Tree {
+					return estimator.newTree(minHeight, maxHeight, rng)
+				},
+			},
+		},
 	}
 
 	return estimator, nil

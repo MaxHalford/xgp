@@ -61,8 +61,8 @@ func (op Cos) String() string {
 type Sin struct{}
 
 // ApplyRow Sin.
-func (op Sin) ApplyRow(X []float64) float64 {
-	return math.Sin(X[0])
+func (op Sin) ApplyRow(x []float64) float64 {
+	return math.Sin(x[0])
 }
 
 // ApplyCols Sin.
@@ -88,8 +88,8 @@ func (op Sin) String() string {
 type Log struct{}
 
 // ApplyRow Log.
-func (op Log) ApplyRow(X []float64) float64 {
-	return math.Log(X[0])
+func (op Log) ApplyRow(x []float64) float64 {
+	return math.Log(x[0])
 }
 
 // ApplyCols Log.
@@ -115,8 +115,8 @@ func (op Log) String() string {
 type Exp struct{}
 
 // ApplyRow Exp.
-func (op Exp) ApplyRow(X []float64) float64 {
-	return math.Exp(X[0])
+func (op Exp) ApplyRow(x []float64) float64 {
+	return math.Exp(x[0])
 }
 
 // ApplyCols Exp.
@@ -144,11 +144,11 @@ func (op Exp) String() string {
 type Max struct{}
 
 // ApplyRow Max.
-func (op Max) ApplyRow(X []float64) float64 {
-	if X[0] > X[1] {
-		return X[0]
+func (op Max) ApplyRow(x []float64) float64 {
+	if x[0] > x[1] {
+		return x[0]
 	}
-	return X[1]
+	return x[1]
 }
 
 // ApplyCols Max.
@@ -178,11 +178,11 @@ func (op Max) String() string {
 type Min struct{}
 
 // ApplyRow Min.
-func (op Min) ApplyRow(X []float64) float64 {
-	if X[0] < X[1] {
-		return X[0]
+func (op Min) ApplyRow(x []float64) float64 {
+	if x[0] < x[1] {
+		return x[0]
 	}
-	return X[1]
+	return x[1]
 }
 
 // ApplyCols Min.
@@ -212,8 +212,8 @@ func (op Min) String() string {
 type Sum struct{}
 
 // ApplyRow Sum.
-func (op Sum) ApplyRow(X []float64) float64 {
-	return X[0] + X[1]
+func (op Sum) ApplyRow(x []float64) float64 {
+	return x[0] + x[1]
 }
 
 // ApplyCols Sum.
@@ -236,8 +236,8 @@ func (op Sum) String() string {
 type Difference struct{}
 
 // ApplyRow Difference.
-func (op Difference) ApplyRow(X []float64) float64 {
-	return X[0] - X[1]
+func (op Difference) ApplyRow(x []float64) float64 {
+	return x[0] - x[1]
 }
 
 // ApplyCols Difference.
@@ -261,14 +261,22 @@ func (op Difference) String() string {
 type Division struct{}
 
 // ApplyRow Division.
-func (op Division) ApplyRow(X []float64) float64 {
-	return X[0] / (1 + X[1])
+func (op Division) ApplyRow(x []float64) float64 {
+	if math.Abs(x[1]) < math.SmallestNonzeroFloat64 {
+		return 1
+	}
+	return x[0] / x[1]
 }
 
 // ApplyCols Division.
 func (op Division) ApplyCols(X [][]float64) []float64 {
-	floats.AddConst(1, X[1])
-	floats.Div(X[0], X[1])
+	for i, x := range X[1] {
+		if math.Abs(x) < math.SmallestNonzeroFloat64 {
+			X[0][i] = 1
+		} else {
+			X[0][i] /= x
+		}
+	}
 	return X[0]
 }
 

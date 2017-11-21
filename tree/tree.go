@@ -76,7 +76,7 @@ func (tree Tree) NConstants() int {
 }
 
 // Clone a tree by recursively copying it's branches's attributes.
-func (tree *Tree) Clone() *Tree {
+func (tree Tree) Clone() *Tree {
 	var branches = make([]*Tree, len(tree.Branches))
 	for i, branch := range tree.Branches {
 		branches[i] = branch.Clone()
@@ -169,11 +169,19 @@ func (tree *Tree) simplify() bool {
 	// If the branches are all Variables then a simplification can be made if
 	// the mother Operator is of type Difference
 	if varBranches {
-		if _, ok := tree.Operator.(Difference); ok {
-			if tree.Branches[0].Operator.(Variable).Index == tree.Branches[1].Operator.(Variable).Index {
+		// Check if the variables have the same index
+		if tree.Branches[0].Operator.(Variable).Index == tree.Branches[1].Operator.(Variable).Index {
+			switch tree.Operator.(type) {
+			case Difference:
 				tree.Operator = Constant{Value: 0}
 				tree.Branches = nil
 				return true
+			case Division:
+				tree.Operator = Constant{Value: 1}
+				tree.Branches = nil
+				return true
+			default:
+				return false
 			}
 		}
 	}

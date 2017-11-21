@@ -1,6 +1,8 @@
 package tree
 
-import "math/rand"
+import (
+	"math/rand"
+)
 
 // An OperatorFactory produces new Operators.
 type OperatorFactory struct {
@@ -23,40 +25,36 @@ func (of OperatorFactory) New(terminal bool, rng *rand.Rand) Operator {
 
 // A Initializer generates a random Tree.
 type Initializer interface {
-	Apply(of OperatorFactory, rng *rand.Rand) *Tree
+	Apply(minHeight, maxHeight int, of OperatorFactory, rng *rand.Rand) *Tree
 }
 
 // FullInitializer generates Trees with node depths equal to Height.
-type FullInitializer struct {
-	Height int
-}
+type FullInitializer struct{}
 
 // Apply FullInitializer.
-func (init FullInitializer) Apply(of OperatorFactory, rng *rand.Rand) *Tree {
+func (init FullInitializer) Apply(minHeight, maxHeight int, of OperatorFactory, rng *rand.Rand) *Tree {
 	var (
-		op   = of.New(init.Height == 0, rng)
+		op   = of.New(maxHeight == 0, rng)
 		tree = &Tree{
 			Operator: op,
 			Branches: make([]*Tree, op.Arity()),
 		}
 	)
 	for i := range tree.Branches {
-		tree.Branches[i] = FullInitializer{Height: init.Height - 1}.Apply(of, rng)
+		tree.Branches[i] = init.Apply(0, maxHeight-1, of, rng)
 	}
 	return tree
 }
 
 // GrowInitializer generates Trees with node depths in [MinHeight, MaxHeight].
 type GrowInitializer struct {
-	MinHeight int
-	MaxHeight int
 	PTerminal float64
 }
 
 // Apply GrowInitializer.
-func (init GrowInitializer) Apply(of OperatorFactory, rng *rand.Rand) *Tree {
+func (init GrowInitializer) Apply(minHeight, maxHeight int, of OperatorFactory, rng *rand.Rand) *Tree {
 	var (
-		leaf = init.MinHeight <= 0 && (init.MaxHeight == 0 || rng.Float64() < init.PTerminal)
+		leaf = maxHeight == 0 || (minHeight <= 0 && rng.Float64() < init.PTerminal)
 		op   = of.New(leaf, rng)
 		tree = &Tree{
 			Operator: op,
@@ -64,11 +62,7 @@ func (init GrowInitializer) Apply(of OperatorFactory, rng *rand.Rand) *Tree {
 		}
 	)
 	for i := range tree.Branches {
-		tree.Branches[i] = GrowInitializer{
-			MinHeight: init.MinHeight - 1,
-			MaxHeight: init.MaxHeight - 1,
-			PTerminal: init.PTerminal,
-		}.Apply(of, rng)
+		tree.Branches[i] = init.Apply(minHeight-1, maxHeight-1, of, rng)
 	}
 	return tree
 }
@@ -76,21 +70,15 @@ func (init GrowInitializer) Apply(of OperatorFactory, rng *rand.Rand) *Tree {
 // RampedHaldAndHalfInitializer randomly applies GrowTreeInitializer or
 // FullTreeInitializer.
 type RampedHaldAndHalfInitializer struct {
-	MinHeight int
-	MaxHeight int
-	PTerminal float64 // Probability of producing a leaf for GrowtreeInitializer
+	FullInitializer FullInitializer
+	GrowInitializer GrowInitializer
 }
 
 // Apply RampedHaldAndHalfInitializer.
-func (init RampedHaldAndHalfInitializer) Apply(of OperatorFactory, rng *rand.Rand) *Tree {
+func (init RampedHaldAndHalfInitializer) Apply(minHeight, maxHeight int, of OperatorFactory, rng *rand.Rand) *Tree {
 	if rng.Float64() < 0.5 {
-		return FullInitializer{
-			Height: randInt(init.MinHeight, init.MaxHeight, rng),
-		}.Apply(of, rng)
+		var height = randInt(minHeight, maxHeight, rng)
+		return init.FullInitializer.Apply(0, height, of, rng)
 	}
-	return GrowInitializer{
-		MinHeight: init.MinHeight,
-		MaxHeight: init.MaxHeight,
-		PTerminal: init.PTerminal,
-	}.Apply(of, rng)
+	return init.GrowInitializer.Apply(minHeight, maxHeight, of, rng)
 }

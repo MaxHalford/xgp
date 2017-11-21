@@ -75,19 +75,12 @@ func (progTuner *ProgramTuner) Mutate(rng *rand.Rand) {
 }
 
 // Crossover method required to implement gago.Genome.
-func (progTuner *ProgramTuner) Crossover(progTuner2 gago.Genome, rng *rand.Rand) (gago.Genome, gago.Genome) {
-	var (
-		o1     = progTuner.clone()
-		o2     = progTuner.clone()
-		c1, c2 = gago.CrossUniformFloat64(
-			progTuner.ConstValues,
-			progTuner2.(*ProgramTuner).ConstValues,
-			rng,
-		)
+func (progTuner *ProgramTuner) Crossover(progTuner2 gago.Genome, rng *rand.Rand) {
+	gago.CrossUniformFloat64(
+		progTuner.ConstValues,
+		progTuner2.(*ProgramTuner).ConstValues,
+		rng,
 	)
-	o1.ConstValues = c1
-	o2.ConstValues = c2
-	return gago.Genome(&o1), gago.Genome(&o2)
 }
 
 // Clone method required to implement gago.Genome.

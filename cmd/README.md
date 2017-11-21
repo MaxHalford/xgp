@@ -4,7 +4,7 @@
 
 ```sh
 cd xgp/cmd
-go run main.go fit ../examples/gplearn/train.csv -l mae
+go run main.go fit ../examples/gplearn/train.csv --loss_metric mae
 go run main.go predict ../examples/gplearn/test.csv -e mae
 ```
 

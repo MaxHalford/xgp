@@ -2,10 +2,10 @@ import time
 
 from gplearn.genetic import SymbolicRegressor
 import numpy as np
-from sklearn import datasets
+import pandas as pd
 from sklearn import ensemble
 from sklearn import linear_model
-from sklearn import model_selection
+from sklearn import metrics
 from sklearn import pipeline
 from sklearn import preprocessing
 from sklearn import tree
@@ -13,9 +13,13 @@ from sklearn import tree
 from xgp import regressor
 
 
-X, y = datasets.load_boston(return_X_y=True)
+train = pd.read_csv('../examples/boston/train.csv')
+test = pd.read_csv('../examples/boston/test.csv')
 
-cv = model_selection.KFold(n_splits=5, random_state=42)
+X_train = train.drop('y', axis='columns').values
+y_train = train['y'].values
+X_test = test.drop('y', axis='columns').values
+y_test = test['y'].values
 
 models = {
     'XGP': regressor.XGPRegressor(
@@ -46,5 +50,7 @@ models = {
 
 for name, model in models.items():
     t0 = time.time()
-    scores = model_selection.cross_val_score(model, X=X, y=y, scoring='neg_mean_absolute_error', cv=cv)
-    print(f'{name}: {-np.mean(scores)} (± {np.std(scores)}) in {time.time() - t0} seconds')
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+    test_score = metrics.mean_absolute_error(y_test, y_pred)
+    print(f'{name}: {test_score} in {time.time() - t0} seconds')

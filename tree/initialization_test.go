@@ -15,19 +15,23 @@ func TestFullInitializer(t *testing.T) {
 		}
 		rng       = newRand()
 		testCases = []struct {
-			height     int
+			maxHeight  int
+			minHeight  int
 			nOperators int
 		}{
 			{
-				height:     0,
+				minHeight:  0,
+				maxHeight:  0,
 				nOperators: 1,
 			},
 			{
-				height:     1,
+				minHeight:  1,
+				maxHeight:  1,
 				nOperators: 3,
 			},
 			{
-				height:     2,
+				minHeight:  2,
+				maxHeight:  2,
 				nOperators: 7,
 			},
 		}
@@ -35,7 +39,7 @@ func TestFullInitializer(t *testing.T) {
 
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
-			var tree = FullInitializer{Height: tc.height}.Apply(of, rng)
+			var tree = FullInitializer{}.Apply(tc.minHeight, tc.maxHeight, of, rng)
 			if tree.NOperators() != tc.nOperators {
 				t.Errorf("Expected %d trees, got %d", tc.nOperators, tree.NOperators())
 			}
@@ -101,11 +105,9 @@ func TestGrowInitializer(t *testing.T) {
 		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
 			var (
 				initializer = GrowInitializer{
-					MinHeight: tc.minHeight,
-					MaxHeight: tc.maxHeight,
 					PTerminal: tc.pLeaf,
 				}
-				tree = initializer.Apply(of, rng)
+				tree = initializer.Apply(tc.minHeight, tc.maxHeight, of, rng)
 			)
 			if tree.NOperators() != tc.nOperators {
 				t.Errorf("Expected %d operator(s), got %d", tc.nOperators, tree.NOperators())
