@@ -15,6 +15,7 @@
 | `n_pops`   | `nPops`   | `n_populations`   | Number of populations used by the genetic algorithm.         | 1 |
 | `parsimony`   | `parsimonyCoeff`   | `parsimony_coeff`   | Parsimony coefficient used for evaluating programs.         | 0 |
 | `p_constant`   | `pConstant`   | `p_constant`   | Probability of generating a constant during ramped half-and-half initialization. | 0.5 |
+| `p_full`   | `pFull`   | `p_full`   | Probability of using full initialization during ramped half-and-half initialization. | 0.5 |
 | `p_hoist_mut`   | `pHoistMutation`   | `p_hoist_mutation`   | Probability of applying hoist mutation.         | 0.2 |
 | `p_point_mut`   | `pPointMutation`   | `p_point_mutation`   | Probability of applying point mutation.         | 0.2 |
 | `p_point_cross`   | `pSubTreeCrossover`   | `p_subtree_crossover`   | Probability of applying sub-tree crossover.         | 0.3 |

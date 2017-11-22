@@ -1,10 +1,9 @@
 package koza
 
 import (
-	"github.com/spf13/cobra"
-
 	"github.com/MaxHalford/koza"
 	"github.com/MaxHalford/koza/dataset"
+	"github.com/spf13/cobra"
 )
 
 var (
@@ -20,12 +19,13 @@ var (
 	fitNPops              int
 	fitParsimonyCoeff     float64
 	fitPopSize            int
-	fitPTerminal          float64
+	fitPConstant          float64
+	fitPFull              float64
 	fitPHoistMutation     float64
 	fitPPointMutation     float64
 	fitPSubTreeCrossover  float64
 	fitPSubTreeMutation   float64
-	fitPConstant          float64
+	fitPTerminal          float64
 	fitRounds             int
 	fitSeed               int64
 	fitTargetCol          string
@@ -48,6 +48,7 @@ func init() {
 	fitCmd.Flags().IntVarP(&fitNPops, "n_pops", "", 1, "number of populations to use in the GA")
 	fitCmd.Flags().Float64VarP(&fitParsimonyCoeff, "parsimony", "", 0, "parsimony coefficient by which a program's height is multiplied to decrease it's fitness")
 	fitCmd.Flags().Float64VarP(&fitPConstant, "p_constant", "", 0.5, "probability of picking a constant and not a constant when generating terminal nodes")
+	fitCmd.Flags().Float64VarP(&fitPFull, "p_full", "", 0.5, "probability of use full initialization during ramped half-and-half initialization")
 	fitCmd.Flags().Float64VarP(&fitPHoistMutation, "p_hoist_mut", "", 0.2, "probability of applying hoist mutation")
 	fitCmd.Flags().Float64VarP(&fitPPointMutation, "p_point_mut", "", 0.2, "probability of applying point mutation")
 	fitCmd.Flags().Float64VarP(&fitPSubTreeCrossover, "p_sub_cross", "", 0.3, "probability of applying sub-tree crossover")
@@ -80,6 +81,7 @@ var fitCmd = &cobra.Command{
 			fitNPops,
 			fitParsimonyCoeff,
 			fitPConstant,
+			fitPFull,
 			fitPHoistMutation,
 			fitPPointMutation,
 			fitPSubTreeCrossover,

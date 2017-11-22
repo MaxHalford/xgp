@@ -3,6 +3,7 @@ package koza
 import (
 	"fmt"
 
+	"github.com/MaxHalford/koza"
 	"github.com/MaxHalford/koza/dataset"
 	"github.com/MaxHalford/koza/metrics"
 	"github.com/spf13/cobra"

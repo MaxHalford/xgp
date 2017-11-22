@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/MaxHalford/koza"
 	"github.com/MaxHalford/koza/tree"
 	"github.com/spf13/cobra"
 )

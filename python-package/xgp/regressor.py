@@ -11,7 +11,7 @@ class XGPRegressor(BaseEstimator, RegressorMixin):
 
     def __init__(self, const_max=5, const_min=-5, funcs_string='sum,sub,mul,div', loss_metric='mae',
                  max_height=6, min_height=3, n_generations=30, n_populations=1, parsimony_coeff=0,
-                 p_constant=0.5, p_hoist_mutation=0.2, p_point_mutation=0.2,
+                 p_constant=0.5, p_full=0.5, p_hoist_mutation=0.2, p_point_mutation=0.2,
                  p_subtree_crossover=0.3, p_subtree_mutation=0.2, p_terminal=0.5,
                  population_size=30, random_state=None, n_rounds=1, tuning_n_generations=0):
 
@@ -25,6 +25,7 @@ class XGPRegressor(BaseEstimator, RegressorMixin):
         self.n_populations = n_populations
         self.parsimony_coeff = parsimony_coeff
         self.p_constant = p_constant
+        self.p_full = p_full
         self.p_hoist_mutation = p_hoist_mutation
         self.p_point_mutation = p_point_mutation
         self.p_subtree_crossover = p_subtree_crossover
@@ -52,6 +53,7 @@ class XGPRegressor(BaseEstimator, RegressorMixin):
             n_populations=self.n_populations,
             parsimony_coeff=self.parsimony_coeff,
             p_constant=self.p_constant,
+            p_full=self.p_full,
             p_hoist_mutation=self.p_hoist_mutation,
             p_point_mutation=self.p_point_mutation,
             p_subtree_crossover=self.p_subtree_crossover,

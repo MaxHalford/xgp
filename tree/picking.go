@@ -15,22 +15,7 @@ type Picker interface {
 // WeightPicker picks a sub-Tree at random by weighting each sub-tree
 // according to it's Operator's type.
 type WeightedPicker struct {
-	PConstant float64
-	PVariable float64
-	PFunction float64
-}
-
-// weight is just a utility method to get the weight that matches an Operator's
-// type.
-func (wp WeightedPicker) weight(op Operator) float64 {
-	switch op.(type) {
-	case Constant:
-		return wp.PConstant
-	case Variable:
-		return wp.PVariable
-	default:
-		return wp.PFunction
-	}
+	Weighting Weighting
 }
 
 // Apply WeightedPicker.
@@ -46,7 +31,7 @@ func (wp WeightedPicker) Apply(tree *Tree, minDepth, maxDepth int, rng *rand.Ran
 			if depth < minDepth || (depth > maxDepth && maxDepth >= 0) {
 				w = 0
 			} else {
-				w = wp.weight(tree.Operator)
+				w = wp.Weighting.apply(tree.Operator)
 			}
 			weights = append(weights, w)
 			trees = append(trees, tree)

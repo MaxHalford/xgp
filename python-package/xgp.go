@@ -6,6 +6,7 @@ package main
 // PyObject* Py_String(char *pystring);
 import "C"
 import (
+	"github.com/MaxHalford/koza"
 	"github.com/MaxHalford/koza/tree"
 )
 
@@ -26,6 +27,7 @@ func Fit(
 	nRounds int,
 	parsimonyCoeff float64,
 	pConstant float64,
+	pFull float64,
 	pHoistMutation float64,
 	pPointMutation float64,
 	pSubTreeCrossover float64,
@@ -49,6 +51,7 @@ func Fit(
 		nPops,
 		parsimonyCoeff,
 		pConstant,
+		pFull,
 		pHoistMutation,
 		pPointMutation,
 		pSubTreeCrossover,

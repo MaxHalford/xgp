@@ -19,6 +19,7 @@ func BenchmarkFit(b *testing.B) {
 		1,                 // nPops
 		0,                 // parsimonyCoeff
 		0.5,               // pConstant
+		0.5,               // pFull
 		0.01,              // pHoistMutation
 		0.01,              // pPointMutation
 		0.9,               // pSubTreeCrossover

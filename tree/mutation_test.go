@@ -16,18 +16,22 @@ func TestModification(t *testing.T) {
 			{
 				mutator: HoistMutation{
 					Picker: WeightedPicker{
-						PConstant: 0.05,
-						PVariable: 0.05,
-						PFunction: 0.9,
+						Weighting: Weighting{
+							PConstant: 0.05,
+							PVariable: 0.05,
+							PFunction: 0.9,
+						},
 					},
 				},
 			},
 			{
 				mutator: SubTreeMutation{
 					Picker: WeightedPicker{
-						PConstant: 0.05,
-						PVariable: 0.05,
-						PFunction: 0.9,
+						Weighting: Weighting{
+							PConstant: 0.05,
+							PVariable: 0.05,
+							PFunction: 0.9,
+						},
 					},
 					NewTree: func(minHeight, maxHeight int, rng *rand.Rand) *Tree {
 						return &Tree{Operator: Constant{42}}
@@ -37,9 +41,11 @@ func TestModification(t *testing.T) {
 			{
 				mutator: PointMutation{
 					Picker: WeightedPicker{
-						PConstant: 1,
-						PVariable: 1,
-						PFunction: 0,
+						Weighting: Weighting{
+							PConstant: 1,
+							PVariable: 1,
+							PFunction: 0,
+						},
 					},
 					MutateOperator: func(op Operator, rng *rand.Rand) Operator {
 						return Constant{42}
@@ -71,32 +77,17 @@ func TestHoistMutation(t *testing.T) {
 			out     *Tree
 		}{
 			{
-				in: &Tree{
-					Operator: Constant{1},
-					Branches: []*Tree{
-						&Tree{
-							Operator: Constant{2},
-							Branches: []*Tree{
-								&Tree{
-									Operator: Constant{3},
-								},
-							},
+				in: mustParseCode("cos(sin(42))"),
+				mutator: HoistMutation{
+					Picker: WeightedPicker{
+						Weighting: Weighting{
+							PConstant: 0.05,
+							PVariable: 0.05,
+							PFunction: 0.9,
 						},
 					},
 				},
-				mutator: HoistMutation{
-					Picker: WeightedPicker{
-						PConstant: 0.05,
-						PVariable: 0.05,
-						PFunction: 0.9,
-					},
-				},
-				out: &Tree{
-					Operator: Constant{1},
-					Branches: []*Tree{
-						&Tree{Operator: Constant{3}},
-					},
-				},
+				out: mustParseCode("cos(42)"),
 			},
 		}
 	)

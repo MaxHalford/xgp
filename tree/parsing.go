@@ -86,3 +86,10 @@ func ParseCode(code string) (*Tree, error) {
 
 	return &tree, nil
 }
+
+// mustParseCode is identical to ParseCode but doesn't return an error. This
+// method should only be used for testing purposes.
+func mustParseCode(code string) *Tree {
+	var tree, _ = ParseCode(code)
+	return tree
+}

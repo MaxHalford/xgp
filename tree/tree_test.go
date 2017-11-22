@@ -12,8 +12,9 @@ import (
 func randTree(rng *rand.Rand) *Tree {
 	var (
 		init = RampedHaldAndHalfInitializer{
-			FullInitializer{},
-			GrowInitializer{0.5},
+			PFull:           0.5,
+			FullInitializer: FullInitializer{},
+			GrowInitializer: GrowInitializer{0.5},
 		}
 		funcs = []Operator{Cos{}, Sin{}, Sum{}, Difference{}, Product{}, Division{}}
 		of    = OperatorFactory{
@@ -78,92 +79,24 @@ func TestTreeSimplify(t *testing.T) {
 		simplifiedTree *Tree
 	}{
 		{
-			tree: &Tree{
-				Operator: Sum{},
-				Branches: []*Tree{
-					&Tree{Operator: Constant{1}},
-					&Tree{Operator: Constant{2}},
-				},
-			},
-			simplifiedTree: &Tree{
-				Operator: Constant{3},
-			},
+			tree:           mustParseCode("sum(1, 2)"),
+			simplifiedTree: mustParseCode("3"),
 		},
 		{
-			tree: &Tree{
-				Operator: Sum{},
-				Branches: []*Tree{
-					&Tree{Operator: Variable{0}},
-					&Tree{Operator: Constant{42}},
-				},
-			},
-			simplifiedTree: &Tree{
-				Operator: Sum{},
-				Branches: []*Tree{
-					&Tree{Operator: Variable{0}},
-					&Tree{Operator: Constant{42}},
-				},
-			},
+			tree:           mustParseCode("sum(X[0], 2)"),
+			simplifiedTree: mustParseCode("sum(X[0], 2)"),
 		},
 		{
-			tree: &Tree{
-				Operator: Difference{},
-				Branches: []*Tree{
-					&Tree{Operator: Variable{0}},
-					&Tree{Operator: Variable{0}},
-				},
-			},
-			simplifiedTree: &Tree{
-				Operator: Constant{0},
-			},
+			tree:           mustParseCode("sub(X[0], X[0])"),
+			simplifiedTree: mustParseCode("0"),
 		},
 		{
-			tree: &Tree{
-				Operator: Sum{},
-				Branches: []*Tree{
-					&Tree{
-						Operator: Sum{},
-						Branches: []*Tree{
-							&Tree{Operator: Constant{1}},
-							&Tree{Operator: Constant{2}},
-						},
-					},
-					&Tree{
-						Operator: Sum{},
-						Branches: []*Tree{
-							&Tree{Operator: Constant{3}},
-							&Tree{Operator: Constant{4}},
-						},
-					},
-				},
-			},
-			simplifiedTree: &Tree{
-				Operator: Constant{10},
-			},
+			tree:           mustParseCode("div(X[0], X[0])"),
+			simplifiedTree: mustParseCode("1"),
 		},
 		{
-			tree: &Tree{
-				Operator: Division{},
-				Branches: []*Tree{
-					&Tree{Operator: Variable{42}},
-					&Tree{Operator: Variable{42}},
-				},
-			},
-			simplifiedTree: &Tree{
-				Operator: Constant{1},
-			},
-		},
-		{
-			tree: &Tree{
-				Operator: Difference{},
-				Branches: []*Tree{
-					&Tree{Operator: Variable{42}},
-					&Tree{Operator: Variable{42}},
-				},
-			},
-			simplifiedTree: &Tree{
-				Operator: Constant{0},
-			},
+			tree:           mustParseCode("sum(sum(1, 2), sum(3, 4))"),
+			simplifiedTree: mustParseCode("10"),
 		},
 	}
 	for i, tc := range testCases {

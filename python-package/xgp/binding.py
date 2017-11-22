@@ -67,6 +67,7 @@ def fit(X: np.ndarray,
         n_populations: int,
         parsimony_coeff: float,
         p_constant: float,
+        p_full: float,
         p_hoist_mutation: float,
         p_point_mutation: float,
         p_subtree_crossover: float,
@@ -95,6 +96,7 @@ def fit(X: np.ndarray,
         c_longlong, # n_rounds
         c_double, # parsimony_coeff
         c_double, # p_constant
+        c_double, # p_full
         c_double, # p_hoist_mutation
         c_double, # p_point_mutation
         c_double, # p_subtree_crossover
@@ -124,6 +126,7 @@ def fit(X: np.ndarray,
         n_rounds,
         parsimony_coeff,
         p_constant,
+        p_full,
         p_hoist_mutation,
         p_point_mutation,
         p_subtree_crossover,

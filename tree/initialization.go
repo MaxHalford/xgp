@@ -70,13 +70,14 @@ func (init GrowInitializer) Apply(minHeight, maxHeight int, of OperatorFactory, 
 // RampedHaldAndHalfInitializer randomly applies GrowTreeInitializer or
 // FullTreeInitializer.
 type RampedHaldAndHalfInitializer struct {
+	PFull           float64
 	FullInitializer FullInitializer
 	GrowInitializer GrowInitializer
 }
 
 // Apply RampedHaldAndHalfInitializer.
 func (init RampedHaldAndHalfInitializer) Apply(minHeight, maxHeight int, of OperatorFactory, rng *rand.Rand) *Tree {
-	if rng.Float64() < 0.5 {
+	if rng.Float64() < init.PFull {
 		var height = randInt(minHeight, maxHeight, rng)
 		return init.FullInitializer.Apply(0, height, of, rng)
 	}

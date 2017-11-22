@@ -260,6 +260,7 @@ func NewEstimator(
 	nPops int,
 	parsimonyCoeff float64,
 	pConstant float64,
+	pFull float64,
 	pHoistMutation float64,
 	pPointMutation float64,
 	pSubTreeCrossover float64,
@@ -312,6 +313,7 @@ func NewEstimator(
 		ParsimonyCoeff: parsimonyCoeff,
 		PConstant:      pConstant,
 		TreeInitializer: tree.RampedHaldAndHalfInitializer{
+			PFull:           pFull,
 			FullInitializer: tree.FullInitializer{},
 			GrowInitializer: tree.GrowInitializer{
 				PTerminal: pTerminal,
@@ -356,9 +358,11 @@ func NewEstimator(
 
 	// Choose a picker
 	var picker = tree.WeightedPicker{
-		PConstant: 0.1, // MAGIC
-		PVariable: 0.1, // MAGIC
-		PFunction: 0.8, // MAGIC
+		Weighting: tree.Weighting{
+			PConstant: 0.1, // MAGIC
+			PVariable: 0.1, // MAGIC
+			PFunction: 0.8, // MAGIC
+		},
 	}
 
 	// Set crossover methods
