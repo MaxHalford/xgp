@@ -9,20 +9,20 @@ from . import binding
 
 class XGPRegressor(BaseEstimator, RegressorMixin):
 
-    def __init__(self, const_max=5, const_min=-5, funcs_string='sum,sub,mul,div', n_generations=30,
-                 loss_metric='mae', max_height=5, min_height=3, n_pops=1, parsimony_coeff=0,
-                 p_constant=0.5, p_hoist_mutation=0.1, p_point_mutation=0.1,
-                 p_subtree_crossover=0.1, p_subtree_mutation=0.1, p_terminal=0.5,
+    def __init__(self, const_max=5, const_min=-5, funcs_string='sum,sub,mul,div', loss_metric='mae',
+                 max_height=6, min_height=3, n_generations=30, n_populations=1, parsimony_coeff=0,
+                 p_constant=0.5, p_hoist_mutation=0.2, p_point_mutation=0.2,
+                 p_subtree_crossover=0.3, p_subtree_mutation=0.2, p_terminal=0.5,
                  population_size=30, random_state=None, n_rounds=1, tuning_n_generations=0):
 
         self.const_max = const_max
         self.const_min = const_min
         self.funcs_string = funcs_string
-        self.n_generations = n_generations
         self.loss_metric = loss_metric
         self.max_height = max_height
         self.min_height = min_height
-        self.n_pops = n_pops
+        self.n_generations = n_generations
+        self.n_populations = n_populations
         self.parsimony_coeff = parsimony_coeff
         self.p_constant = p_constant
         self.p_hoist_mutation = p_hoist_mutation
@@ -45,11 +45,11 @@ class XGPRegressor(BaseEstimator, RegressorMixin):
             const_max=self.const_max,
             eval_metric_name=fit_params.get('eval_metric', self.loss_metric),
             funcs_string=self.funcs_string,
-            n_generations=self.n_generations,
             loss_metric_name=self.loss_metric,
             max_height=self.max_height,
             min_height=self.min_height,
-            n_pops=self.n_pops,
+            n_generations=self.n_generations,
+            n_populations=self.n_populations,
             parsimony_coeff=self.parsimony_coeff,
             p_constant=self.p_constant,
             p_hoist_mutation=self.p_hoist_mutation,

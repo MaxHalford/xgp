@@ -19,7 +19,7 @@ func ParseStringFuncs(str string) ([]Operator, error) {
 		funcs = make([]Operator, len(strs))
 	)
 	for i, s := range strs {
-		var f, err = GetFunction(s)
+		var f, err = parseFuncName(s)
 		if err != nil {
 			return nil, err
 		}

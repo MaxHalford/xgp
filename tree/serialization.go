@@ -58,7 +58,7 @@ func parseSerialtree(serial serialtree) (*Tree, error) {
 		}
 		tree.Operator = Variable{idx}
 	default:
-		var function, err = GetFunction(serial.OpValue)
+		var function, err = parseFuncName(serial.OpValue)
 		if err != nil {
 			return nil, err
 		}

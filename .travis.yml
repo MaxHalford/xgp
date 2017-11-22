@@ -1,6 +1,7 @@
 matrix:
   include:
     language: python
+    cache: pip
     install:
       - pip install mkdocs mkdocs-material
     script:

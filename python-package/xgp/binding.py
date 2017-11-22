@@ -64,7 +64,7 @@ def fit(X: np.ndarray,
         loss_metric_name: str,
         max_height: int,
         min_height: int,
-        n_pops: int,
+        n_populations: int,
         parsimony_coeff: float,
         p_constant: float,
         p_hoist_mutation: float,
@@ -91,7 +91,7 @@ def fit(X: np.ndarray,
         c_longlong, # max_height
         c_longlong, # min_height
         c_longlong, # n_generations
-        c_longlong, # n_pops
+        c_longlong, # n_populations
         c_longlong, # n_rounds
         c_double, # parsimony_coeff
         c_double, # p_constant
@@ -120,7 +120,7 @@ def fit(X: np.ndarray,
         max_height,
         min_height,
         n_generations,
-        n_pops,
+        n_populations,
         n_rounds,
         parsimony_coeff,
         p_constant,

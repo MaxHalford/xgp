@@ -6,13 +6,7 @@ import (
 )
 
 func TestTreeJSONEncodeDecode(t *testing.T) {
-	var initialtree = &Tree{
-		Operator: Sum{},
-		Branches: []*Tree{
-			&Tree{Operator: Constant{42}},
-			&Tree{Operator: Variable{1}},
-		},
-	}
+	var initialtree, _ = ParseCode("sum(42, X[1])")
 
 	// Serialize the initial Tree
 	var bytes, err = json.Marshal(initialtree)

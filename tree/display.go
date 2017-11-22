@@ -91,7 +91,7 @@ func (displayer GraphvizDisplay) Apply(tree *Tree) string {
 
 // CodeDisplay outputs an code-like representation of a Tree.
 //
-// power(sum(X[0], X[1]), cos(2))
+// pow(sum(X[0], X[1]), cos(2))
 //
 type CodeDisplay struct{}
 

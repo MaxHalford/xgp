@@ -7,8 +7,8 @@ import (
 	"gonum.org/v1/gonum/floats"
 )
 
-// GetFunction returns a functional Operator from it's String representation.
-func GetFunction(funcName string) (Operator, error) {
+// parseFuncName returns a functional Operator from it's String representation.
+func parseFuncName(funcName string) (Operator, error) {
 	var f, ok = map[string]Operator{
 		Cos{}.String():        Cos{},
 		Sin{}.String():        Sin{},

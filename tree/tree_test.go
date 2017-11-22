@@ -74,8 +74,8 @@ func TestNOperators(t *testing.T) {
 
 func TestTreeSimplify(t *testing.T) {
 	var testCases = []struct {
-		tree       *Tree
-		prunedTree *Tree
+		tree           *Tree
+		simplifiedTree *Tree
 	}{
 		{
 			tree: &Tree{
@@ -85,7 +85,7 @@ func TestTreeSimplify(t *testing.T) {
 					&Tree{Operator: Constant{2}},
 				},
 			},
-			prunedTree: &Tree{
+			simplifiedTree: &Tree{
 				Operator: Constant{3},
 			},
 		},
@@ -97,7 +97,7 @@ func TestTreeSimplify(t *testing.T) {
 					&Tree{Operator: Constant{42}},
 				},
 			},
-			prunedTree: &Tree{
+			simplifiedTree: &Tree{
 				Operator: Sum{},
 				Branches: []*Tree{
 					&Tree{Operator: Variable{0}},
@@ -113,7 +113,7 @@ func TestTreeSimplify(t *testing.T) {
 					&Tree{Operator: Variable{0}},
 				},
 			},
-			prunedTree: &Tree{
+			simplifiedTree: &Tree{
 				Operator: Constant{0},
 			},
 		},
@@ -137,7 +137,7 @@ func TestTreeSimplify(t *testing.T) {
 					},
 				},
 			},
-			prunedTree: &Tree{
+			simplifiedTree: &Tree{
 				Operator: Constant{10},
 			},
 		},
@@ -149,7 +149,7 @@ func TestTreeSimplify(t *testing.T) {
 					&Tree{Operator: Variable{42}},
 				},
 			},
-			prunedTree: &Tree{
+			simplifiedTree: &Tree{
 				Operator: Constant{1},
 			},
 		},
@@ -161,7 +161,7 @@ func TestTreeSimplify(t *testing.T) {
 					&Tree{Operator: Variable{42}},
 				},
 			},
-			prunedTree: &Tree{
+			simplifiedTree: &Tree{
 				Operator: Constant{0},
 			},
 		},
@@ -169,8 +169,8 @@ func TestTreeSimplify(t *testing.T) {
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
 			tc.tree.simplify()
-			if !reflect.DeepEqual(tc.tree, tc.prunedTree) {
-				t.Errorf("Expected %v, got %v", tc.prunedTree, tc.tree)
+			if !reflect.DeepEqual(tc.tree, tc.simplifiedTree) {
+				t.Errorf("Expected %v, got %v", tc.simplifiedTree, tc.tree)
 			}
 		})
 	}
