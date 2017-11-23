@@ -18,7 +18,7 @@ X, y = datasets.load_boston(return_X_y=True)
 cv = model_selection.KFold(n_splits=5, random_state=42)
 
 models = {
-    'XGP': regressor.XGPRegressor(
+    'Koza': regressor.SymbolicRegressor(
         population_size=300,
         n_generations=30,
         p_hoist_mutation=0.2,
@@ -35,7 +35,7 @@ models = {
         p_subtree_mutation=0.2,
         population_size=300,
         random_state=2,
-        verbose=1,
+        #verbose=1,
     ),
     'Linear': linear_model.LinearRegression(),
     'Lasso': linear_model.Lasso(),

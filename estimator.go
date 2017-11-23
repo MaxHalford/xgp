@@ -118,7 +118,7 @@ func (est *Estimator) Fit(X [][]float64, Y []float64, XNames []string, verbose b
 				stats        = collectStats(est.GA)
 				yPred, _     = best.Predict(est.train.X, est.EvalMetric.NeedsProbabilities())
 				evalScore, _ = est.EvalMetric.Apply(est.train.Y, yPred, nil)
-				message      = "[%d]\t%s: %.5f\tbest height: %d\tmean height: %.2f\tt_gen: %s\tt_total: %s\n"
+				message      = "[%d]\t%s: %.5f\tbest size: %d\tmean size: %.2f\tt_gen: %s\tt_total: %s\n"
 			)
 			fmt.Fprintf(
 				writer,
@@ -126,8 +126,8 @@ func (est *Estimator) Fit(X [][]float64, Y []float64, XNames []string, verbose b
 				generation,
 				est.EvalMetric.String(),
 				evalScore,
-				best.Tree.Height(),
-				stats.avgHeight,
+				best.Tree.NOperators(),
+				stats.avgNOperators,
 				duration,
 				totalDuration,
 			)
@@ -162,7 +162,6 @@ func (est *Estimator) Fit(X [][]float64, Y []float64, XNames []string, verbose b
 	if err != nil {
 		return err
 	}
-	fmt.Println(best.Tree)
 	if verbose {
 		fmt.Printf("Best program: %s\n", best)
 	}

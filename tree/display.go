@@ -170,9 +170,11 @@ func (displayer NumpyDisplay) Apply(tree *Tree) string {
 		// Division
 		case Division:
 			return fmt.Sprintf(
-				"np.divide(%s, 1 + %s)",
+				"np.divide(%s, %s, out=np.ones(shape=len(X)), where=%s>=%s)",
 				displayer.Apply(tree.Branches[0]),
 				displayer.Apply(tree.Branches[1]),
+				displayer.Apply(tree.Branches[1]),
+				strconv.FormatFloat(zeroThreshold, 'f', -1, 64),
 			)
 		// Product
 		case Product:

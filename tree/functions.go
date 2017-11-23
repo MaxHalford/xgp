@@ -7,6 +7,8 @@ import (
 	"gonum.org/v1/gonum/floats"
 )
 
+const zeroThreshold = 0.001
+
 // parseFuncName returns a functional Operator from it's String representation.
 func parseFuncName(funcName string) (Operator, error) {
 	var f, ok = map[string]Operator{
@@ -262,7 +264,7 @@ type Division struct{}
 
 // ApplyRow Division.
 func (op Division) ApplyRow(x []float64) float64 {
-	if math.Abs(x[1]) < math.SmallestNonzeroFloat64 {
+	if math.Abs(x[1]) < zeroThreshold {
 		return 1
 	}
 	return x[0] / x[1]
@@ -271,7 +273,7 @@ func (op Division) ApplyRow(x []float64) float64 {
 // ApplyCols Division.
 func (op Division) ApplyCols(X [][]float64) []float64 {
 	for i, x := range X[1] {
-		if math.Abs(x) < math.SmallestNonzeroFloat64 {
+		if math.Abs(x) < zeroThreshold {
 			X[0][i] = 1
 		} else {
 			X[0][i] /= x

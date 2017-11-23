@@ -23,7 +23,7 @@ func (prog *Program) Evaluate() float64 {
 	}
 	prog.Estimator.setBest(prog, fitness)
 	if prog.Estimator.ParsimonyCoeff != 0 {
-		fitness += prog.Estimator.ParsimonyCoeff * float64(prog.Tree.Height())
+		fitness += prog.Estimator.ParsimonyCoeff * float64(prog.Tree.NOperators())
 	}
 	return fitness
 }

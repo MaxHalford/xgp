@@ -7,7 +7,7 @@ from sklearn.base import RegressorMixin
 from . import binding
 
 
-class XGPRegressor(BaseEstimator, RegressorMixin):
+class SymbolicRegressor(BaseEstimator, RegressorMixin):
 
     def __init__(self, const_max=5, const_min=-5, funcs_string='sum,sub,mul,div', loss_metric='mae',
                  max_height=6, min_height=3, n_generations=30, n_populations=1, parsimony_coeff=0,
@@ -65,6 +65,8 @@ class XGPRegressor(BaseEstimator, RegressorMixin):
             tuning_n_generations=self.tuning_n_generations,
             verbose=fit_params.get('verbose', False)
         )
+
+        print(self.program_str_)
 
         self.program_eval_ = lambda X: eval(self.program_str_)
 

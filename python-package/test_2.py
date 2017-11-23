@@ -22,7 +22,7 @@ X_test = test.drop('y', axis='columns').values
 y_test = test['y'].values
 
 models = {
-    'XGP': regressor.XGPRegressor(
+    'Koza': regressor.SymbolicRegressor(
         population_size=300,
         n_generations=30,
         p_hoist_mutation=0.2,
