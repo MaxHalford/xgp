@@ -1,18 +1,31 @@
 language: go
-sudo: false
+
+sudo: required
+
+os:
+  - linux
+
 go:
   - tip
+
 cache:
-  - pip
-before_install:
-  - go get github.com/mattn/goveralls
+  directories:
+    - ${HOME}/.cache/usr
+    - ${HOME}/.cache/pip
+
+env:
+  matrix:
+    # Core Go library tests
+    - TASK=go_test
+
 script:
-  - go test -race -v -cover -coverprofile=coverage.out
-  - $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci
+  - .travis/test.sh
+
 after_success:
-  - sudo apt-get install python
-  - sudo pip install mkdocs mkdocs-material
+  - sudo -H apt-get install python
+  - sudo -H pip install mkdocs mkdocs-material
   - mkdocs build --verbose --clean --strict
+
 deploy:
   provider: pages
   skip_cleanup: true
@@ -20,6 +33,3 @@ deploy:
   local_dir: site
   on:
     branch: master
-branches:
-  only:
-    - master
