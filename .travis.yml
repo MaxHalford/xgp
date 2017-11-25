@@ -2,13 +2,15 @@ language: go
 sudo: false
 go:
   - tip
+cache:
+  - pip
 before_install:
   - go get github.com/mattn/goveralls
 script:
   - go test -race -v -cover -coverprofile=coverage.out
   - $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci
-after_script:
-  - apt-get install python
+after_success:
+  - sudo apt-get install python
   - pip install mkdocs mkdocs-material
   - mkdocs build --verbose --clean --strict
 deploy:
