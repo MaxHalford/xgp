@@ -11,7 +11,7 @@ script:
   - $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci
 after_success:
   - sudo apt-get install python
-  - pip install mkdocs mkdocs-material
+  - sudo pip install mkdocs mkdocs-material
   - mkdocs build --verbose --clean --strict
 deploy:
   provider: pages
