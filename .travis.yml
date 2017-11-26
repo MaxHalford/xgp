@@ -21,7 +21,7 @@ jobs:
       script: .travis/make_documentation.sh
       deploy:
         provider: pages
-        api_key: $GITHUB_TOKEN
+        github_token: $GITHUB_TOKEN
         skip_cleanup: true
         on:
           branch: master
