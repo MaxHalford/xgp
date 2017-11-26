@@ -54,6 +54,56 @@ func (metric MeanAbsoluteError) String() string {
 	return "mae"
 }
 
+// MeanSquaredError measures the mean absolute error (MAE).
+type MeanSquaredError struct{}
+
+// Apply MeanSquaredError.
+func (metric MeanSquaredError) Apply(yTrue, yPred, weights []float64) (float64, error) {
+	if len(yTrue) != len(yPred) {
+		return math.Inf(1), &errMismatchedLengths{len(yTrue), len(yPred)}
+	}
+	if weights != nil && len(yTrue) != len(weights) {
+		return math.Inf(1), &errMismatchedLengths{len(yTrue), len(weights)}
+	}
+
+	var (
+		sum float64
+		ws  float64
+	)
+	for i := range yTrue {
+		if weights != nil {
+			sum += math.Pow(yTrue[i]-yPred[i], 2) * weights[i]
+			ws += weights[i]
+		} else {
+			sum += math.Pow(yTrue[i]-yPred[i], 2)
+		}
+	}
+	if weights != nil {
+		return sum / ws, nil
+	}
+	return sum / float64(len(yTrue)), nil
+}
+
+// Classification method of MeanSquaredError.
+func (metric MeanSquaredError) Classification() bool {
+	return false
+}
+
+// BiggerIsBetter method of MeanSquaredError.
+func (metric MeanSquaredError) BiggerIsBetter() bool {
+	return false
+}
+
+// NeedsProbabilities method of MeanSquaredError.
+func (metric MeanSquaredError) NeedsProbabilities() bool {
+	return false
+}
+
+// String method of MeanSquaredError.
+func (metric MeanSquaredError) String() string {
+	return "mae"
+}
+
 // R2 measures the coefficient of determination.
 type R2 struct{}
 

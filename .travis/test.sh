@@ -7,8 +7,10 @@ if [ ${TASK} == "test_core" ]; then
     ${HOME}/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci
 fi
 
-if [ ${TASK} == "test_python" ]; then
+if [ ${TASK} == "test_python_3" ]; then
     set -e
     cd python-package
-    pytest
+    source activate python3
+    python -m pip install pytest
+    py.test tests/
 fi

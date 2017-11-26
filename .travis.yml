@@ -17,8 +17,11 @@ env:
   matrix:
     # Core library Golang tests
     - TASK=test_core
-    # Python package tests
-    - TASK=test_python
+    # Python 3 package tests
+    - TASK=test_python_3
+
+install:
+  - source tests/travis/setup.sh
 
 script:
   - .travis/test.sh

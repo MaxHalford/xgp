@@ -144,6 +144,8 @@ func (est *Estimator) Fit(X [][]float64, Y []float64, XNames []string, verbose b
 		}
 	}
 
+	fmt.Println(est.GA.Populations[0].Individuals)
+
 	// Enhance the GA est.Generations times
 	for i := 0; i < est.Generations; i++ {
 		var start = time.Now()
