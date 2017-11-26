@@ -18,7 +18,7 @@ jobs:
     - script: .travis/tests/core.sh
     - script: .travis/tests/python3.sh
     - stage: Documentation
-      script: .travis/make_documentation.sh
+      script: sudo ./travis/make_documentation.sh
       deploy:
         provider: pages
         api_key: $GITHUB_TOKEN
