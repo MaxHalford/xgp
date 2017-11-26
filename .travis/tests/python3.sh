@@ -10,9 +10,7 @@ export PATH="$HOME/miniconda/bin:$PATH"
 hash -r
 conda config --set always_yes yes --set changeps1 no
 conda update -q conda
-conda create -n python3 python=3.5
 
 cd python-package
-source activate python3
 python -m pip install numpy pytest sklearn
 py.test tests/
