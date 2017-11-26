@@ -1,8 +1,9 @@
 <div align="center">
   <!-- Logo -->
   <img src="https://docs.google.com/drawings/d/e/2PACX-1vSLdt85rEf3SQUBkpuWfXOclyUY7rdZ7RBoTuNIyCc3-liSpurbL3i7QfrzWBFr2LfwTfoAf_1i4Qwe/pub?w=378&h=223"/>
-  <p>koza is a machine learning tool based on <a href="https://www.wikiwand.com/en/Genetic_programming">genetic programming</a></p>
 </div>
+
+<br/>
 
 <div align="center">
   <!-- godoc -->
@@ -19,6 +20,11 @@
   </a>
 </div>
 
+<br/>
+
+<div align="center">A <a href="https://www.wikiwand.com/en/Symbolic_regression">symbolic regression</a> library written in Go with bindings to other languages</div>
+
+<br/>
 
 If you want to use koza in a data science pipeline then you probably want to use it in one of the following ways:
 
