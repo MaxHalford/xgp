@@ -13,28 +13,16 @@ cache:
     - ${HOME}/.cache/usr
     - ${HOME}/.cache/pip
 
-env:
-  matrix:
-    # Core library Golang tests
-    - TASK=test_core
-    # Python 3 package tests
-    - TASK=test_python_3
-
-install:
-  - source .travis/setup.sh
-
-script:
-  - .travis/test.sh
-
-after_success:
-  - sudo -H apt-get install python
-  - sudo -H pip install mkdocs mkdocs-material
-  - mkdocs build --verbose --clean --strict
-
-deploy:
-  provider: pages
-  skip_cleanup: true
-  github_token: $GITHUB_TOKEN # Set in travis-ci.org dashboard
-  local_dir: site
-  on:
-    branch: master
+jobs:
+  include:
+    - stage: Testing
+      script: .travis/tests/core.sh
+      script: .travis/tests/python3.sh
+    - stage: Documentation
+      script: .travis/make_documentation.sh
+      deploy:
+        provider: pages
+        api_key: $GITHUB_TOKEN
+        skip_cleanup: true
+        on:
+          branch: master
