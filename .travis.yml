@@ -21,7 +21,7 @@ env:
     - TASK=test_python_3
 
 install:
-  - source tests/travis/setup.sh
+  - source .travis/setup.sh
 
 script:
   - .travis/test.sh

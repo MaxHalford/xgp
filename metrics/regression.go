@@ -101,7 +101,7 @@ func (metric MeanSquaredError) NeedsProbabilities() bool {
 
 // String method of MeanSquaredError.
 func (metric MeanSquaredError) String() string {
-	return "mae"
+	return "mse"
 }
 
 // R2 measures the coefficient of determination.

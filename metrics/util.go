@@ -29,6 +29,7 @@ func GetMetric(metricName string, class int) (Metric, error) {
 			MicroF1Score{}.String():      MicroF1Score{},
 			WeightedF1Score{}.String():   WeightedF1Score{},
 			MeanAbsoluteError{}.String(): MeanAbsoluteError{},
+			MeanSquaredError{}.String():  MeanSquaredError{},
 			R2{}.String():                R2{},
 		}[metricName]
 	)
