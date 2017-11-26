@@ -16,8 +16,8 @@ cache:
 jobs:
   include:
     - stage: Testing
-      script: .travis/tests/core.sh
-      script: .travis/tests/python3.sh
+      - script: .travis/tests/core.sh
+      - script: .travis/tests/python3.sh
     - stage: Documentation
       script: .travis/make_documentation.sh
       deploy:
