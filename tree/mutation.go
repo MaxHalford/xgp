@@ -11,14 +11,19 @@ type Mutator interface {
 
 // PointMutation picks one sub-Tree at random and replaces it's Operator.
 type PointMutation struct {
-	Picker         Picker
+	Weighting      Weighting
 	MutateOperator func(op Operator, rng *rand.Rand) Operator
 }
 
 // Apply PointMutation.
 func (mut PointMutation) Apply(tree *Tree, rng *rand.Rand) {
-	var subTree, _ = mut.Picker.Apply(tree, 0, -1, rng)
-	subTree.Operator = mut.MutateOperator(subTree.Operator, rng)
+	var f = func(tree *Tree, depth int) (stop bool) {
+		if rng.Float64() < mut.Weighting.apply(tree.Operator) {
+			tree.Operator = mut.MutateOperator(tree.Operator, rng)
+		}
+		return false
+	}
+	tree.rApply(f)
 }
 
 // HoistMutation selects a first sub-Tree from a Tree. It then selects a second
@@ -46,15 +51,11 @@ func (mut HoistMutation) Apply(tree *Tree, rng *rand.Rand) {
 // SubTreeMutation selects a sub-Tree at random and replaces with a new Tree.
 // The new Tree has at most the same height as the selected sub-Tree.
 type SubTreeMutation struct {
-	Picker  Picker
-	NewTree func(minHeight, maxHeight int, rng *rand.Rand) *Tree
+	NewTree   func(rng *rand.Rand) *Tree
+	Crossover Crossover
 }
 
 // Apply SubTreeMutation.
 func (mut SubTreeMutation) Apply(tree *Tree, rng *rand.Rand) {
-	var (
-		sub, _  = mut.Picker.Apply(tree, 1, tree.Height(), rng)
-		newTree = mut.NewTree(0, sub.Height(), rng)
-	)
-	*sub = *newTree
+	mut.Crossover.Apply(tree, mut.NewTree(rng), rng)
 }

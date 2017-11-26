@@ -6,10 +6,27 @@ package main
 // PyObject* Py_String(char *pystring);
 import "C"
 import (
+	"reflect"
+	"unsafe"
+
 	"github.com/MaxHalford/koza"
 	"github.com/MaxHalford/koza/tree"
 )
 
+var estimator *koza.Estimator
+
+// ArrayToSlice converts a C double array to a Go Slice.
+//export ArrayToSlice
+func ArrayToSlice(a *C.double, length int) *[]float64 {
+	var sh = reflect.SliceHeader{
+		Data: uintptr(unsafe.Pointer(a)),
+		Len:  length,
+		Cap:  length,
+	}
+	return (*[]float64)(unsafe.Pointer(&sh))
+}
+
+// Fit an Estimator to a dataset
 //export Fit
 func Fit(
 	X [][]float64,
@@ -25,7 +42,6 @@ func Fit(
 	nGenerations int,
 	nPops int,
 	nRounds int,
-	parsimonyCoeff float64,
 	pConstant float64,
 	pFull float64,
 	pHoistMutation float64,
@@ -33,13 +49,15 @@ func Fit(
 	pSubTreeCrossover float64,
 	pSubTreeMutation float64,
 	pTerminal float64,
+	parsimonyCoeff float64,
+	pointMutationRate float64,
 	popSize int,
 	seed int,
 	tuningNGenerations int,
 	verbose bool,
 ) *C.char {
 
-	var estimator, err = koza.NewEstimator(
+	estimator, err := koza.NewEstimator(
 		constMax,
 		constMin,
 		evalMetricName,
@@ -49,7 +67,6 @@ func Fit(
 		maxHeight,
 		minHeight,
 		nPops,
-		parsimonyCoeff,
 		pConstant,
 		pFull,
 		pHoistMutation,
@@ -57,6 +74,8 @@ func Fit(
 		pSubTreeCrossover,
 		pSubTreeMutation,
 		pTerminal,
+		parsimonyCoeff,
+		pointMutationRate,
 		popSize,
 		int64(seed),
 		tuningNGenerations,
@@ -77,6 +96,18 @@ func Fit(
 	var numpy = tree.NumpyDisplay{}.Apply(best.Tree)
 	return C.CString(numpy)
 
+}
+
+// Predict a dataset
+//export Predict
+func Predict(X [][]float64, YPred *[]float64, predictProba bool) {
+	var Y, err = estimator.Predict(X, predictProba)
+	if err != nil {
+		panic(err)
+	}
+	for i, y := range Y {
+		(*YPred)[i] = y
+	}
 }
 
 func main() {}

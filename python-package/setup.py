@@ -11,7 +11,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='koza',
-    version='0.0.1',
+    version='0.0.1dev',
     description='A machine learning tool based on genetic programming',
     long_description=long_description,
     url='https://github.com/pypa/sampleproject',
@@ -35,7 +35,7 @@ setup(
     python_requires='>=3',
     build_golang={'root': 'github.com/MaxHalford/koza'},
     ext_modules=[Extension('koza', ['koza.go'])],
-    setup_requires=['setuptools-golang'],
+    setup_requires=['setuptools-golang>=0.2.0'],
     install_requires=['numpy', 'sklearn'],
     extras_require={
         'dev': find_packages(exclude=['tests']) + ['twine', 'wheel'],

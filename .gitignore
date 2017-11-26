@@ -1,5 +1,7 @@
 examples/*/*.csv
 site/
+build/
+koza.egg-info/
 *.dot
 *.json
 *.h

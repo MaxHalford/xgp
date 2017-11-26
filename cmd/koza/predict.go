@@ -18,9 +18,9 @@ var (
 func init() {
 	RootCmd.AddCommand(predictCmd)
 
-	predictCmd.Flags().StringVarP(&predictEvalMetricName, "metric", "e", "mae", "metric to evaluate predictions")
-	predictCmd.Flags().StringVarP(&predictProgramName, "program", "p", "program.json", "path to the program")
-	predictCmd.Flags().StringVarP(&predictTargetCol, "target_col", "y", "y", "name of the target column")
+	predictCmd.Flags().StringVarP(&predictEvalMetricName, "eval", "", "mae", "evaluation metric")
+	predictCmd.Flags().StringVarP(&predictProgramName, "program", "", "program.json", "path to the program")
+	predictCmd.Flags().StringVarP(&predictTargetCol, "target", "", "y", "name of the target column")
 }
 
 var predictCmd = &cobra.Command{

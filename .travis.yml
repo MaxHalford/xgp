@@ -15,8 +15,10 @@ cache:
 
 env:
   matrix:
-    # Core Go library tests
-    - TASK=go_test
+    # Core library Golang tests
+    - TASK=test_core
+    # Python package tests
+    - TASK=test_python
 
 script:
   - .travis/test.sh

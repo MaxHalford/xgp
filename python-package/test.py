@@ -25,6 +25,7 @@ models = {
         p_point_mutation=0.2,
         p_subtree_crossover=0.3,
         p_subtree_mutation=0.2,
+        parsimony_coeff=0.001,
         random_state=42
     ),
     'gplearn': SymbolicRegressor(

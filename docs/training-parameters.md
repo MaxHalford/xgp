@@ -19,9 +19,10 @@
 | `p_hoist_mut`   | `pHoistMutation`   | `p_hoist_mutation`   | Probability of applying hoist mutation.         | 0.2 |
 | `p_point_mut`   | `pPointMutation`   | `p_point_mutation`   | Probability of applying point mutation.         | 0.2 |
 | `p_point_cross`   | `pSubTreeCrossover`   | `p_subtree_crossover`   | Probability of applying sub-tree crossover.         | 0.3 |
-| `p_point_lut`   | `pSubTreeMutation`   | `p_subtree_mutation`   | Probability of applying sub-tree mutation.         | 0.2 |
+| `p_point_mut`   | `pSubTreeMutation`   | `p_subtree_mutation`   | Probability of applying sub-tree mutation.         | 0.2 |
 | `p_terminal`   | `pTerminal`   | `p_terminal`   | Probability of generating a terminal node during ramped half-and-half initialization. | 0.5 |
-| `pop_size`   | `pPopSize`   | `population_size`   | Probability of generating a terminal node during ramped half-and-half initialization. | 0.5 |
+| `point_mut_rate`   | `pointMutationRate`   | `point_mutation_rate`   | Probability of modifying an operator during point mutation. | 0.1 |
+| `pop_size`   | `pPopSize`   | `population_size`   | Number of individuals in each population of the genetic algorithm. | 50 |
 | `rounds`   | `rounds`   | `n_rounds`   | Number of rounds used for boosting (not yet implemented). | 1 |
 | `seed`   | `seed`   | `random_state`   | Seed used for generating random numbers. | Random |
 | `verbose`   | `verbose`   | `verbose`   | Indicates if progress should be monitored or not. | False |

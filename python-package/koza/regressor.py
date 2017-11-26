@@ -10,10 +10,10 @@ from . import binding
 class SymbolicRegressor(BaseEstimator, RegressorMixin):
 
     def __init__(self, const_max=5, const_min=-5, funcs_string='sum,sub,mul,div', loss_metric='mae',
-                 max_height=6, min_height=3, n_generations=30, n_populations=1, parsimony_coeff=0,
-                 p_constant=0.5, p_full=0.5, p_hoist_mutation=0.2, p_point_mutation=0.2,
-                 p_subtree_crossover=0.3, p_subtree_mutation=0.2, p_terminal=0.5,
-                 population_size=30, random_state=None, n_rounds=1, tuning_n_generations=0):
+                 max_height=6, min_height=3, n_generations=30, n_populations=1, p_constant=0.5,
+                 p_full=0.5, p_hoist_mutation=0.2, p_point_mutation=0.2, p_subtree_crossover=0.3,
+                 p_subtree_mutation=0.2, p_terminal=0.5, parsimony_coeff=0, point_mutation_rate=0.1,
+                 population_size=50, random_state=None, n_rounds=1, tuning_n_generations=0):
 
         self.const_max = const_max
         self.const_min = const_min
@@ -23,7 +23,6 @@ class SymbolicRegressor(BaseEstimator, RegressorMixin):
         self.min_height = min_height
         self.n_generations = n_generations
         self.n_populations = n_populations
-        self.parsimony_coeff = parsimony_coeff
         self.p_constant = p_constant
         self.p_full = p_full
         self.p_hoist_mutation = p_hoist_mutation
@@ -31,6 +30,8 @@ class SymbolicRegressor(BaseEstimator, RegressorMixin):
         self.p_subtree_crossover = p_subtree_crossover
         self.p_subtree_mutation = p_subtree_mutation
         self.p_terminal = p_terminal
+        self.parsimony_coeff = parsimony_coeff
+        self.point_mutation_rate = point_mutation_rate
         self.population_size = population_size
         self.random_state = random_state
         self.n_rounds = n_rounds
@@ -51,7 +52,6 @@ class SymbolicRegressor(BaseEstimator, RegressorMixin):
             min_height=self.min_height,
             n_generations=self.n_generations,
             n_populations=self.n_populations,
-            parsimony_coeff=self.parsimony_coeff,
             p_constant=self.p_constant,
             p_full=self.p_full,
             p_hoist_mutation=self.p_hoist_mutation,
@@ -59,14 +59,14 @@ class SymbolicRegressor(BaseEstimator, RegressorMixin):
             p_subtree_crossover=self.p_subtree_crossover,
             p_subtree_mutation=self.p_subtree_mutation,
             p_terminal=self.p_terminal,
+            parsimony_coeff=self.parsimony_coeff,
+            point_mutation_rate=self.point_mutation_rate,
             population_size=self.population_size,
             n_rounds=self.n_rounds,
             seed=self.random_state if self.random_state else random.randrange(2 ** 16),
             tuning_n_generations=self.tuning_n_generations,
             verbose=fit_params.get('verbose', False)
         )
-
-        print(self.program_str_)
 
         self.program_eval_ = lambda X: eval(self.program_str_)
 

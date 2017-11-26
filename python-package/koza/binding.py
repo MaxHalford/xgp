@@ -65,7 +65,6 @@ def fit(X: np.ndarray,
         max_height: int,
         min_height: int,
         n_populations: int,
-        parsimony_coeff: float,
         p_constant: float,
         p_full: float,
         p_hoist_mutation: float,
@@ -73,6 +72,8 @@ def fit(X: np.ndarray,
         p_subtree_crossover: float,
         p_subtree_mutation: float,
         p_terminal: float,
+        parsimony_coeff: float,
+        point_mutation_rate: float,
         population_size: int,
         n_rounds: int,
         tuning_n_generations: int,
@@ -94,7 +95,6 @@ def fit(X: np.ndarray,
         c_longlong, # n_generations
         c_longlong, # n_populations
         c_longlong, # n_rounds
-        c_double, # parsimony_coeff
         c_double, # p_constant
         c_double, # p_full
         c_double, # p_hoist_mutation
@@ -102,6 +102,8 @@ def fit(X: np.ndarray,
         c_double, # p_subtree_crossover
         c_double, # p_subtree_mutation
         c_double, # p_terminal
+        c_double, # parsimony_coeff
+        c_double, # point_mutation_rate
         c_longlong, # population_size
         c_longlong, # seed
         c_longlong, # tuning_n_generations
@@ -124,7 +126,6 @@ def fit(X: np.ndarray,
         n_generations,
         n_populations,
         n_rounds,
-        parsimony_coeff,
         p_constant,
         p_full,
         p_hoist_mutation,
@@ -132,6 +133,8 @@ def fit(X: np.ndarray,
         p_subtree_crossover,
         p_subtree_mutation,
         p_terminal,
+        parsimony_coeff,
+        point_mutation_rate,
         population_size,
         seed,
         tuning_n_generations,
@@ -139,13 +142,3 @@ def fit(X: np.ndarray,
     )
 
     return program_bytes.decode()
-
-
-# def predict(X: np.ndarray, predict_proba: bool) -> np.ndarray:
-#     """Refers to the Predict method in main.go"""
-#     koza = cdll.LoadLibrary('./koza.so')
-#     koza.Predict.argtypes = [GoFloat64Matrix, c_bool]
-#     #koza.Predict.restype = GoFloat64Slice
-#     y_pred = koza.Predict(numpy_to_float64_slice(np.transpose(X)), predict_proba)
-#     print(y_pred)
-#     return y_pred

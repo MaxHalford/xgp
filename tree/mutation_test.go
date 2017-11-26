@@ -26,26 +26,24 @@ func TestModification(t *testing.T) {
 			},
 			{
 				mutator: SubTreeMutation{
-					Picker: WeightedPicker{
-						Weighting: Weighting{
-							PConstant: 0.05,
-							PVariable: 0.05,
-							PFunction: 0.9,
+					Crossover: SubTreeCrossover{
+						Picker: WeightedPicker{
+							Weighting: Weighting{
+								PConstant: 0.1,
+								PVariable: 0.1,
+								PFunction: 0.1,
+							},
 						},
 					},
-					NewTree: func(minHeight, maxHeight int, rng *rand.Rand) *Tree {
-						return &Tree{Operator: Constant{42}}
-					},
+					NewTree: randTree,
 				},
 			},
 			{
 				mutator: PointMutation{
-					Picker: WeightedPicker{
-						Weighting: Weighting{
-							PConstant: 1,
-							PVariable: 1,
-							PFunction: 0,
-						},
+					Weighting: Weighting{
+						PConstant: 1,
+						PVariable: 1,
+						PFunction: 0,
 					},
 					MutateOperator: func(op Operator, rng *rand.Rand) Operator {
 						return Constant{42}
@@ -57,12 +55,12 @@ func TestModification(t *testing.T) {
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
 			var (
-				tree  = randTree(rng)
-				clone = tree.Clone()
+				tree   = randTree(rng)
+				mutant = tree.Clone()
 			)
-			tc.mutator.Apply(clone, rng)
-			if reflect.DeepEqual(clone, tree) {
-				t.Error("Mutation should not have affected the original tree")
+			tc.mutator.Apply(mutant, rng)
+			if reflect.DeepEqual(mutant, tree) {
+				t.Error("Mutation did not make any difference")
 			}
 		})
 	}
