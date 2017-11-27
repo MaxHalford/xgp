@@ -1,8 +1,6 @@
 package metrics
 
-import (
-	"math"
-)
+import "math"
 
 // MeanAbsoluteError measures the mean absolute error (MAE).
 type MeanAbsoluteError struct{}

@@ -7,14 +7,7 @@ import (
 )
 
 func TestRegression(t *testing.T) {
-	var testCases = []struct {
-		yTrue   []float64
-		yPred   []float64
-		weights []float64
-		metric  Metric
-		score   float64
-		err     error
-	}{
+	var testCases = []metricTestCase{
 		{
 			yTrue:   []float64{3, -0.5, 2, 7},
 			yPred:   []float64{2.5, 0, 2, 8},

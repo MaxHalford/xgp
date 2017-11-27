@@ -1,8 +1,6 @@
 package metrics
 
-import (
-	"strings"
-)
+import "strings"
 
 // GetMetric returns a Metric from it's String representation.
 func GetMetric(metricName string, class int) (Metric, error) {
@@ -14,23 +12,25 @@ func GetMetric(metricName string, class int) (Metric, error) {
 	var (
 		klass      = float64(class)
 		metric, ok = map[string]Metric{
-			BinaryLogLoss{}.String():     BinaryLogLoss{},
-			Accuracy{}.String():          Accuracy{},
-			BinaryPrecision{}.String():   BinaryPrecision{Class: klass},
-			MacroPrecision{}.String():    MacroPrecision{},
-			MicroPrecision{}.String():    MicroPrecision{},
-			WeightedPrecision{}.String(): WeightedPrecision{},
-			BinaryRecall{}.String():      BinaryRecall{Class: klass},
-			MacroRecall{}.String():       MacroRecall{},
-			MicroRecall{}.String():       MicroRecall{},
-			WeightedRecall{}.String():    WeightedRecall{},
-			BinaryF1Score{}.String():     BinaryF1Score{Class: klass},
-			MacroF1Score{}.String():      MacroF1Score{},
-			MicroF1Score{}.String():      MicroF1Score{},
-			WeightedF1Score{}.String():   WeightedF1Score{},
-			MeanAbsoluteError{}.String(): MeanAbsoluteError{},
-			MeanSquaredError{}.String():  MeanSquaredError{},
-			R2{}.String():                R2{},
+			BinaryLogLoss{}.String():              BinaryLogLoss{},
+			Accuracy{}.String():                   Accuracy{},
+			BinaryPrecision{}.String():            BinaryPrecision{Class: klass},
+			MacroPrecision{}.String():             MacroPrecision{},
+			MicroPrecision{}.String():             MicroPrecision{},
+			WeightedPrecision{}.String():          WeightedPrecision{},
+			BinaryRecall{}.String():               BinaryRecall{Class: klass},
+			MacroRecall{}.String():                MacroRecall{},
+			MicroRecall{}.String():                MicroRecall{},
+			WeightedRecall{}.String():             WeightedRecall{},
+			BinaryF1{}.String():                   BinaryF1{Class: klass},
+			MacroF1{}.String():                    MacroF1{},
+			MicroF1{}.String():                    MicroF1{},
+			WeightedF1{}.String():                 WeightedF1{},
+			MeanAbsoluteError{}.String():          MeanAbsoluteError{},
+			MeanSquaredError{}.String():           MeanSquaredError{},
+			R2{}.String():                         R2{},
+			ROCAUC{}.String():                     ROCAUC{},
+			AbsolutePearsonCorrelation{}.String(): AbsolutePearsonCorrelation{},
 		}[metricName]
 	)
 	if !ok {
