@@ -12,7 +12,6 @@ import (
 
 	"github.com/MaxHalford/gago"
 
-	"github.com/MaxHalford/koza/dataset"
 	"github.com/MaxHalford/koza/metrics"
 	"github.com/MaxHalford/koza/tree"
 )
@@ -50,7 +49,9 @@ type Estimator struct {
 	mutex       sync.Mutex
 	cache       *tree.Cache
 	fm          map[int][]tree.Operator
-	train       *dataset.Dataset
+	trainX      [][]float64
+	trainY      []float64
+	nClasses    int
 }
 
 // BestProgram set an Estimator's bestProgram and bestFitness in a safe way.
@@ -76,16 +77,17 @@ func (est Estimator) BestProgram() (*Program, error) {
 // Fit an Estimator to a dataset.Dataset.
 func (est *Estimator) Fit(X [][]float64, Y []float64, XNames []string, verbose bool) error {
 
-	// Set the train dataset so that the initial GA can be initialized
-	var train, err = dataset.NewFromXY(X, Y, XNames, est.LossMetric.Classification())
-	if err != nil {
-		return err
-	}
-	est.train = train
+	// Set the training set
+	est.trainX = X
+	est.trainY = Y
 
-	// Check that the task to perform is not multi-class classification
-	if est.LossMetric.Classification() && est.train.NClasses() > 2 {
-		return errors.New("Multi-class classification is not supported")
+	// Count the number of classes if the task is classification
+	if est.LossMetric.Classification() {
+		est.nClasses = countDistinct(Y)
+		// Check that the task to perform is not multi-class classification
+		if est.nClasses > 2 {
+			return errors.New("Multi-class classification is not supported")
+		}
 	}
 
 	// Initialize the best fitness and program
@@ -112,8 +114,8 @@ func (est *Estimator) Fit(X [][]float64, Y []float64, XNames []string, verbose b
 			}
 			var (
 				stats        = collectStats(est.GA)
-				yPred, _     = best.Predict(est.train.X, est.EvalMetric.NeedsProbabilities())
-				evalScore, _ = est.EvalMetric.Apply(est.train.Y, yPred, nil)
+				yPred, _     = best.Predict(est.trainX, est.EvalMetric.NeedsProbabilities())
+				evalScore, _ = est.EvalMetric.Apply(est.trainY, yPred, nil)
 				message      = "[%d]\t%s: %.5f\tbest size: %d\tmean size: %.2f\tt_gen: %s\tt_total: %s\n"
 			)
 			fmt.Fprintf(
@@ -201,7 +203,7 @@ func (est Estimator) newConstant(rng *rand.Rand) tree.Constant {
 }
 
 func (est Estimator) newVariable(rng *rand.Rand) tree.Variable {
-	return tree.Variable{Index: rng.Intn(est.train.NFeatures())}
+	return tree.Variable{Index: rng.Intn(len(est.trainX))}
 }
 
 func (est Estimator) newFunction(rng *rand.Rand) tree.Operator {
@@ -243,7 +245,7 @@ func (est *Estimator) newProgram(rng *rand.Rand) gago.Genome {
 		Tree: est.newTree(rng),
 		Task: Task{
 			Metric:   est.LossMetric,
-			NClasses: est.train.NClasses(),
+			NClasses: est.nClasses,
 		},
 		Estimator: est,
 	}

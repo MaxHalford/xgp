@@ -1,8 +1,9 @@
 package koza
 
 import (
+	"fmt"
+
 	"github.com/MaxHalford/koza"
-	"github.com/MaxHalford/koza/dataset"
 	"github.com/spf13/cobra"
 )
 
@@ -99,13 +100,25 @@ var fitCmd = &cobra.Command{
 		}
 
 		// Load the training set in memory
-		train, err := dataset.ReadCSV(args[0], fitTargetCol, estimator.LossMetric.Classification())
+		df, err := ReadCSV(args[0])
 		if err != nil {
 			return err
 		}
 
+		// Check the target column exists
+		var columns = df.Names()
+		if !containsString(columns, fitTargetCol) {
+			return fmt.Errorf("No column named %s", fitTargetCol)
+		}
+
 		// Fit the estimator
-		err = estimator.Fit(train.X, train.Y, train.XNames, fitVerbose)
+		var featureColumns = removeString(columns, fitTargetCol)
+		err = estimator.Fit(
+			dataFrameToFloat64(df.Select(featureColumns)),
+			df.Col(fitTargetCol).Float(),
+			featureColumns,
+			fitVerbose,
+		)
 		if err != nil {
 			return err
 		}

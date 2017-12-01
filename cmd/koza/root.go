@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/fatih/color"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -28,7 +27,7 @@ koza can be used for both classification and regression problems.`,
 // the rootCmd.
 func Execute() {
 	if err := RootCmd.Execute(); err != nil {
-		color.Red(err.Error())
+		fmt.Println(err.Error())
 		os.Exit(1)
 	}
 }
