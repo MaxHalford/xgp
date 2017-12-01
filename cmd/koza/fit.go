@@ -19,10 +19,10 @@ var (
 	fitNPops              int
 	fitPopSize            int
 	fitPConstant          float64
+	fitPCrossover         float64
 	fitPFull              float64
 	fitPHoistMutation     float64
 	fitPPointMutation     float64
-	fitPSubTreeCrossover  float64
 	fitPSubTreeMutation   float64
 	fitPTerminal          float64
 	fitParsimonyCoeff     float64
@@ -48,14 +48,14 @@ func init() {
 	fitCmd.Flags().IntVarP(&fitNGenerations, "n_generations", "", 30, "number of generations")
 	fitCmd.Flags().IntVarP(&fitNPops, "n_pops", "", 1, "number of populations to use in the GA")
 	fitCmd.Flags().Float64VarP(&fitPConstant, "p_constant", "", 0.5, "probability of picking a constant and not a constant when generating terminal nodes")
+	fitCmd.Flags().Float64VarP(&fitPCrossover, "p_crossover", "", 0.5, "probability of applying crossover")
 	fitCmd.Flags().Float64VarP(&fitPFull, "p_full", "", 0.5, "probability of use full initialization during ramped half-and-half initialization")
-	fitCmd.Flags().Float64VarP(&fitPHoistMutation, "p_hoist_mut", "", 0.4, "probability of applying hoist mutation")
-	fitCmd.Flags().Float64VarP(&fitPPointMutation, "p_point_mut", "", 0.3, "probability of applying point mutation")
-	fitCmd.Flags().Float64VarP(&fitPSubTreeCrossover, "p_sub_cross", "", 0.1, "probability of applying sub-tree crossover")
+	fitCmd.Flags().Float64VarP(&fitPHoistMutation, "p_hoist_mut", "", 0.1, "probability of applying hoist mutation")
+	fitCmd.Flags().Float64VarP(&fitPPointMutation, "p_point_mut", "", 0.1, "probability of applying point mutation")
 	fitCmd.Flags().Float64VarP(&fitPSubTreeMutation, "p_sub_mut", "", 0.1, "probability of applying sub-tree mutation")
 	fitCmd.Flags().Float64VarP(&fitPTerminal, "p_terminal", "", 0.5, "probability of generating a terminal branch in ramped half-and-half initialization")
 	fitCmd.Flags().Float64VarP(&fitParsimonyCoeff, "parsimony", "", 0, "parsimony coefficient by which a program's height is multiplied to decrease it's fitness")
-	fitCmd.Flags().Float64VarP(&fitPointMutationRate, "point_mut_rate", "", 0.1, "probability of modifying an operator during point mutation")
+	fitCmd.Flags().Float64VarP(&fitPointMutationRate, "point_mut_rate", "", 0.3, "probability of modifying an operator during point mutation")
 	fitCmd.Flags().IntVarP(&fitPopSize, "pop_size", "", 50, "number of individuals to use for each population in the GA")
 	fitCmd.Flags().IntVarP(&fitRounds, "rounds", "", 1, "number of boosting rounds")
 	fitCmd.Flags().Int64VarP(&fitSeed, "seed", "", 0, "seed for random number generation")
@@ -82,10 +82,10 @@ var fitCmd = &cobra.Command{
 			fitMinHeight,
 			fitNPops,
 			fitPConstant,
+			fitPCrossover,
 			fitPFull,
 			fitPHoistMutation,
 			fitPPointMutation,
-			fitPSubTreeCrossover,
 			fitPSubTreeMutation,
 			fitPTerminal,
 			fitParsimonyCoeff,

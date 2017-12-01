@@ -26,17 +26,18 @@ func newProgramTuner(prog *Program) ProgramTuner {
 		consts       = make([]float64, nConsts)
 		constSetters = make([]ConstantSetter, nConsts)
 		i            int
-		addConst     = func(t *tree.Tree) {
+		addConst     = func(t *tree.Tree, depth int) (stop bool) {
 			if c, ok := t.Operator.(tree.Constant); ok {
 				consts[i] = c.Value
 				constSetters[i] = newConstantSetter(t)
 				i++
 			}
+			return
 		}
 		progTuner = ProgramTuner{Program: prog.clone()}
 	)
 	// Extract all the Constants from the Program
-	progTuner.Program.Tree.RecApply(addConst)
+	progTuner.Program.Tree.Walk(addConst)
 	progTuner.ConstValues = consts
 	progTuner.ConstSetters = constSetters
 	return progTuner

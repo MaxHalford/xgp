@@ -1,6 +1,11 @@
 from ctypes import *
+import os
 
 import numpy as np
+
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+LIB = cdll.LoadLibrary(os.path.join(HERE, '../koza.so'))
 
 
 class GoString(Structure):
@@ -66,10 +71,10 @@ def fit(X: np.ndarray,
         min_height: int,
         n_populations: int,
         p_constant: float,
+        p_crossover: float,
         p_full: float,
         p_hoist_mutation: float,
         p_point_mutation: float,
-        p_subtree_crossover: float,
         p_subtree_mutation: float,
         p_terminal: float,
         parsimony_coeff: float,
@@ -80,8 +85,7 @@ def fit(X: np.ndarray,
         seed: int,
         verbose: bool):
     """Refers to the Fit method in main.go"""
-    koza = cdll.LoadLibrary('./koza.so')
-    koza.Fit.argtypes = [
+    LIB.Fit.argtypes = [
         GoFloat64Matrix, # X
         GoFloat64Slice, # y
         GoStringSlice, # X_names
@@ -96,10 +100,10 @@ def fit(X: np.ndarray,
         c_longlong, # n_populations
         c_longlong, # n_rounds
         c_double, # p_constant
+        c_double, # p_crossover
         c_double, # p_full
         c_double, # p_hoist_mutation
         c_double, # p_point_mutation
-        c_double, # p_subtree_crossover
         c_double, # p_subtree_mutation
         c_double, # p_terminal
         c_double, # parsimony_coeff
@@ -110,9 +114,7 @@ def fit(X: np.ndarray,
         c_bool # verbose
     ]
 
-    koza.Fit.restype = c_char_p
-
-    program_bytes = koza.Fit(
+    return LIB.Fit(
         numpy_to_float64_slice(np.transpose(X)),
         numpy_to_float64_slice(y),
         str_list_to_string_slice(X_names),
@@ -127,10 +129,10 @@ def fit(X: np.ndarray,
         n_populations,
         n_rounds,
         p_constant,
+        p_crossover,
         p_full,
         p_hoist_mutation,
         p_point_mutation,
-        p_subtree_crossover,
         p_subtree_mutation,
         p_terminal,
         parsimony_coeff,
@@ -141,4 +143,24 @@ def fit(X: np.ndarray,
         verbose
     )
 
-    return program_bytes.decode()
+
+def predict(X: np.ndarray,
+            predict_proba: bool) -> np.array:
+    """Refers to the Predict method in main.go"""
+
+    # Instantiate an array that will receive the predictions
+    y_pred = np.zeros(shape=len(X))
+
+    LIB.Predict.argtypes = [
+        GoFloat64Matrix, # X
+        c_bool, # eval_metric_name
+        GoFloat64Slice, # y_pred
+    ]
+
+    LIB.Predict(
+        numpy_to_float64_slice(np.transpose(X)),
+        predict_proba,
+        numpy_to_float64_slice(y_pred),
+    )
+
+    return y_pred

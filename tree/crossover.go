@@ -17,8 +17,8 @@ type SubTreeCrossover struct {
 // Apply SubTreeCrossover.
 func (cross SubTreeCrossover) Apply(tree1, tree2 *Tree, rng *rand.Rand) {
 	var (
-		subTree1, _ = cross.Picker.Apply(tree1, 0, -1, rng)
-		subTree2, _ = cross.Picker.Apply(tree2, 0, -1, rng)
+		subTree1 = cross.Picker.Apply(tree1, 0, tree1.Height()-1, rng)
+		subTree2 = cross.Picker.Apply(tree2, 0, tree2.Height(), rng)
 	)
 	*subTree1, *subTree2 = *subTree2, *subTree1
 }

@@ -6,27 +6,12 @@ package main
 // PyObject* Py_String(char *pystring);
 import "C"
 import (
-	"reflect"
-	"unsafe"
-
 	"github.com/MaxHalford/koza"
-	"github.com/MaxHalford/koza/tree"
 )
 
 var estimator *koza.Estimator
 
-// ArrayToSlice converts a C double array to a Go Slice.
-//export ArrayToSlice
-func ArrayToSlice(a *C.double, length int) *[]float64 {
-	var sh = reflect.SliceHeader{
-		Data: uintptr(unsafe.Pointer(a)),
-		Len:  length,
-		Cap:  length,
-	}
-	return (*[]float64)(unsafe.Pointer(&sh))
-}
-
-// Fit an Estimator to a dataset
+// Fit an Estimator to a dataset.
 //export Fit
 func Fit(
 	X [][]float64,
@@ -43,10 +28,10 @@ func Fit(
 	nPops int,
 	nRounds int,
 	pConstant float64,
+	pCrossover float64,
 	pFull float64,
 	pHoistMutation float64,
 	pPointMutation float64,
-	pSubTreeCrossover float64,
 	pSubTreeMutation float64,
 	pTerminal float64,
 	parsimonyCoeff float64,
@@ -56,8 +41,8 @@ func Fit(
 	tuningNGenerations int,
 	verbose bool,
 ) *C.char {
-
-	estimator, err := koza.NewEstimator(
+	var err error
+	estimator, err = koza.NewEstimator(
 		constMax,
 		constMin,
 		evalMetricName,
@@ -68,10 +53,10 @@ func Fit(
 		minHeight,
 		nPops,
 		pConstant,
+		pCrossover,
 		pFull,
 		pHoistMutation,
 		pPointMutation,
-		pSubTreeCrossover,
 		pSubTreeMutation,
 		pTerminal,
 		parsimonyCoeff,
@@ -87,27 +72,24 @@ func Fit(
 		panic(err)
 	}
 
-	// Get the best obtained program
+	// Get the best obtained Program
 	best, err := estimator.BestProgram()
 	if err != nil {
 		panic(err)
 	}
 
-	var numpy = tree.NumpyDisplay{}.Apply(best.Tree)
-	return C.CString(numpy)
-
+	return C.CString(best.String())
 }
 
-// Predict a dataset
+// Predict a dataset. The predicitions will be copied onto YPred, this way the
+// results can be accessed on the Python side.
 //export Predict
-func Predict(X [][]float64, YPred *[]float64, predictProba bool) {
+func Predict(X [][]float64, predictProba bool, YPred []float64) {
 	var Y, err = estimator.Predict(X, predictProba)
 	if err != nil {
 		panic(err)
 	}
-	for i, y := range Y {
-		(*YPred)[i] = y
-	}
+	copy(YPred, Y)
 }
 
 func main() {}

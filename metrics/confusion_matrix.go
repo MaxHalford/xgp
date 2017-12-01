@@ -32,20 +32,20 @@ func (cm ConfusionMatrix) Classes() []float64 {
 }
 
 // TruePositives returns the number of times a class was correctly predicted.
-func (cm ConfusionMatrix) TruePositives(class float64) (float64, error) {
+func (cm ConfusionMatrix) TruePositives(class float64) float64 {
 
 	if _, ok := cm[class]; !ok {
-		return 0, &errClassNotFound{class}
+		return 0
 	}
 
-	return cm[class][class], nil
+	return cm[class][class]
 }
 
 // FalsePositives returns the number of times a class was wrongly predicted.
-func (cm ConfusionMatrix) FalsePositives(class float64) (float64, error) {
+func (cm ConfusionMatrix) FalsePositives(class float64) float64 {
 
 	if _, ok := cm[class]; !ok {
-		return 0, &errClassNotFound{class}
+		return 0
 	}
 
 	var FP float64
@@ -54,14 +54,14 @@ func (cm ConfusionMatrix) FalsePositives(class float64) (float64, error) {
 			FP += cm[tc][class]
 		}
 	}
-	return FP, nil
+	return FP
 }
 
 // FalseNegatives returns the number of times a class was wrongly not predicted.
-func (cm ConfusionMatrix) FalseNegatives(class float64) (float64, error) {
+func (cm ConfusionMatrix) FalseNegatives(class float64) float64 {
 
 	if _, ok := cm[class]; !ok {
-		return 0, &errClassNotFound{class}
+		return 0
 	}
 
 	var FN float64
@@ -70,15 +70,15 @@ func (cm ConfusionMatrix) FalseNegatives(class float64) (float64, error) {
 			FN += cm[class][pc]
 		}
 	}
-	return FN, nil
+	return FN
 }
 
 // TrueNegatives returns the number of times a class was correctly not
 // predicted.
-func (cm ConfusionMatrix) TrueNegatives(class float64) (float64, error) {
+func (cm ConfusionMatrix) TrueNegatives(class float64) float64 {
 
 	if _, ok := cm[class]; !ok {
-		return 0, &errClassNotFound{class}
+		return 0
 	}
 
 	var TN float64
@@ -91,7 +91,7 @@ func (cm ConfusionMatrix) TrueNegatives(class float64) (float64, error) {
 			}
 		}
 	}
-	return TN, nil
+	return TN
 }
 
 // String returns a string that can easily be read by a human in a terminal.

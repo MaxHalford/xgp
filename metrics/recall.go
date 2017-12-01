@@ -2,7 +2,7 @@ package metrics
 
 // BinaryRecall measures the fraction of times a true class was predicted.
 type BinaryRecall struct {
-	Class float64 `json:"class"`
+	Class float64
 }
 
 // Apply BinaryRecall.
@@ -11,12 +11,10 @@ func (metric BinaryRecall) Apply(yTrue, yPred, weights []float64) (float64, erro
 	if err != nil {
 		return 0, err
 	}
-	TP, err := cm.TruePositives(metric.Class)
-	// Check class exists
-	if err != nil {
-		return 0, err
-	}
-	FN, err := cm.FalseNegatives(metric.Class)
+	var (
+		TP = cm.TruePositives(metric.Class)
+		FN = cm.FalseNegatives(metric.Class)
+	)
 	// If the class has never been predicted return 0
 	if TP+FN == 0 {
 		return 0, nil
@@ -59,16 +57,8 @@ func (metric MicroRecall) Apply(yTrue, yPred, weights []float64) (float64, error
 		FN float64
 	)
 	for _, class := range cm.Classes() {
-		tp, err := cm.TruePositives(class)
-		if err != nil {
-			return 0, err
-		}
-		fn, err := cm.FalsePositives(class)
-		if err != nil {
-			return 0, err
-		}
-		TP += tp
-		FN += fn
+		TP += cm.TruePositives(class)
+		FN += cm.FalsePositives(class)
 	}
 	return TP / (TP + FN), nil
 }
@@ -148,8 +138,8 @@ func (metric WeightedRecall) Apply(yTrue, yPred, weights []float64) (float64, er
 	for _, class := range cm.Classes() {
 		var (
 			recall, _ = BinaryRecall{Class: class}.Apply(yTrue, yPred, weights)
-			TP, _     = cm.TruePositives(class)
-			FN, _     = cm.FalseNegatives(class)
+			TP        = cm.TruePositives(class)
+			FN        = cm.FalseNegatives(class)
 		)
 		sum += (TP + FN) * recall
 		n += (TP + FN)

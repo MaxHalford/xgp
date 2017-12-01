@@ -9,7 +9,7 @@ import (
 
 // A Picker picks a sub-Tree from a Tree.
 type Picker interface {
-	Apply(tree *Tree, minDepth, maxDepth int, rng *rand.Rand) (subTree *Tree, subTreeDepth int)
+	Apply(tree *Tree, minHeight, maxHeight int, rng *rand.Rand) *Tree
 }
 
 // WeightPicker picks a sub-Tree at random by weighting each sub-tree
@@ -19,28 +19,29 @@ type WeightedPicker struct {
 }
 
 // Apply WeightedPicker.
-func (wp WeightedPicker) Apply(tree *Tree, minDepth, maxDepth int, rng *rand.Rand) (*Tree, int) {
+func (wp WeightedPicker) Apply(tree *Tree, minHeight, maxHeight int, rng *rand.Rand) *Tree {
 	// Assign weight to each Tree and calculate the total weight
 	var (
 		trees        []*Tree
-		depths       []int
 		weights      []float64
 		totalWeight  float64
 		assignWeight = func(tree *Tree, depth int) (stop bool) {
-			var w float64
-			if depth < minDepth || (depth > maxDepth && maxDepth >= 0) {
+			var (
+				w float64
+				h = tree.Height()
+			)
+			if h < minHeight || h > maxHeight {
 				w = 0
 			} else {
 				w = wp.Weighting.apply(tree.Operator)
 			}
 			weights = append(weights, w)
 			trees = append(trees, tree)
-			depths = append(depths, depth)
 			totalWeight += w
 			return
 		}
 	)
-	tree.rApply(assignWeight)
+	tree.Walk(assignWeight)
 	// Calculate the cumulative sum of the weights
 	var cumSum = make([]float64, len(weights))
 	floats.CumSum(cumSum, weights)
@@ -48,5 +49,5 @@ func (wp WeightedPicker) Apply(tree *Tree, minDepth, maxDepth int, rng *rand.Ran
 	var r = rng.Float64() * cumSum[len(cumSum)-1]
 	// Find i where cumSum[i-1] < r < cumSum[i]
 	var i = sort.SearchFloat64s(cumSum, r)
-	return trees[i], depths[i]
+	return trees[i]
 }

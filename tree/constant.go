@@ -30,5 +30,5 @@ func (c Constant) Arity() int {
 
 // String representation of a Constant.
 func (c Constant) String() string {
-	return fmt.Sprintf("%.2f", c.Value)
+	return fmt.Sprintf("%.3f", c.Value)
 }

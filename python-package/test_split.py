@@ -23,12 +23,8 @@ y_test = test['y'].values
 
 models = {
     'Koza': regressor.SymbolicRegressor(
-        population_size=30,
-        n_generations=30,
-        p_hoist_mutation=0.4,
-        p_point_mutation=0.3,
-        p_subtree_crossover=0.1,
-        p_subtree_mutation=0.1,
+        population_size=500,
+        n_generations=100,
         random_state=42
     ),
     'gplearn': SymbolicRegressor(
@@ -41,7 +37,6 @@ models = {
         random_state=2,
         verbose=1,
     ),
-    'Linear': linear_model.LinearRegression(),
     'Lasso': linear_model.Lasso(),
     'Ridge': linear_model.Ridge(),
     'Tree': tree.DecisionTreeRegressor(random_state=42),

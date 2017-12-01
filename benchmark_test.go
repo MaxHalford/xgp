@@ -16,6 +16,7 @@ func BenchmarkFit(b *testing.B) {
 	if err != nil {
 		panic(err)
 	}
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		estimator.Fit(boston.X, boston.Y, boston.XNames, false)
 	}

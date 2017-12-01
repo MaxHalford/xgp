@@ -2,7 +2,7 @@ package metrics
 
 // BinaryF1 measures the F1-score.
 type BinaryF1 struct {
-	Class float64 `json:"class"`
+	Class float64
 }
 
 // Apply BinaryF1.
@@ -11,15 +11,10 @@ func (metric BinaryF1) Apply(yTrue, yPred, weights []float64) (float64, error) {
 	if err != nil {
 		return 0, err
 	}
-	TP, err := cm.TruePositives(metric.Class)
-	// Check class exists
-	if err != nil {
-		return 0, err
-	}
-	FP, err := cm.FalsePositives(metric.Class)
-	FN, err := cm.FalseNegatives(metric.Class)
-	// If the class has never been predicted return 0
 	var (
+		TP        = cm.TruePositives(metric.Class)
+		FP        = cm.FalsePositives(metric.Class)
+		FN        = cm.FalseNegatives(metric.Class)
 		precision = TP / (TP + FP)
 		recall    = TP / (TP + FN)
 	)
@@ -141,8 +136,8 @@ func (metric WeightedF1) Apply(yTrue, yPred, weights []float64) (float64, error)
 	for _, class := range cm.Classes() {
 		var (
 			f1Score, _ = BinaryF1{Class: class}.Apply(yTrue, yPred, weights)
-			TP, _      = cm.TruePositives(class)
-			FN, _      = cm.FalseNegatives(class)
+			TP         = cm.TruePositives(class)
+			FN         = cm.FalseNegatives(class)
 		)
 		sum += (TP + FN) * f1Score
 		n += (TP + FN)

@@ -10,8 +10,8 @@ go run main.go predict ../examples/gplearn/test.csv -e mae
 
 ```sh
 cd koza/cmd
-go run main.go fit ../examples/boston/train.csv --loss mae
-go run main.go predict ../examples/boston/test.csv --eval mae
+go run main.go fit ../examples/boston/train.csv --loss mae # 6.754572271386434 with median
+go run main.go predict ../examples/boston/test.csv --eval mae # 6.119760479041916 with median
 ```
 
 ```sh

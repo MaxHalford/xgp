@@ -118,7 +118,7 @@ func TestConfusionMatrixTruePositives(t *testing.T) {
 		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
 			var cm, _ = MakeConfusionMatrix(tc.yTrue, tc.yPred, tc.weights)
 			for _, class := range cm.Classes() {
-				var TP, _ = cm.TruePositives(class)
+				var TP = cm.TruePositives(class)
 				if TP != tc.TPs[int(class)] {
 					t.Errorf("Error in test case number %d", i)
 				}
@@ -163,7 +163,7 @@ func TestConfusionMatrixFalsePositives(t *testing.T) {
 		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
 			var cm, _ = MakeConfusionMatrix(tc.yTrue, tc.yPred, tc.weights)
 			for _, class := range cm.Classes() {
-				var FP, _ = cm.FalsePositives(class)
+				var FP = cm.FalsePositives(class)
 				if FP != tc.FPs[int(class)] {
 					t.Errorf("Error in test case number %d", i)
 				}
@@ -208,7 +208,7 @@ func TestConfusionMatrixFalseNegatives(t *testing.T) {
 		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
 			var cm, _ = MakeConfusionMatrix(tc.yTrue, tc.yPred, tc.weights)
 			for _, class := range cm.Classes() {
-				var FN, _ = cm.FalseNegatives(class)
+				var FN = cm.FalseNegatives(class)
 				if FN != tc.FNs[int(class)] {
 					t.Errorf("Error in test case number %d", i)
 				}
@@ -253,7 +253,7 @@ func TestConfusionMatrixTrueNegatives(t *testing.T) {
 		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
 			var cm, _ = MakeConfusionMatrix(tc.yTrue, tc.yPred, tc.weights)
 			for _, class := range cm.Classes() {
-				var TN, _ = cm.TrueNegatives(class)
+				var TN = cm.TrueNegatives(class)
 				if TN != tc.TNs[int(class)] {
 					t.Errorf("Error in test case number %d", i)
 				}

@@ -17,16 +17,6 @@ import (
 	"github.com/MaxHalford/koza/tree"
 )
 
-type crossover struct {
-	p      float64
-	method tree.Crossover
-}
-
-type mutator struct {
-	p      float64
-	method tree.Mutator
-}
-
 // An Estimator links all the different components together and can be used to
 // train Programs on a dataset. You shouldn't instantiate this struct directly,
 // instead you should use the NewEstimator method.
@@ -47,10 +37,16 @@ type Estimator struct {
 	TuningGenerations int
 	CacheDuration     int
 
+	PointMutation    tree.PointMutation
+	PPointMutation   float64
+	SubTreeMutation  tree.SubTreeMutation
+	PSubTreeMutation float64
+	HoistMutation    tree.HoistMutation
+	PHoistMutation   float64
+	SubTreeCrossover tree.SubTreeCrossover
+
 	bestProgram *Program
 	bestFitness float64
-	crossovers  []crossover
-	mutators    []mutator
 	mutex       sync.Mutex
 	cache       *tree.Cache
 	fm          map[int][]tree.Operator
@@ -144,12 +140,28 @@ func (est *Estimator) Fit(X [][]float64, Y []float64, XNames []string, verbose b
 		}
 	}
 
-	fmt.Println(est.GA.Populations[0].Individuals)
+	//fmt.Println(est.GA.Populations[0].Individuals)
 
-	// Enhance the GA est.Generations times
+	// Enhance the GA
 	for i := 0; i < est.Generations; i++ {
 		var start = time.Now()
-		est.GA.Enhance()
+
+		// Make sure each tree has at least a height of 2
+		for _, pop := range est.GA.Populations {
+			for _, indi := range pop.Individuals {
+				var prog = indi.Genome.(*Program)
+				if prog.Tree.Height() < 2 {
+					est.SubTreeMutation.Apply(prog.Tree, pop.RNG)
+					prog.Evaluate()
+				}
+			}
+		}
+
+		est.GA.Evolve()
+
+		//fmt.Println(strings.Repeat("-", 30))
+		//fmt.Println(est.GA.Populations[0].Individuals)
+
 		// Display current statistics
 		if verbose {
 			err := notify(i+1, time.Since(start))
@@ -212,13 +224,17 @@ func (est Estimator) mutateOperator(op tree.Operator, rng *rand.Rand) tree.Opera
 }
 
 func (est Estimator) newTree(rng *rand.Rand) *tree.Tree {
-	var of = tree.OperatorFactory{
-		PConstant:   est.PConstant,
-		NewConstant: est.newConstant,
-		NewVariable: est.newVariable,
-		NewFunction: est.newFunction,
-	}
-	return est.TreeInitializer.Apply(est.MinHeight, est.MaxHeight, of, rng)
+	return est.TreeInitializer.Apply(
+		est.MinHeight,
+		est.MaxHeight,
+		tree.OperatorFactory{
+			PConstant:   est.PConstant,
+			NewConstant: est.newConstant,
+			NewVariable: est.newVariable,
+			NewFunction: est.newFunction,
+		},
+		rng,
+	)
 }
 
 // newProgram can be used by gago to produce a new Genome.
@@ -260,10 +276,10 @@ func NewEstimator(
 	minHeight int,
 	nPops int,
 	pConstant float64,
+	pCrossover float64,
 	pFull float64,
 	pHoistMutation float64,
 	pPointMutation float64,
-	pSubTreeCrossover float64,
 	pSubTreeMutation float64,
 	pTerminal float64,
 	parsimonyCoeff float64,
@@ -342,7 +358,7 @@ func NewEstimator(
 				NContestants: 3,
 			},
 			pMutate:    pHoistMutation + pPointMutation + pSubTreeMutation,
-			pCrossover: pSubTreeCrossover,
+			pCrossover: pCrossover,
 		},
 		RNG: rng,
 	}
@@ -359,66 +375,55 @@ func NewEstimator(
 	}
 
 	// Set crossover methods
-	estimator.crossovers = []crossover{
-		crossover{
-			p: pSubTreeCrossover,
-			method: tree.SubTreeCrossover{
-				Picker: tree.WeightedPicker{
-					Weighting: tree.Weighting{
-						PConstant: 0.1, // MAGIC
-						PVariable: 0.1, // MAGIC
-						PFunction: 0.8, // MAGIC
-					},
-				},
+	estimator.SubTreeCrossover = tree.SubTreeCrossover{
+		Picker: tree.WeightedPicker{
+			Weighting: tree.Weighting{
+				PConstant: 0.1, // MAGIC
+				PVariable: 0.1, // MAGIC
+				PFunction: 0.8, // MAGIC
 			},
 		},
 	}
 
 	// Set mutation methods
-	estimator.mutators = []mutator{
-		mutator{
-			p: pPointMutation,
-			method: tree.PointMutation{
-				Weighting: tree.Weighting{
-					PConstant: pointMutationRate,
-					PVariable: pointMutationRate,
-					PFunction: pointMutationRate,
-				},
-				MutateOperator: func(op tree.Operator, rng *rand.Rand) tree.Operator {
-					return estimator.mutateOperator(op, rng)
-				},
-			},
+	estimator.PointMutation = tree.PointMutation{
+		Weighting: tree.Weighting{
+			PConstant: pointMutationRate,
+			PVariable: pointMutationRate,
+			PFunction: pointMutationRate,
 		},
-		mutator{
-			p: pHoistMutation,
-			method: tree.HoistMutation{
-				Picker: tree.WeightedPicker{
-					Weighting: tree.Weighting{
-						PConstant: 0.1, // MAGIC
-						PVariable: 0.1, // MAGIC
-						PFunction: 0.8, // MAGIC
-					},
-				},
-			},
+		MutateOperator: func(op tree.Operator, rng *rand.Rand) tree.Operator {
+			return estimator.mutateOperator(op, rng)
 		},
-		mutator{
-			p: pSubTreeMutation,
-			method: tree.SubTreeMutation{
-				Crossover: tree.SubTreeCrossover{
-					Picker: tree.WeightedPicker{
-						Weighting: tree.Weighting{
-							PConstant: 0.1, // MAGIC
-							PVariable: 0.1, // MAGIC
-							PFunction: 0.8, // MAGIC
-						},
-					},
-				},
-				NewTree: func(rng *rand.Rand) *tree.Tree {
-					return estimator.newTree(rng)
-				},
+	}
+	estimator.PPointMutation = pPointMutation
+
+	estimator.HoistMutation = tree.HoistMutation{
+		Picker: tree.WeightedPicker{
+			Weighting: tree.Weighting{
+				PConstant: 0.1, // MAGIC
+				PVariable: 0.1, // MAGIC
+				PFunction: 0.8, // MAGIC
 			},
 		},
 	}
+	estimator.PHoistMutation = pHoistMutation
+
+	estimator.SubTreeMutation = tree.SubTreeMutation{
+		Crossover: tree.SubTreeCrossover{
+			Picker: tree.WeightedPicker{
+				Weighting: tree.Weighting{
+					PConstant: 0.1, // MAGIC
+					PVariable: 0.1, // MAGIC
+					PFunction: 0.8, // MAGIC
+				},
+			},
+		},
+		NewTree: func(rng *rand.Rand) *tree.Tree {
+			return estimator.newTree(rng)
+		},
+	}
+	estimator.PSubTreeMutation = pSubTreeMutation
 
 	return estimator, nil
 }
@@ -436,11 +441,11 @@ func NewEstimatorWithDefaults() (*Estimator, error) {
 		3,                 // minHeight
 		1,                 // nPops
 		0.5,               // pConstant
+		0.6,               // pCrossover
 		0.5,               // pFull
-		0.01,              // pHoistMutation
-		0.01,              // pPointMutation
-		0.9,               // pSubTreeCrossover
-		0.01,              // PSubTreeMutation
+		0.1,               // pHoistMutation
+		0.1,               // pPointMutation
+		0.1,               // PSubTreeMutation
 		0.3,               // pTerminal
 		0,                 // parsimonyCoeff
 		0.1,               // pointMutationRate

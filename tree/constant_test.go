@@ -79,19 +79,19 @@ func TestConstantString(t *testing.T) {
 	}{
 		{
 			c: Constant{42},
-			s: "42.00",
+			s: "42.000",
 		},
 		{
 			c: Constant{-42},
-			s: "-42.00",
+			s: "-42.000",
 		},
 		{
 			c: Constant{42.24},
-			s: "42.24",
+			s: "42.240",
 		},
 		{
 			c: Constant{},
-			s: "0.00",
+			s: "0.000",
 		},
 	}
 	for i, tc := range testCases {

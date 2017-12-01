@@ -2,7 +2,7 @@ package metrics
 
 // BinaryPrecision measures the fraction of times a class was correctly predicted.
 type BinaryPrecision struct {
-	Class float64 `json:"class"`
+	Class float64
 }
 
 // Apply BinaryPrecision.
@@ -11,12 +11,10 @@ func (metric BinaryPrecision) Apply(yTrue, yPred, weights []float64) (float64, e
 	if err != nil {
 		return 0, err
 	}
-	TP, err := cm.TruePositives(metric.Class)
-	// Check class exists
-	if err != nil {
-		return 0, err
-	}
-	FP, err := cm.FalsePositives(metric.Class)
+	var (
+		TP = cm.TruePositives(metric.Class)
+		FP = cm.FalsePositives(metric.Class)
+	)
 	// If the class has never been predicted return 0
 	if TP+FP == 0 {
 		return 0, nil
@@ -59,16 +57,8 @@ func (metric MicroPrecision) Apply(yTrue, yPred, weights []float64) (float64, er
 		FP float64
 	)
 	for _, class := range cm.Classes() {
-		tp, err := cm.TruePositives(class)
-		if err != nil {
-			return 0, err
-		}
-		fp, err := cm.FalsePositives(class)
-		if err != nil {
-			return 0, err
-		}
-		TP += tp
-		FP += fp
+		TP += cm.TruePositives(class)
+		FP += cm.FalsePositives(class)
 	}
 	return TP / (TP + FP), nil
 }
@@ -148,8 +138,8 @@ func (metric WeightedPrecision) Apply(yTrue, yPred, weights []float64) (float64,
 	for _, class := range cm.Classes() {
 		var (
 			precision, _ = BinaryPrecision{Class: class}.Apply(yTrue, yPred, weights)
-			TP, _        = cm.TruePositives(class)
-			FN, _        = cm.FalseNegatives(class)
+			TP           = cm.TruePositives(class)
+			FN           = cm.FalseNegatives(class)
 		)
 		sum += (TP + FN) * precision
 		n += (TP + FN)

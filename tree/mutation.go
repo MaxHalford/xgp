@@ -23,7 +23,7 @@ func (mut PointMutation) Apply(tree *Tree, rng *rand.Rand) {
 		}
 		return false
 	}
-	tree.rApply(f)
+	tree.Walk(f)
 }
 
 // HoistMutation selects a first sub-Tree from a Tree. It then selects a second
@@ -42,8 +42,8 @@ func (mut HoistMutation) Apply(tree *Tree, rng *rand.Rand) {
 		return
 	}
 	var (
-		sub, _    = mut.Picker.Apply(tree, 1, height-1, rng)
-		subsub, _ = mut.Picker.Apply(sub, 1, -1, rng)
+		sub    = mut.Picker.Apply(tree, 1, height, rng)
+		subsub = mut.Picker.Apply(sub, 0, sub.Height()-1, rng)
 	)
 	*sub = *subsub
 }

@@ -1,6 +1,5 @@
 import random
 
-import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.base import RegressorMixin
 
@@ -11,8 +10,8 @@ class SymbolicRegressor(BaseEstimator, RegressorMixin):
 
     def __init__(self, const_max=5, const_min=-5, funcs_string='sum,sub,mul,div', loss_metric='mae',
                  max_height=6, min_height=3, n_generations=30, n_populations=1, p_constant=0.5,
-                 p_full=0.5, p_hoist_mutation=0.2, p_point_mutation=0.2, p_subtree_crossover=0.3,
-                 p_subtree_mutation=0.2, p_terminal=0.5, parsimony_coeff=0, point_mutation_rate=0.1,
+                 p_crossover=0.5, p_full=0.5, p_hoist_mutation=0.1, p_point_mutation=0.1,
+                 p_subtree_mutation=0.1, p_terminal=0.5, parsimony_coeff=0, point_mutation_rate=0.1,
                  population_size=50, random_state=None, n_rounds=1, tuning_n_generations=0):
 
         self.const_max = const_max
@@ -24,10 +23,10 @@ class SymbolicRegressor(BaseEstimator, RegressorMixin):
         self.n_generations = n_generations
         self.n_populations = n_populations
         self.p_constant = p_constant
+        self.p_crossover = p_crossover
         self.p_full = p_full
         self.p_hoist_mutation = p_hoist_mutation
         self.p_point_mutation = p_point_mutation
-        self.p_subtree_crossover = p_subtree_crossover
         self.p_subtree_mutation = p_subtree_mutation
         self.p_terminal = p_terminal
         self.parsimony_coeff = parsimony_coeff
@@ -53,10 +52,10 @@ class SymbolicRegressor(BaseEstimator, RegressorMixin):
             n_generations=self.n_generations,
             n_populations=self.n_populations,
             p_constant=self.p_constant,
+            p_crossover=self.p_crossover,
             p_full=self.p_full,
             p_hoist_mutation=self.p_hoist_mutation,
             p_point_mutation=self.p_point_mutation,
-            p_subtree_crossover=self.p_subtree_crossover,
             p_subtree_mutation=self.p_subtree_mutation,
             p_terminal=self.p_terminal,
             parsimony_coeff=self.parsimony_coeff,
@@ -68,15 +67,8 @@ class SymbolicRegressor(BaseEstimator, RegressorMixin):
             verbose=fit_params.get('verbose', False)
         )
 
-        self.program_eval_ = lambda X: eval(self.program_str_)
-
         return self
 
     def predict(self, X):
-        y_pred = self.program_eval_(X)
-
-        # In case the program is a single constant it has to be converted to an array
-        if isinstance(y_pred, float):
-            y_pred = np.array([y_pred] * len(X))
-
+        y_pred = binding.predict(X=X, predict_proba=False)
         return y_pred

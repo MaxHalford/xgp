@@ -13,17 +13,17 @@ from sklearn import tree
 from koza import regressor
 
 
-X, y = datasets.load_boston(return_X_y=True)
+X, Y = datasets.load_boston(return_X_y=True)
 
-cv = model_selection.KFold(n_splits=5, random_state=42)
+CV = model_selection.KFold(n_splits=5, random_state=42)
 
-models = {
+MODELS = {
     'Koza': regressor.SymbolicRegressor(
         population_size=300,
         n_generations=30,
         p_hoist_mutation=0.2,
         p_point_mutation=0.2,
-        p_subtree_crossover=0.3,
+        p_crossover=0.3,
         p_subtree_mutation=0.2,
         parsimony_coeff=0.001,
         random_state=42
@@ -35,17 +35,27 @@ models = {
         p_point_mutation=0.2,
         p_subtree_mutation=0.2,
         population_size=300,
-        random_state=2,
-        #verbose=1,
+        random_state=2
     ),
-    'Linear': linear_model.LinearRegression(),
     'Lasso': linear_model.Lasso(),
     'Ridge': linear_model.Ridge(),
     'Tree': tree.DecisionTreeRegressor(random_state=42),
     'Random forest': ensemble.RandomForestRegressor(random_state=42),
 }
 
-for name, model in models.items():
-    t0 = time.time()
-    scores = model_selection.cross_val_score(model, X=X, y=y, scoring='neg_mean_absolute_error', cv=cv)
-    print(f'{name}: {-np.mean(scores)} (± {np.std(scores)}) in {time.time() - t0} seconds')
+
+if __name__ == '__main__':
+
+    left_space = max(len(name) for name in MODELS.keys()) + 1
+
+    print(f'{"Model".rjust(left_space)} | Time (s.) |        MAE', )
+    print(f'{"-" * left_space} + --------- + ------------------')
+    for name, model in MODELS.items():
+        t0 = time.time()
+        scores = model_selection.cross_val_score(model, X=X, y=Y, scoring='neg_mean_absolute_error', cv=CV)
+        mean_score = '{0:.4f}'.format(-np.mean(scores))
+        std_score = '{0:.4f}'.format(np.std(scores))
+        duration = '{0:.4f}'.format(time.time() - t0).rjust(9)
+        print(f"{name.rjust(left_space)} | {duration} | {mean_score} (± {std_score})")
+
+
