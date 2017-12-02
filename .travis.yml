@@ -14,12 +14,11 @@ cache:
     - ${HOME}/.cache/pip
 
 install:
-  - .travis/install.sh
+  - .travis/setup.sh
 
 jobs:
   include:
     - script: .travis/tests/core.sh
-    - script: .travis/tests/python36.sh
     - stage: Documentation
       script: .travis/make_documentation.sh
       deploy:
