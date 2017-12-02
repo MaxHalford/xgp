@@ -15,7 +15,7 @@ func (prog *Program) Evaluate() float64 {
 		return math.Inf(1)
 	}
 	// Use the Metric defined in the Estimator
-	fitness, err := prog.Task.Metric.Apply(prog.Estimator.trainY, yPred, nil)
+	fitness, err := prog.Task.Metric.Apply(prog.Estimator.trainY, yPred, prog.Estimator.trainW)
 	if err != nil || math.IsNaN(fitness) {
 		return math.Inf(1)
 	}

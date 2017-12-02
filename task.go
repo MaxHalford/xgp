@@ -13,6 +13,6 @@ func (t Task) binaryClassification() bool {
 	return t.Metric.Classification() && t.NClasses == 2
 }
 
-func (t Task) multiClassClassification() bool {
+func (t Task) multiClassification() bool {
 	return t.Metric.Classification() && t.NClasses > 2
 }

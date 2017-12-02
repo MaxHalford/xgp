@@ -49,7 +49,7 @@ func (prog *Program) Predict(X [][]float64, predictProba bool) (yPred []float64,
 		return binary(yPred), nil
 	}
 	// Multi-class classification
-	if prog.Task.multiClassClassification() {
+	if prog.Task.multiClassification() {
 		return prog.DRS.Predict(yPred), nil
 	}
 	// Regression

@@ -51,6 +51,7 @@ type Estimator struct {
 	fm          map[int][]tree.Operator
 	trainX      [][]float64
 	trainY      []float64
+	trainW      []float64
 	nClasses    int
 }
 
@@ -75,11 +76,12 @@ func (est Estimator) BestProgram() (*Program, error) {
 }
 
 // Fit an Estimator to a dataset.Dataset.
-func (est *Estimator) Fit(X [][]float64, Y []float64, XNames []string, verbose bool) error {
+func (est *Estimator) Fit(X [][]float64, Y []float64, W []float64, XNames []string, verbose bool) error {
 
 	// Set the training set
 	est.trainX = X
 	est.trainY = Y
+	est.trainW = W
 
 	// Count the number of classes if the task is classification
 	if est.LossMetric.Classification() {
@@ -142,8 +144,6 @@ func (est *Estimator) Fit(X [][]float64, Y []float64, XNames []string, verbose b
 		}
 	}
 
-	//fmt.Println(est.GA.Populations[0].Individuals)
-
 	// Enhance the GA
 	for i := 0; i < est.Generations; i++ {
 		var start = time.Now()
@@ -160,9 +160,6 @@ func (est *Estimator) Fit(X [][]float64, Y []float64, XNames []string, verbose b
 		}
 
 		est.GA.Evolve()
-
-		//fmt.Println(strings.Repeat("-", 30))
-		//fmt.Println(est.GA.Populations[0].Individuals)
 
 		// Display current statistics
 		if verbose {

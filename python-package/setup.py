@@ -14,15 +14,14 @@ setup(
     version='0.0.1dev',
     description='A machine learning tool based on genetic programming',
     long_description=long_description,
-    url='https://github.com/pypa/sampleproject',
+    url='https://maxhalford.github.io/koza',
     author='Max Halford',
     author_email='maxhalford25@gmail.com',
     license='MIT',
     classifiers=[
-        # How mature is this project? Common values are
-        #   3 - Alpha
-        #   4 - Beta
-        #   5 - Production/Stable
+        # 3 - Alpha
+        # 4 - Beta
+        # 5 - Production/Stable
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Build Tools',
@@ -30,7 +29,7 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
     ],
-    keywords='Genetic programming',
+    keywords='Machine learning, genetic programming, symbolic regression',
     packages=find_packages(exclude=['tests']),
     python_requires='>=3',
     build_golang={'root': 'github.com/MaxHalford/koza'},
