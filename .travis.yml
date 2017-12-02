@@ -13,9 +13,6 @@ cache:
     - ${HOME}/.cache/usr
     - ${HOME}/.cache/pip
 
-install:
-  - .travis/setup.sh
-
 jobs:
   include:
     - script: .travis/tests/core.sh
