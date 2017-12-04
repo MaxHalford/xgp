@@ -116,6 +116,7 @@ var fitCmd = &cobra.Command{
 		err = estimator.Fit(
 			dataFrameToFloat64(df.Select(featureColumns)),
 			df.Col(fitTargetCol).Float(),
+			nil,
 			featureColumns,
 			fitVerbose,
 		)
