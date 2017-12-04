@@ -1,12 +1,12 @@
 language: go
 
+go:
+  - tip
+
 sudo: required
 
 os:
   - linux
-
-go:
-  - tip
 
 cache:
   directories:
