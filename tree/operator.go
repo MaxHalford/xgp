@@ -12,7 +12,7 @@ type Operator interface {
 	String() string
 }
 
-// ParseStringFuncs a list of strings into a slice of Operators.
+// ParseStringFuncs parses a string into a slice of Operators.
 func ParseStringFuncs(str string) ([]Operator, error) {
 	var (
 		strs  = strings.Split(str, ",")
