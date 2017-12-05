@@ -3,10 +3,9 @@ package koza
 import (
 	"errors"
 	"fmt"
-	"math"
+	"io"
 	"math/rand"
 	"os"
-	"sync"
 	"text/tabwriter"
 	"time"
 
@@ -44,57 +43,95 @@ type Estimator struct {
 	PHoistMutation   float64
 	SubTreeCrossover tree.SubTreeCrossover
 
-	bestProgram *Program
-	bestFitness float64
-	mutex       sync.Mutex
-	cache       *tree.Cache
-	fm          map[int][]tree.Operator
-	trainX      [][]float64
-	trainY      []float64
-	trainW      []float64
-	nClasses    int
-}
-
-// BestProgram set an Estimator's bestProgram and bestFitness in a safe way.
-func (est *Estimator) setBest(prog *Program, fitness float64) {
-	est.mutex.Lock()
-	if fitness < est.bestFitness {
-		est.bestProgram = prog.clone()
-		est.bestFitness = fitness
-	}
-	est.mutex.Unlock()
+	cache    *tree.Cache
+	fm       map[int][]tree.Operator
+	XTrain   [][]float64
+	YTrain   []float64
+	WTrain   []float64
+	XVal     [][]float64
+	YVal     []float64
+	nClasses int
 }
 
 // BestProgram returns an Estimator's bestProgram in a safe way.
-func (est Estimator) BestProgram() (*Program, error) {
-	est.mutex.Lock()
-	defer est.mutex.Unlock()
-	if est.bestProgram == nil {
-		return nil, errors.New("No best program has been set yet")
+func (est Estimator) BestProgram() *Program {
+	return est.GA.HallOfFame[0].Genome.(*Program)
+}
+
+func notifyProgress(est *Estimator, generation int, duration time.Duration, w io.Writer) error {
+	var (
+		writer = tabwriter.NewWriter(w, 0, 0, 4, ' ', 0)
+		best   = est.BestProgram()
+		stats  = collectStats(est.GA)
+	)
+	// Get the score on the training set
+	yTrainPred, err := best.Predict(est.XTrain, est.EvalMetric.NeedsProbabilities())
+	if err != nil {
+		return err
 	}
-	return est.bestProgram, nil
+	trainScore, err := est.EvalMetric.Apply(est.YTrain, yTrainPred, nil)
+	if err != nil {
+		return err
+	}
+	// Get the score on the evaluation set
+	var evalScoreStr = "/"
+	if est.XVal != nil && est.YVal != nil {
+		yEvalPred, err := best.Predict(est.XVal, est.EvalMetric.NeedsProbabilities())
+		if err != nil {
+			return err
+		}
+		evalScore, err := est.EvalMetric.Apply(est.YVal, yEvalPred, nil)
+		if err != nil {
+			return err
+		}
+		evalScoreStr = fmt.Sprintf("%.5f", evalScore)
+	}
+	// Produce the output message
+	var message = "[%d]\ttrain %s: %.5f\tval %s: %s\tbest size: %d\tmean size: %.2f\tduration: %s\n"
+	fmt.Fprintf(
+		writer,
+		message,
+		generation,
+		est.EvalMetric.String(),
+		trainScore,
+		est.EvalMetric.String(),
+		evalScoreStr,
+		best.Tree.NOperators(),
+		stats.avgNOperators,
+		fmtDuration(duration),
+	)
+	writer.Flush()
+	return nil
 }
 
 // Fit an Estimator to a dataset.Dataset.
-func (est *Estimator) Fit(X [][]float64, Y []float64, W []float64, XNames []string, verbose bool) error {
+func (est *Estimator) Fit(
+	XTrain [][]float64,
+	YTrain []float64,
+	WTrain []float64,
+	XVal [][]float64,
+	YVal []float64,
+	XNames []string,
+	verbose bool,
+) error {
 
 	// Set the training set
-	est.trainX = X
-	est.trainY = Y
-	est.trainW = W
+	est.XTrain = XTrain
+	est.YTrain = YTrain
+	est.WTrain = WTrain
+
+	// Set the validation set
+	est.XVal = XVal
+	est.YVal = YVal
 
 	// Count the number of classes if the task is classification
 	if est.LossMetric.Classification() {
-		est.nClasses = countDistinct(Y)
+		est.nClasses = countDistinct(YTrain)
 		// Check that the task to perform is not multi-class classification
 		if est.nClasses > 2 {
 			return errors.New("Multi-class classification is not supported")
 		}
 	}
-
-	// Initialize the best fitness and program
-	est.bestFitness = math.Inf(1)
-	est.bestProgram = nil
 
 	// Initialize the GA
 	est.GA.Initialize()
@@ -104,49 +141,19 @@ func (est *Estimator) Fit(X [][]float64, Y []float64, W []float64, XNames []stri
 		est.cache = tree.NewCache()
 	}
 
-	// Measure the progress through time
-	var (
-		totalDuration time.Duration
-		writer        = tabwriter.NewWriter(os.Stdout, 0, 0, 4, ' ', 0)
-		notify        = func(generation int, duration time.Duration) error {
-			totalDuration += duration
-			var best, err = est.BestProgram()
-			if err != nil {
-				return err
-			}
-			var (
-				stats        = collectStats(est.GA)
-				yPred, _     = best.Predict(est.trainX, est.EvalMetric.NeedsProbabilities())
-				evalScore, _ = est.EvalMetric.Apply(est.trainY, yPred, nil)
-				message      = "[%d]\t%s: %.5f\tbest size: %d\tmean size: %.2f\tt_gen: %s\tt_total: %s\n"
-			)
-			fmt.Fprintf(
-				writer,
-				message,
-				generation,
-				est.EvalMetric.String(),
-				evalScore,
-				best.Tree.NOperators(),
-				stats.avgNOperators,
-				duration,
-				totalDuration,
-			)
-			writer.Flush()
-			return nil
-		}
-	)
-
 	// Display initial statistics
 	if verbose {
-		err := notify(0, 0)
+		err := notifyProgress(est, 0, 0, os.Stdout)
 		if err != nil {
 			return err
 		}
 	}
 
-	// Enhance the GA
+	// Keep track of the time spent evolving
+	var start = time.Now()
+
+	// Evolve the GA
 	for i := 0; i < est.Generations; i++ {
-		var start = time.Now()
 
 		// Make sure each tree has at least a height of 2
 		for _, pop := range est.GA.Populations {
@@ -163,7 +170,7 @@ func (est *Estimator) Fit(X [][]float64, Y []float64, W []float64, XNames []stri
 
 		// Display current statistics
 		if verbose {
-			err := notify(i+1, time.Since(start))
+			err := notifyProgress(est, i+1, time.Since(start), os.Stdout)
 			if err != nil {
 				return err
 			}
@@ -171,12 +178,8 @@ func (est *Estimator) Fit(X [][]float64, Y []float64, W []float64, XNames []stri
 	}
 
 	// Display the best program
-	best, err := est.BestProgram()
-	if err != nil {
-		return err
-	}
 	if verbose {
-		fmt.Printf("Best program: %s\n", best)
+		fmt.Printf("Best program: %s\n", est.BestProgram())
 	}
 
 	return nil
@@ -184,11 +187,7 @@ func (est *Estimator) Fit(X [][]float64, Y []float64, W []float64, XNames []stri
 
 // Predict the output of a slice of features.
 func (est Estimator) Predict(X [][]float64, predictProba bool) ([]float64, error) {
-	var bestProg, err = est.BestProgram()
-	if err != nil {
-		return nil, err
-	}
-	yPred, err := bestProg.Predict(X, predictProba)
+	var yPred, err = est.BestProgram().Predict(X, predictProba)
 	if err != nil {
 		return nil, err
 	}
@@ -200,7 +199,7 @@ func (est Estimator) newConstant(rng *rand.Rand) tree.Constant {
 }
 
 func (est Estimator) newVariable(rng *rand.Rand) tree.Variable {
-	return tree.Variable{Index: rng.Intn(len(est.trainX))}
+	return tree.Variable{Index: rng.Intn(len(est.XTrain))}
 }
 
 func (est Estimator) newFunction(rng *rand.Rand) tree.Operator {

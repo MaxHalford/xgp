@@ -32,6 +32,7 @@ var (
 	fitSeed               int64
 	fitTargetCol          string
 	fitTuningNGenerations int
+	fitValPath            string
 	fitVerbose            bool
 )
 
@@ -46,8 +47,8 @@ func init() {
 	fitCmd.Flags().IntVarP(&fitMaxHeight, "max_height", "", 6, "max program height used in ramped half-and-half initialization")
 	fitCmd.Flags().IntVarP(&fitMinHeight, "min_height", "", 3, "min program height used in ramped half-and-half initialization")
 	fitCmd.Flags().StringVarP(&fitOutputName, "output", "", "program.json", "path where to save the best program as a JSON file")
-	fitCmd.Flags().IntVarP(&fitNGenerations, "n_generations", "", 30, "number of generations")
-	fitCmd.Flags().IntVarP(&fitNPops, "n_pops", "", 1, "number of populations to use in the GA")
+	fitCmd.Flags().IntVarP(&fitNGenerations, "generations", "", 30, "number of generations")
+	fitCmd.Flags().IntVarP(&fitNPops, "pops", "", 1, "number of populations to use in the GA")
 	fitCmd.Flags().Float64VarP(&fitPConstant, "p_constant", "", 0.5, "probability of picking a constant and not a constant when generating terminal nodes")
 	fitCmd.Flags().Float64VarP(&fitPCrossover, "p_crossover", "", 0.5, "probability of applying crossover")
 	fitCmd.Flags().Float64VarP(&fitPFull, "p_full", "", 0.5, "probability of use full initialization during ramped half-and-half initialization")
@@ -57,10 +58,11 @@ func init() {
 	fitCmd.Flags().Float64VarP(&fitPTerminal, "p_terminal", "", 0.5, "probability of generating a terminal branch in ramped half-and-half initialization")
 	fitCmd.Flags().Float64VarP(&fitParsimonyCoeff, "parsimony", "", 0, "parsimony coefficient by which a program's height is multiplied to decrease it's fitness")
 	fitCmd.Flags().Float64VarP(&fitPointMutationRate, "point_mut_rate", "", 0.3, "probability of modifying an operator during point mutation")
-	fitCmd.Flags().IntVarP(&fitPopSize, "pop_size", "", 50, "number of individuals to use for each population in the GA")
+	fitCmd.Flags().IntVarP(&fitPopSize, "indis", "", 50, "number of individuals to use for each population in the GA")
 	fitCmd.Flags().IntVarP(&fitRounds, "rounds", "", 1, "number of boosting rounds")
 	fitCmd.Flags().Int64VarP(&fitSeed, "seed", "", 0, "seed for random number generation")
 	fitCmd.Flags().StringVarP(&fitTargetCol, "target", "", "y", "name of the target column in the training set")
+	fitCmd.Flags().StringVarP(&fitValPath, "val_set", "", "", "validation set used to monitor out-of-bag performance")
 	fitCmd.Flags().BoolVarP(&fitVerbose, "verbose", "", true, "monitor progress or not")
 }
 
@@ -100,23 +102,45 @@ var fitCmd = &cobra.Command{
 		}
 
 		// Load the training set in memory
-		df, err := ReadCSV(args[0])
+		train, err := ReadCSV(args[0])
 		if err != nil {
 			return err
 		}
 
 		// Check the target column exists
-		var columns = df.Names()
+		var columns = train.Names()
 		if !containsString(columns, fitTargetCol) {
 			return fmt.Errorf("No column named %s", fitTargetCol)
 		}
+		var featureColumns = removeString(columns, fitTargetCol)
+
+		// Extract the features and target from the training set
+		var (
+			XTrain = dataFrameToFloat64(train.Select(featureColumns))
+			YTrain = train.Col(fitTargetCol).Float()
+		)
+
+		// Load the validation set in memory
+		var (
+			XVal [][]float64
+			YVal []float64
+		)
+		if fitValPath != "" {
+			val, err := ReadCSV(fitValPath)
+			if err != nil {
+				return err
+			}
+			XVal = dataFrameToFloat64(val.Select(featureColumns))
+			YVal = val.Col(fitTargetCol).Float()
+		}
 
 		// Fit the estimator
-		var featureColumns = removeString(columns, fitTargetCol)
 		err = estimator.Fit(
-			dataFrameToFloat64(df.Select(featureColumns)),
-			df.Col(fitTargetCol).Float(),
+			XTrain,
+			YTrain,
 			nil,
+			XVal,
+			YVal,
 			featureColumns,
 			fitVerbose,
 		)
@@ -125,10 +149,7 @@ var fitCmd = &cobra.Command{
 		}
 
 		// Save the best Program
-		bestProg, err := estimator.BestProgram()
-		if err != nil {
-			return err
-		}
+		var bestProg = estimator.BestProgram()
 		err = koza.SaveProgramToJSON(*bestProg, fitOutputName)
 		if err != nil {
 			return err

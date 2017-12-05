@@ -1,25 +1,29 @@
 package koza
 
 import (
-	"fmt"
+	"os"
 
 	"github.com/MaxHalford/koza"
+	"github.com/kniren/gota/dataframe"
+	"github.com/kniren/gota/series"
 	"github.com/spf13/cobra"
 )
 
 var (
-	predictOutputName  string
-	predictProgramName string
+	predOutputPath  string
+	predProgramName string
+	predTargetCol   string
 )
 
 func init() {
-	RootCmd.AddCommand(predictCmd)
+	RootCmd.AddCommand(predCmd)
 
-	predictCmd.Flags().StringVarP(&predictOutputName, "output", "", "y_pred.csv", "path to the CSV output")
-	predictCmd.Flags().StringVarP(&predictProgramName, "program", "", "program.json", "path to the program")
+	predCmd.Flags().StringVarP(&predOutputPath, "output", "", "y_pred.csv", "path to the CSV output")
+	predCmd.Flags().StringVarP(&predProgramName, "program", "", "program.json", "path to the program")
+	predCmd.Flags().StringVarP(&predTargetCol, "target", "", "y", "name of the predictions column in the CSV output")
 }
 
-var predictCmd = &cobra.Command{
+var predCmd = &cobra.Command{
 	Use:   "predict",
 	Short: "Predicts a dataset with a program",
 	Long:  "Predicts a dataset with a program",
@@ -27,7 +31,7 @@ var predictCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		// Load the program
-		prog, err := koza.LoadProgramFromJSON(predictProgramName)
+		prog, err := koza.LoadProgramFromJSON(predProgramName)
 		if err != nil {
 			return err
 		}
@@ -44,8 +48,13 @@ var predictCmd = &cobra.Command{
 			return err
 		}
 
-		// Save predictions
-		fmt.Println(yPred)
+		// Save the predictions
+		outFile, err := os.Create(predOutputPath)
+		if err != nil {
+			return err
+		}
+		df = dataframe.New(series.New(yPred, series.Float, predTargetCol))
+		df.WriteCSV(outFile)
 
 		return nil
 	},
