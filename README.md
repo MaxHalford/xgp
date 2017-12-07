@@ -37,7 +37,7 @@ koza is a tool for performing symbolic regression oriented towards machine learn
 <br/>
 </div align="center">
   <a href="https://asciinema.org/a/x6t8d5PZ4Td6iDoAa4IXeK7IB">
-    <img src="https://asciinema.org/a/x6t8d5PZ4Td6iDoAa4IXeK7IB.png" style="max-width:60%;" />
+    <img src="https://asciinema.org/a/x6t8d5PZ4Td6iDoAa4IXeK7IB.png" width="60%" />
   </a>
 </div>
 <br/>
