@@ -8,7 +8,7 @@
 <div align="center">
   <!-- Documentation -->
   <a href="https://maxhalford.github.io/koza">
-    <img src="https://img.shields.io/website-up-down-green-red/http/shields.io.svg?label=my-website" alt="documentation" />
+    <img src="https://img.shields.io/website-up-down-green-red/http/shields.io.svg?label=documentation" alt="documentation" />
   </a>
   <!-- godoc -->
   <a href="https://godoc.org/github.com/MaxHalford/koza">
@@ -32,10 +32,32 @@
 
 :warning: koza is still in active development phase.
 
-koza is a tool for performing symbolic regression for various machine learning tasks. Please refer to [the documentation](maxhalford.github.io/koza) for a full introduction.
+koza is a tool for performing symbolic regression oriented towards machine learning. It can be used for regression and classification tasks. Please refer to [the documentation](maxhalford.github.io/koza) for an in-depth introduction to symbolic regression.
 
-The core library is written in Go and can be used in different ways.
+</div align="center">
+  <a href="https://asciinema.org/a/x6t8d5PZ4Td6iDoAa4IXeK7IB">
+    <img src="https://asciinema.org/a/x6t8d5PZ4Td6iDoAa4IXeK7IB.png" />
+  </a>
+</div>
+
+## Usage
+
+The core library is written in Go but can be used in different ways.
 
 - [Command-line interface (CLI)](maxhalford.github.io/koza/cli)
 - [Go API](maxhalford.github.io/koza/go)
 - [Python API](maxhalford.github.io/koza/python)
+
+## Thanks
+
+koza uses the following projects which are a joy to work with.
+
+- [olekukonko/tablewriter](github.com/olekukonko/tablewriter) for displaying parameters in a pretty way
+- [gonum/gonum](https://github.com/gonum/gonum) for [SIMD operations](https://www.wikiwand.com/en/SIMD) and calculating metrics
+- [spf13/cobra](https://github.com/spf13/cobra) for building the CLI
+- [kniren/gota](https://github.com/kniren/gota) for manipulating dataframes in the CLI
+- [mkdocs/mkdocs](https://github.com/mkdocs/mkdocs/) and [squidfunk/mkdocs-material](https://github.com/squidfunk/mkdocs-material) for building the documentation
+
+## License
+
+The MIT License (MIT). Please see the [LICENSE file](LICENSE) for more information.

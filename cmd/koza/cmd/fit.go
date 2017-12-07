@@ -169,7 +169,7 @@ var fitCmd = &cobra.Command{
 			nil,
 			XVal,
 			YVal,
-			featureColumns,
+			nil,
 			fitNotifyEvery,
 		)
 		if err != nil {

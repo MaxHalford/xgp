@@ -17,9 +17,9 @@ var (
 func init() {
 	RootCmd.AddCommand(scoreCmd)
 
-	scoreCmd.Flags().StringVarP(&scoreEvalMetricName, "eval", "", "mae", "evaluation metric")
-	scoreCmd.Flags().StringVarP(&scoreProgramName, "program", "", "program.json", "path to the program")
-	scoreCmd.Flags().StringVarP(&scoreTargetCol, "target", "", "y", "name of the target column")
+	scoreCmd.Flags().StringVarP(&scoreEvalMetricName, "eval", "", "", "evaluation metric")
+	scoreCmd.Flags().StringVarP(&scoreProgramName, "program", "", "program.json", "path to the program to score")
+	scoreCmd.Flags().StringVarP(&scoreTargetCol, "target", "", "y", "name of the target column in the dataset")
 }
 
 var scoreCmd = &cobra.Command{
@@ -29,10 +29,21 @@ var scoreCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		// Determine the metric to use
-		metric, err := metrics.GetMetric(scoreEvalMetricName, 1)
+		// Load the program
+		prog, err := koza.LoadProgramFromJSON(scoreProgramName)
 		if err != nil {
 			return err
+		}
+
+		// Determine the metric to use
+		var metric metrics.Metric
+		if scoreEvalMetricName == "" {
+			metric, err = metrics.GetMetric(scoreEvalMetricName, 1)
+			if err != nil {
+				return err
+			}
+		} else {
+			metric = prog.Task.Metric
 		}
 
 		// Load the test set in memory
@@ -45,12 +56,6 @@ var scoreCmd = &cobra.Command{
 		var columns = df.Names()
 		if !containsString(columns, scoreTargetCol) {
 			return fmt.Errorf("No column named %s", scoreTargetCol)
-		}
-
-		// Load the program
-		prog, err := koza.LoadProgramFromJSON(scoreProgramName)
-		if err != nil {
-			return err
 		}
 
 		// Make predictions

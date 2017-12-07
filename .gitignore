@@ -1,4 +1,4 @@
-examples/*/*.csv
+*.csv
 site/
 build/
 koza.egg-info/

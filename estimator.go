@@ -39,6 +39,7 @@ type Estimator struct {
 	WTrain   []float64
 	XVal     [][]float64
 	YVal     []float64
+	WVal     []float64
 	nClasses int
 }
 
@@ -76,7 +77,7 @@ func notifyProgress(est *Estimator, generation int, duration time.Duration, w io
 		if err != nil {
 			return err
 		}
-		evalScore, err := est.EvalMetric.Apply(est.YVal, yEvalPred, nil)
+		evalScore, err := est.EvalMetric.Apply(est.YVal, yEvalPred, est.WVal)
 		if err != nil {
 			return err
 		}
@@ -109,7 +110,7 @@ func (est *Estimator) Fit(
 	WTrain []float64,
 	XVal [][]float64,
 	YVal []float64,
-	XNames []string,
+	WVal []float64,
 	notifyEvery uint,
 ) error {
 
@@ -121,6 +122,7 @@ func (est *Estimator) Fit(
 	// Set the validation set
 	est.XVal = XVal
 	est.YVal = YVal
+	est.WVal = WVal
 
 	// Count the number of classes if the task is classification
 	if est.LossMetric.Classification() {

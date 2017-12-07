@@ -7,9 +7,10 @@ import (
 	"time"
 
 	"github.com/MaxHalford/gago"
+	"github.com/olekukonko/tablewriter"
+
 	"github.com/MaxHalford/koza/metrics"
 	"github.com/MaxHalford/koza/tree"
-	"github.com/olekukonko/tablewriter"
 )
 
 // A Config contains all the information needed to instantiate an Estimator.
@@ -226,34 +227,36 @@ func (c Config) NewEstimator() (*Estimator, error) {
 	return estimator, nil
 }
 
-// DefaultConfig is a Config with default values.
-var DefaultConfig = Config{
-	ConstMin: -5,
-	ConstMax: 5,
+// NewConfigWithDefaults returns a Config with default values.
+func NewConfigWithDefaults() Config {
+	return Config{
+		ConstMin: -5,
+		ConstMax: 5,
 
-	EvalMetricName: "mae",
-	LossMetricName: "mae",
+		EvalMetricName: "mae",
+		LossMetricName: "mae",
 
-	Funcs: "sum,sub,mul,div",
+		Funcs: "sum,sub,mul,div",
 
-	MinHeight: 3,
-	MaxHeight: 5,
+		MinHeight: 3,
+		MaxHeight: 5,
 
-	NPopulations:       1,
-	NIndividuals:       50,
-	NGenerations:       30,
-	NTuningGenerations: 0,
+		NPopulations:       1,
+		NIndividuals:       50,
+		NGenerations:       30,
+		NTuningGenerations: 0,
 
-	PConstant: 0.5,
-	PFull:     0.5,
-	PTerminal: 0.3,
+		PConstant: 0.5,
+		PFull:     0.5,
+		PTerminal: 0.3,
 
-	PHoistMutation:    0.1,
-	PPointMutation:    0.1,
-	PSubTreeMutation:  0.1,
-	PointMutationRate: 0.3,
+		PHoistMutation:    0.1,
+		PPointMutation:    0.1,
+		PSubTreeMutation:  0.1,
+		PointMutationRate: 0.3,
 
-	PSubTreeCrossover: 0.5,
+		PSubTreeCrossover: 0.5,
 
-	ParsimonyCoeff: 0,
+		ParsimonyCoeff: 0,
+	}
 }

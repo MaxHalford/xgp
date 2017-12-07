@@ -10,8 +10,7 @@ For development you can replace `koza` with `go run main.go`. For example instea
 
 ```sh
 python examples/boston/create_datasets.py
-koza fit examples/boston/train.csv --loss mae
-koza score examples/boston/test.csv --eval mae
+koza fit examples/boston/train.csv --loss mae --val_set examples/boston/test.csv --indis 500 --gens 50 --seed 5
 ```
 
 ### gplearn polynomial example

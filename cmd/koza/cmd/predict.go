@@ -19,8 +19,8 @@ func init() {
 	RootCmd.AddCommand(predCmd)
 
 	predCmd.Flags().StringVarP(&predOutputPath, "output", "", "y_pred.csv", "path to the CSV output")
-	predCmd.Flags().StringVarP(&predProgramName, "program", "", "program.json", "path to the program")
-	predCmd.Flags().StringVarP(&predTargetCol, "target", "", "y", "name of the predictions column in the CSV output")
+	predCmd.Flags().StringVarP(&predProgramName, "program", "", "program.json", "path to the program used to make predictions")
+	predCmd.Flags().StringVarP(&predTargetCol, "target", "", "y", "name of the target column in the CSV output")
 }
 
 var predCmd = &cobra.Command{
