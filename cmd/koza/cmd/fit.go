@@ -38,10 +38,10 @@ var (
 
 	fitSeed int64
 
-	fitOutputName string
-	fitTargetCol  string
-	fitValPath    string
-	fitVerbose    bool
+	fitNotifyEvery uint
+	fitOutputName  string
+	fitTargetCol   string
+	fitValPath     string
 )
 
 func init() {
@@ -61,7 +61,7 @@ func init() {
 	fitCmd.Flags().IntVarP(&fitNPopulations, "pops", "", 1, "number of populations to use in the GA")
 	fitCmd.Flags().IntVarP(&fitNIndividuals, "indis", "", 50, "number of individuals to use for each population in the GA")
 	fitCmd.Flags().IntVarP(&fitNGenerations, "gens", "", 30, "number of generations used to evolve the GA")
-	fitCmd.Flags().IntVarP(&fitNTuningGenerations, "tuning_gens", "", 0, "number of generations used to evolve the tuning GA")
+	fitCmd.Flags().IntVarP(&fitNTuningGenerations, "tune_gens", "", 0, "number of generations used to evolve the tuning GA")
 
 	fitCmd.Flags().Float64VarP(&fitPConstant, "p_constant", "", 0.5, "probability of picking a constant and not a constant when generating terminal nodes")
 	fitCmd.Flags().Float64VarP(&fitPFull, "p_full", "", 0.5, "probability of use full initialization during ramped half-and-half initialization")
@@ -78,10 +78,10 @@ func init() {
 
 	fitCmd.Flags().Int64VarP(&fitSeed, "seed", "", 0, "seed for random number generation")
 
-	fitCmd.Flags().StringVarP(&fitOutputName, "output", "", "program.json", "path where to save the best program as a JSON file")
-	fitCmd.Flags().StringVarP(&fitTargetCol, "target", "", "y", "name of the target column in the training set")
-	fitCmd.Flags().StringVarP(&fitValPath, "val_set", "", "", "validation set used to monitor out-of-bag performance")
-	fitCmd.Flags().BoolVarP(&fitVerbose, "verbose", "", true, "monitor progress or not")
+	fitCmd.Flags().UintVarP(&fitNotifyEvery, "notify", "", 1, "frequency at which progress should be displayed")
+	fitCmd.Flags().StringVarP(&fitOutputName, "output", "", "program.json", "path where to save the JSON representation of the best program ")
+	fitCmd.Flags().StringVarP(&fitTargetCol, "target", "", "y", "name of the target column in the training and validation datasets")
+	fitCmd.Flags().StringVarP(&fitValPath, "val", "", "", "path to a validation dataset that can be used to monitor out-of-bag performance")
 }
 
 var fitCmd = &cobra.Command{
@@ -170,7 +170,7 @@ var fitCmd = &cobra.Command{
 			XVal,
 			YVal,
 			featureColumns,
-			fitVerbose,
+			fitNotifyEvery,
 		)
 		if err != nil {
 			return err

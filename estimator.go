@@ -110,7 +110,7 @@ func (est *Estimator) Fit(
 	XVal [][]float64,
 	YVal []float64,
 	XNames []string,
-	verbose bool,
+	notifyEvery uint,
 ) error {
 
 	// Set the training set
@@ -142,7 +142,7 @@ func (est *Estimator) Fit(
 	fmt.Println(est)
 
 	// Display initial statistics
-	if verbose {
+	if notifyEvery > 0 {
 		err := notifyProgress(est, 0, 0, os.Stdout)
 		if err != nil {
 			return err
@@ -169,7 +169,7 @@ func (est *Estimator) Fit(
 		est.GA.Evolve()
 
 		// Display current statistics
-		if verbose {
+		if notifyEvery > 0 && uint(i+1)%notifyEvery == 0 {
 			err := notifyProgress(est, i+1, time.Since(start), os.Stdout)
 			if err != nil {
 				return err
@@ -178,9 +178,7 @@ func (est *Estimator) Fit(
 	}
 
 	// Display the best program
-	if verbose {
-		fmt.Printf("Best program: %s\n", est.BestProgram())
-	}
+	fmt.Printf("Best program: %s\n", est.BestProgram())
 
 	return nil
 }
