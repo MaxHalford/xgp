@@ -5,7 +5,7 @@ site_author: 'Max Halford'
 site_url: 'https://maxhalford.github.io/koza'
 
 # Repository
-repo_name: 'MaxHalford/koza'
+repo_name: 'GitHub'
 repo_url: 'https://github.com/MaxHalford/koza'
 
 # Copyright
@@ -16,11 +16,11 @@ theme: 'material'
 
 # Pages
 pages:
-  - Home: index.md
+  - Introduction: index.md
   - How it works: how-it-works.md
-  - CLI: cli.md
-  - Go: go.md
-  - Python: python.md
+  - Command-line interface (CLI): cli.md
+  - Go API: go.md
+  - Python API: python.md
   - Training parameters: training-parameters.md
 
 # Extensions
@@ -30,9 +30,11 @@ markdown_extensions:
 
 # Options
 extra:
+  logo:
+    icon: 'home'
   palette:
-    primary: 'indigo'
+    primary: 'blue-grey'
     accent: 'red'
   social:
     - type: 'github'
-      link: 'https://github.com/squidfunk'
+      link: 'https://github.com/MaxHalford/koza'

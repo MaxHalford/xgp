@@ -41,7 +41,7 @@ func TestFullInitializer(t *testing.T) {
 		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
 			var tree = FullInitializer{}.Apply(tc.minHeight, tc.maxHeight, of, rng)
 			if tree.NOperators() != tc.nOperators {
-				t.Errorf("Expected %d trees, got %d", tc.nOperators, tree.NOperators())
+				t.Errorf("Expected %d, got %d", tc.nOperators, tree.NOperators())
 			}
 		})
 	}

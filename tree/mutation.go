@@ -35,14 +35,13 @@ type HoistMutation struct {
 
 // Apply HoistMutation.
 func (mut HoistMutation) Apply(tree *Tree, rng *rand.Rand) {
-	// The Tree has to have a depth of at least 2 for hoist mutation to make
-	// sense
+	// Hoist mutation only works if the height of Tree exceeds 1
 	var height = tree.Height()
-	if height < 2 {
+	if height < 1 {
 		return
 	}
 	var (
-		sub    = mut.Picker.Apply(tree, 1, height, rng)
+		sub    = mut.Picker.Apply(tree, 1, tree.Height(), rng)
 		subsub = mut.Picker.Apply(sub, 0, sub.Height()-1, rng)
 	)
 	*sub = *subsub

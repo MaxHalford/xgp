@@ -7,12 +7,13 @@ import (
 	"gonum.org/v1/gonum/floats"
 )
 
-// A Picker picks a sub-Tree from a Tree.
+// A Picker picks a sub-Tree from a Tree. The sub-Tree can be forced to have
+// a height in range [minHeight, maxHeight].
 type Picker interface {
 	Apply(tree *Tree, minHeight, maxHeight int, rng *rand.Rand) *Tree
 }
 
-// WeightPicker picks a sub-Tree at random by weighting each sub-tree
+// WeightPicker picks a sub-Tree at random by weighting each sub-Tree
 // according to it's Operator's type.
 type WeightedPicker struct {
 	Weighting Weighting
@@ -42,12 +43,16 @@ func (wp WeightedPicker) Apply(tree *Tree, minHeight, maxHeight int, rng *rand.R
 		}
 	)
 	tree.Walk(assignWeight)
+
 	// Calculate the cumulative sum of the weights
 	var cumSum = make([]float64, len(weights))
 	floats.CumSum(cumSum, weights)
+
 	// Sample a random number in [0, cumSum[-1])
 	var r = rng.Float64() * cumSum[len(cumSum)-1]
+
 	// Find i where cumSum[i-1] < r < cumSum[i]
 	var i = sort.SearchFloat64s(cumSum, r)
+
 	return trees[i]
 }

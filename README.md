@@ -6,6 +6,10 @@
 <br/>
 
 <div align="center">
+  <!-- Documentation -->
+  <a href="https://maxhalford.github.io/koza">
+    <img src="https://img.shields.io/website-up-down-green-red/http/shields.io.svg?label=my-website" alt="documentation" />
+  </a>
   <!-- godoc -->
   <a href="https://godoc.org/github.com/MaxHalford/koza">
     <img src="https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square" alt="godoc" />
@@ -22,17 +26,14 @@
 
 <br/>
 
-<div align="center">A <a href="https://www.wikiwand.com/en/Symbolic_regression">symbolic regression</a> library written in Go with bindings to other languages</div>
+<div align="center">A <a href="https://www.wikiwand.com/en/Symbolic_regression">symbolic regression</a> tool written in Go with bindings to other languages</div>
 
 <br/>
 
-If you want to use koza in a data science pipeline then you probably want to use it in one of the following ways:
+koza is a tool for performing symbolic regression for various machine learning tasks. Please refer to [the documentation](maxhalford.github.io/koza) for a full introduction.
 
-- [Command-line interface (CLI)](cmd)
-- [Python package](python-package)
+The core library is written in Go and can be used in different ways.
 
-You can also simply install the `koza` Go package and use it from within your Go code.
-
-```sh
-go get -u github.com/MaxHalford/koza
-```
+- [Command-line interface (CLI)](maxhalford.github.io/koza/cli)
+- [Go API](maxhalford.github.io/koza/go)
+- [Python API](maxhalford.github.io/koza/python) (separate repository)

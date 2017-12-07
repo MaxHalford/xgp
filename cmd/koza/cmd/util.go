@@ -1,4 +1,4 @@
-package koza
+package cmd
 
 import "github.com/kniren/gota/dataframe"
 

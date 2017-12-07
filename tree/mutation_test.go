@@ -75,7 +75,7 @@ func TestHoistMutation(t *testing.T) {
 			out     *Tree
 		}{
 			{
-				in: mustParseCode("cos(sin(42))"),
+				in: mustParseCode("cos(42)"),
 				mutator: HoistMutation{
 					Picker: WeightedPicker{
 						Weighting: Weighting{
@@ -85,7 +85,7 @@ func TestHoistMutation(t *testing.T) {
 						},
 					},
 				},
-				out: mustParseCode("cos(42)"),
+				out: mustParseCode("42"),
 			},
 		}
 	)

@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// ParseCode takes a code representation of a Tree and parses it into a Tree.
 func ParseCode(code string) (*Tree, error) {
 	var tree Tree
 
@@ -45,9 +46,9 @@ func ParseCode(code string) (*Tree, error) {
 	parts[len(parts)-1] = parts[len(parts)-1][:len(parts[len(parts)-1])-1]
 
 	var (
-		operands         = []string{}
-		operand          = ""
-		parenthisCounter int
+		operands           = []string{}
+		operand            = ""
+		parenthesesCounter int
 	)
 	for _, r := range parts[1] {
 		var s = string(r)
@@ -55,16 +56,16 @@ func ParseCode(code string) (*Tree, error) {
 			continue
 		}
 		if s == "(" {
-			parenthisCounter++
+			parenthesesCounter++
 		}
-		if s == "," && parenthisCounter <= 0 {
+		if s == "," && parenthesesCounter <= 0 {
 			operands = append(operands, operand)
 			operand = ""
 		} else {
 			operand += s
 		}
 		if s == ")" {
-			parenthisCounter--
+			parenthesesCounter--
 		}
 	}
 	operands = append(operands, operand)

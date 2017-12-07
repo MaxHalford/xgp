@@ -2,6 +2,8 @@
 
 ## Installation
 
+### Mac
+
 First, [install Go](https://golang.org/dl/), set your `GOPATH`, and make sure `$GOPATH/bin` is on your `PATH`.
 
 ```sh
@@ -15,8 +17,14 @@ export PATH="$PATH:$GOPATH/bin"
 Now you can install the `koza` command-line interface with the following command.
 
 ```sh
-go get -u github.com/MaxHalford/koza/cmd
+go install github.com/MaxHalford/koza/cmd/koza
 ```
+
+Run `koza --help` to check if the installation was successful.
+
+### Linux
+
+### Windows
 
 ## Commands
 
