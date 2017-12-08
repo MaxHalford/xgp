@@ -91,6 +91,11 @@ var fitCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 
+		// By default the evaluation metric is equal to the loss metric
+		if fitEvalMetricName == "" {
+			fitEvalMetricName = fitLossMetricName
+		}
+
 		// Instantiate an Estimator
 		var config = koza.Config{
 			ConstMin: fitConstMin,

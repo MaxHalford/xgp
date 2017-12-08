@@ -19,9 +19,8 @@ var (
 func init() {
 	RootCmd.AddCommand(toDOTCmd)
 
-	toDOTCmd.Flags().StringVarP(&toDOTOutputName, "output", "", "program.dot", "path for the output file")
-	toDOTCmd.Flags().StringVarP(&toDOTProgramName, "program", "", "program.json", "path to the program")
-	toDOTCmd.Flags().BoolVarP(&toDOTSave, "save", "", false, "save to a file or not")
+	toDOTCmd.Flags().StringVarP(&toDOTOutputName, "output", "", "program.dot", "path to the DOT file output")
+	toDOTCmd.Flags().BoolVarP(&toDOTSave, "save", "", false, "save to a DOT file or not")
 	toDOTCmd.Flags().BoolVarP(&toDOTShell, "shell", "", true, "output in the terminal or not")
 }
 
@@ -29,9 +28,10 @@ var toDOTCmd = &cobra.Command{
 	Use:   "todot",
 	Short: "Produces a DOT language representation of a program",
 	Long:  "Produces a DOT language representation of a program",
+	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// Load the program
-		program, err := koza.LoadProgramFromJSON(toDOTProgramName)
+		program, err := koza.LoadProgramFromJSON(args[0])
 		if err != nil {
 			return err
 		}

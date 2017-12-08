@@ -42,7 +42,7 @@ koza fit train.csv
 
 This will evaluate and evolve many programs with default values before finally outputting the best obtained program to a JSON file. By default the JSON file is named `program.json`. The JSON file can then be used by the `predict` command to make predictions on another dataset.
 
-Default values are specified in the [training parameters section](training-parameters.md). In addition to these parameters, the following arguments are available if you are using the CLI.
+Default values are specified in the [training parameters section](training-parameters.md). In addition to these parameters, the following arguments are available for the `fit` command.
 
 | Argument | Description | Default |
 |----------|-------------|---------|
@@ -85,3 +85,22 @@ The following arguments are available for the `score` command.
 | eval | Evaluation metric | Same as the loss metric used during training |
 | program | Path to the program to score | program.json |
 | target | Name of the target column in the dataset | y |
+
+
+### todot
+
+Because programs can be represented as trees, [Graphviz](https://www.graphviz.org/) can be used to visualize them. The `todot` command takes a program as input and outputs the Graphviz representation of the program. You can then copy/paste the output and use a service such as [webgraphviz](http://www.webgraphviz.com/) to obtain the visualization. By default the output will not be saved to a file but will however be displayed in the terminal.
+
+```sh
+koza todot program.json
+```
+
+The following arguments are available for the `todot` command.
+
+| Argument | Description | Default |
+|----------|-------------|---------|
+| output | Path to the DOT file output | program.dot |
+| program | Save to a DOT file or not | False |
+| target | Output in the terminal or not | True |
+
+

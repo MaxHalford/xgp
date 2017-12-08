@@ -27,6 +27,7 @@ pages:
 markdown_extensions:
   - admonition
   - codehilite
+  - mdx_math
 
 # Options
 extra:
@@ -38,3 +39,6 @@ extra:
   social:
     - type: 'github'
       link: 'https://github.com/MaxHalford/koza'
+
+extra_javascript:
+  - https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML
