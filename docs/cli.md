@@ -75,7 +75,7 @@ This will make predictions on `test.csv` and save them to a specificied path. Th
 If you don't necessarily want to save predictions but only want to evaluate a program then you can use the `score` command. The `score` command will open a program, make predictions against a given dataset, and output a prediction score. By default the loss metric used during training is used.
 
 ```sh
-koza predict test.csv
+koza score test.csv
 ```
 
 The following arguments are available for the `score` command.

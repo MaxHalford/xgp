@@ -45,7 +45,7 @@ func (est *Estimator) Fit(
 ) error
 ```
 
-Just like the [CLI `fit` command](cli.md#fit) only requires a training set to function; the `Estimator`'s `Fit` method only requires a matrix of features `XTrain` and a list of targets `YTrain`. `WTrain` can be used to weight the samples in `XTrain` during program evaluation, this is particularly useful for higher-level learning algorithms such as [boosting](https://www.wikiwand.com/en/Boosting_(machine_learning)). One important thing to not is that `XTrain` and `XVal` should be **ordered column-wise**; that is `X[0]` should access the first column in the dataset, not the first row.
+Just like the in CLI, the only required arguments to the `Estimator`'s `Fit` are a matrix of features `XTrain` and a list of targets `YTrain`. `WTrain` can be used to weight the samples in `XTrain` during program evaluation, this is particularly useful for higher-level learning algorithms such as [boosting](https://www.wikiwand.com/en/Boosting_(machine_learning)). One important thing to not is that `XTrain` and `XVal` should be **ordered column-wise**; that is `X[0]` should access the first column in the dataset, not the first row.
 
 !!! warning
     For the while koza does not handle missing values.

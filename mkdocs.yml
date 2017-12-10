@@ -12,7 +12,15 @@ repo_url: 'https://github.com/MaxHalford/koza'
 copyright: 'Copyright &copy; 2017 Max Halford'
 
 # Theme
-theme: 'material'
+theme:
+  name: 'material'
+  logo: 'home'
+  palette:
+    primary: 'blue-grey'
+    accent: 'red'
+  social:
+    - type: 'github'
+      link: 'https://github.com/MaxHalford/koza'
 
 # Pages
 pages:
@@ -29,16 +37,6 @@ markdown_extensions:
   - codehilite
   - mdx_math
 
-# Options
-extra:
-  logo:
-    icon: 'home'
-  palette:
-    primary: 'blue-grey'
-    accent: 'red'
-  social:
-    - type: 'github'
-      link: 'https://github.com/MaxHalford/koza'
-
+# MathJax JavaScript
 extra_javascript:
   - https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML
