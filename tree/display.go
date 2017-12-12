@@ -2,7 +2,6 @@ package tree
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 )
 
@@ -112,85 +111,4 @@ func (displayer CodeDisplay) Apply(tree *Tree) string {
 	default:
 		return tree.Operator.String()
 	}
-}
-
-// NumpyDisplay outputs an code-like representation of a Tree.
-//
-// np.power(np.sum([X[:, 0], X[:, 1], axis=1), np.cos(2))
-//
-type NumpyDisplay struct{}
-
-// Apply NumpyDisplay.
-func (displayer NumpyDisplay) Apply(tree *Tree) string {
-	switch len(tree.Branches) {
-	// Nil arity
-	case 0:
-		switch tree.Operator.(type) {
-		// Constant
-		case Constant:
-			return strconv.FormatFloat(tree.Operator.(Constant).Value, 'f', -1, 64)
-		// Variable
-		default:
-			return fmt.Sprintf("X[:, %d]", tree.Operator.(Variable).Index)
-		}
-	// Unary
-	case 1:
-		return fmt.Sprintf("np.%s(%s)", tree.Operator.String(), displayer.Apply(tree.Branches[0]))
-	// Binary
-	case 2:
-		switch tree.Operator.(type) {
-		// Max
-		case Max:
-			return fmt.Sprintf(
-				"np.maximum(%s, %s)",
-				displayer.Apply(tree.Branches[0]),
-				displayer.Apply(tree.Branches[1]),
-			)
-		// Min
-		case Min:
-			return fmt.Sprintf(
-				"np.minimum(%s, %s)",
-				displayer.Apply(tree.Branches[0]),
-				displayer.Apply(tree.Branches[1]),
-			)
-		// Sum
-		case Sum:
-			return fmt.Sprintf(
-				"np.add(%s, %s)",
-				displayer.Apply(tree.Branches[0]),
-				displayer.Apply(tree.Branches[1]),
-			)
-		// Difference
-		case Difference:
-			return fmt.Sprintf(
-				"np.subtract(%s, %s)",
-				displayer.Apply(tree.Branches[0]),
-				displayer.Apply(tree.Branches[1]),
-			)
-		// Division
-		case Division:
-			return fmt.Sprintf(
-				"np.divide(%s, %s, out=np.ones(shape=len(X)), where=%s>=%s)",
-				displayer.Apply(tree.Branches[0]),
-				displayer.Apply(tree.Branches[1]),
-				displayer.Apply(tree.Branches[1]),
-				strconv.FormatFloat(zeroThreshold, 'f', -1, 64),
-			)
-		// Product
-		case Product:
-			return fmt.Sprintf(
-				"np.multiply(%s, %s)",
-				displayer.Apply(tree.Branches[0]),
-				displayer.Apply(tree.Branches[1]),
-			)
-		// Power
-		case Power:
-			return fmt.Sprintf(
-				"np.power(%s, %s)",
-				displayer.Apply(tree.Branches[0]),
-				displayer.Apply(tree.Branches[1]),
-			)
-		}
-	}
-	return ""
 }

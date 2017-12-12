@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+
+	"github.com/MaxHalford/koza/tree/op"
 )
 
 func TestParseCode(t *testing.T) {
@@ -14,23 +16,23 @@ func TestParseCode(t *testing.T) {
 		{
 			code: "sum(X[0], 42)",
 			tree: &Tree{
-				Operator: Sum{},
+				Operator: op.Sum{},
 				Branches: []*Tree{
-					&Tree{Operator: Variable{0}},
-					&Tree{Operator: Constant{42}},
+					&Tree{Operator: op.Variable{0}},
+					&Tree{Operator: op.Constant{42}},
 				},
 			},
 		},
 		{
 			code: "cos(sum(X[0], 42))",
 			tree: &Tree{
-				Operator: Cos{},
+				Operator: op.Cos{},
 				Branches: []*Tree{
 					&Tree{
-						Operator: Sum{},
+						Operator: op.Sum{},
 						Branches: []*Tree{
-							&Tree{Operator: Variable{0}},
-							&Tree{Operator: Constant{42}},
+							&Tree{Operator: op.Variable{0}},
+							&Tree{Operator: op.Constant{42}},
 						},
 					},
 				},
@@ -39,20 +41,20 @@ func TestParseCode(t *testing.T) {
 		{
 			code: "sum(sum(X[0], 42), sum(X[1], 43))",
 			tree: &Tree{
-				Operator: Sum{},
+				Operator: op.Sum{},
 				Branches: []*Tree{
 					&Tree{
-						Operator: Sum{},
+						Operator: op.Sum{},
 						Branches: []*Tree{
-							&Tree{Operator: Variable{0}},
-							&Tree{Operator: Constant{42}},
+							&Tree{Operator: op.Variable{0}},
+							&Tree{Operator: op.Constant{42}},
 						},
 					},
 					&Tree{
-						Operator: Sum{},
+						Operator: op.Sum{},
 						Branches: []*Tree{
-							&Tree{Operator: Variable{1}},
-							&Tree{Operator: Constant{43}},
+							&Tree{Operator: op.Variable{1}},
+							&Tree{Operator: op.Constant{43}},
 						},
 					},
 				},
@@ -61,16 +63,45 @@ func TestParseCode(t *testing.T) {
 		{
 			code: "cos(cos(cos(42)))",
 			tree: &Tree{
-				Operator: Cos{},
+				Operator: op.Cos{},
 				Branches: []*Tree{
 					&Tree{
-						Operator: Cos{},
+						Operator: op.Cos{},
 						Branches: []*Tree{
 							&Tree{
-								Operator: Cos{},
+								Operator: op.Cos{},
 								Branches: []*Tree{
 									&Tree{
-										Operator: Constant{42},
+										Operator: op.Constant{42},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			code: "mul(cos(X[0]), log(sin(X[1])))",
+			tree: &Tree{
+				Operator: op.Product{},
+				Branches: []*Tree{
+					&Tree{
+						Operator: op.Cos{},
+						Branches: []*Tree{
+							&Tree{
+								Operator: op.Variable{0},
+							},
+						},
+					},
+					&Tree{
+						Operator: op.Log{},
+						Branches: []*Tree{
+							&Tree{
+								Operator: op.Sin{},
+								Branches: []*Tree{
+									&Tree{
+										Operator: op.Variable{1},
 									},
 								},
 							},

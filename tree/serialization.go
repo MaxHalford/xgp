@@ -3,6 +3,8 @@ package tree
 import (
 	"encoding/json"
 	"strconv"
+
+	"github.com/MaxHalford/koza/tree/op"
 )
 
 // A serialtree can be serialized and holds information that can be used to
@@ -19,12 +21,12 @@ func serializetree(tree *Tree) (serialtree, error) {
 		Branches: make([]serialtree, len(tree.Branches)),
 	}
 	switch tree.Operator.(type) {
-	case Constant:
+	case op.Constant:
 		serial.OpType = "constant"
-		serial.OpValue = strconv.FormatFloat(tree.Operator.(Constant).Value, 'f', -1, 64)
-	case Variable:
+		serial.OpValue = strconv.FormatFloat(tree.Operator.(op.Constant).Value, 'f', -1, 64)
+	case op.Variable:
 		serial.OpType = "variable"
-		serial.OpValue = strconv.Itoa(tree.Operator.(Variable).Index)
+		serial.OpValue = strconv.Itoa(tree.Operator.(op.Variable).Index)
 	default:
 		serial.OpType = "function"
 		serial.OpValue = tree.Operator.String()
@@ -50,15 +52,15 @@ func parseSerialtree(serial serialtree) (*Tree, error) {
 		if err != nil {
 			return nil, err
 		}
-		tree.Operator = Constant{val}
+		tree.Operator = op.Constant{val}
 	case "variable":
 		var idx, err = strconv.Atoi(serial.OpValue)
 		if err != nil {
 			return nil, err
 		}
-		tree.Operator = Variable{idx}
+		tree.Operator = op.Variable{idx}
 	default:
-		var function, err = parseFuncName(serial.OpValue)
+		var function, err = op.ParseFuncName(serial.OpValue)
 		if err != nil {
 			return nil, err
 		}

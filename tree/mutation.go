@@ -2,6 +2,8 @@ package tree
 
 import (
 	"math/rand"
+
+	"github.com/MaxHalford/koza/tree/op"
 )
 
 // A Mutator modifies a Tree in-place.
@@ -12,7 +14,7 @@ type Mutator interface {
 // PointMutation picks one sub-Tree at random and replaces it's Operator.
 type PointMutation struct {
 	Weighting      Weighting
-	MutateOperator func(op Operator, rng *rand.Rand) Operator
+	MutateOperator func(op op.Operator, rng *rand.Rand) op.Operator
 }
 
 // Apply PointMutation.

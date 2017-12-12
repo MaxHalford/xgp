@@ -1,8 +1,10 @@
 package tree
 
+import "github.com/MaxHalford/koza/tree/op"
+
 // A Tree holds an Operator and leaf trees called branches.
 type Tree struct {
-	Operator Operator
+	Operator op.Operator
 	Branches []*Tree
 }
 
@@ -64,7 +66,7 @@ func (tree Tree) NOperators() int {
 // NConstants returns the number of Constants in a Tree.
 func (tree Tree) NConstants() int {
 	var isConstant = func(tree *Tree) bool {
-		var _, ok = tree.Operator.(Constant)
+		var _, ok = tree.Operator.(op.Constant)
 		return ok
 	}
 	return tree.count(isConstant)
@@ -146,9 +148,9 @@ func (tree *Tree) simplify() bool {
 		branch.simplify()
 		// Check the type of the branch's operator
 		switch branch.Operator.(type) {
-		case Constant:
+		case op.Constant:
 			varBranches = false
-		case Variable:
+		case op.Variable:
 			constBranches = false
 		default:
 			varBranches = false
@@ -157,7 +159,7 @@ func (tree *Tree) simplify() bool {
 	}
 	// If the branches are all Constants then a simplification can be made
 	if constBranches {
-		tree.Operator = Constant{Value: tree.evaluateRow([]float64{})}
+		tree.Operator = op.Constant{Value: tree.evaluateRow([]float64{})}
 		tree.Branches = nil
 		return true
 	}
@@ -165,14 +167,14 @@ func (tree *Tree) simplify() bool {
 	// the mother Operator is of type Difference
 	if varBranches {
 		// Check if the variables have the same index
-		if tree.Branches[0].Operator.(Variable).Index == tree.Branches[1].Operator.(Variable).Index {
+		if tree.Branches[0].Operator.(op.Variable).Index == tree.Branches[1].Operator.(op.Variable).Index {
 			switch tree.Operator.(type) {
-			case Difference:
-				tree.Operator = Constant{Value: 0}
+			case op.Difference:
+				tree.Operator = op.Constant{Value: 0}
 				tree.Branches = nil
 				return true
-			case Division:
-				tree.Operator = Constant{Value: 1}
+			case op.Division:
+				tree.Operator = op.Constant{Value: 1}
 				tree.Branches = nil
 				return true
 			default:

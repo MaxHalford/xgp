@@ -8,6 +8,7 @@ import (
 
 	"github.com/MaxHalford/koza/metrics"
 	"github.com/MaxHalford/koza/tree"
+	"github.com/MaxHalford/koza/tree/op"
 )
 
 func TestDRSJSONEncodeDecode(t *testing.T) {
@@ -38,10 +39,10 @@ func TestDRSJSONEncodeDecode(t *testing.T) {
 func TestProgramJSONPersistence(t *testing.T) {
 	var initialProgram = Program{
 		Tree: &tree.Tree{
-			Operator: tree.Sum{},
+			Operator: op.Sum{},
 			Branches: []*tree.Tree{
-				&tree.Tree{Operator: tree.Constant{42}},
-				&tree.Tree{Operator: tree.Variable{1}},
+				&tree.Tree{Operator: op.Constant{42}},
+				&tree.Tree{Operator: op.Variable{1}},
 			},
 		},
 		DRS: &DynamicRangeSelection{

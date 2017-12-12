@@ -14,7 +14,9 @@ copyright: 'Copyright &copy; 2017 Max Halford'
 # Theme
 theme:
   name: 'material'
-  logo: 'home'
+  custom_dir: 'docs/theme'
+  logo:
+    icon: 'home'
   palette:
     primary: 'blue-grey'
     accent: 'red'
@@ -30,6 +32,7 @@ pages:
   - Go API: go.md
   - Python API: python.md
   - Training parameters: training-parameters.md
+  - Available operators: operators.md
 
 # Extensions
 markdown_extensions:

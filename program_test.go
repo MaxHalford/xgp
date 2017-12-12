@@ -6,6 +6,7 @@ import (
 
 	"github.com/MaxHalford/koza/metrics"
 	"github.com/MaxHalford/koza/tree"
+	"github.com/MaxHalford/koza/tree/op"
 )
 
 func TestPredict(t *testing.T) {
@@ -22,10 +23,10 @@ func TestPredict(t *testing.T) {
 			},
 			program: Program{
 				Tree: &tree.Tree{
-					Operator: tree.Sum{},
+					Operator: op.Sum{},
 					Branches: []*tree.Tree{
-						&tree.Tree{Operator: tree.Variable{0}},
-						&tree.Tree{Operator: tree.Variable{1}},
+						&tree.Tree{Operator: op.Variable{0}},
+						&tree.Tree{Operator: op.Variable{1}},
 					},
 				},
 				Task: Task{

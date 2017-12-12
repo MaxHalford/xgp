@@ -95,12 +95,18 @@ Because programs can be represented as trees, [Graphviz](https://www.graphviz.or
 koza todot program.json
 ```
 
+You can also feed the `todot` command a formula instead of a JSON file.
+
+```sh
+koza todot "sum(X[13], 42)"
+```
+
 The following arguments are available for the `todot` command.
 
 | Argument | Description | Default |
 |----------|-------------|---------|
 | output | Path to the DOT file output | program.dot |
-| program | Save to a DOT file or not | False |
-| target | Output in the terminal or not | True |
+| save | Save to a DOT file or not | False |
+| shell | Output in the terminal or not | True |
 
 

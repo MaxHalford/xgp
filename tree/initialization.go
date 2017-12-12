@@ -2,18 +2,20 @@ package tree
 
 import (
 	"math/rand"
+
+	"github.com/MaxHalford/koza/tree/op"
 )
 
 // An OperatorFactory produces new Operators.
 type OperatorFactory struct {
 	PConstant   float64
-	NewConstant func(rng *rand.Rand) Constant
-	NewVariable func(rng *rand.Rand) Variable
-	NewFunction func(rng *rand.Rand) Operator
+	NewConstant func(rng *rand.Rand) op.Constant
+	NewVariable func(rng *rand.Rand) op.Variable
+	NewFunction func(rng *rand.Rand) op.Operator
 }
 
 // New returns an Operator.
-func (of OperatorFactory) New(terminal bool, rng *rand.Rand) Operator {
+func (of OperatorFactory) New(terminal bool, rng *rand.Rand) op.Operator {
 	if terminal {
 		if rng.Float64() < of.PConstant {
 			return of.NewConstant(rng)

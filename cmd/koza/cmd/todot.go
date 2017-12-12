@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/MaxHalford/koza"
 	"github.com/MaxHalford/koza/tree"
@@ -29,18 +30,31 @@ var toDOTCmd = &cobra.Command{
 	Short: "Produces a DOT language representation of a program",
 	Long:  "Produces a DOT language representation of a program",
 	Args:  cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
+
 		// Load the program
-		program, err := koza.LoadProgramFromJSON(args[0])
-		if err != nil {
-			return err
+		var program koza.Program
+		if strings.Contains(args[0], `"`) {
+			program, err = koza.LoadProgramFromJSON(args[0])
+			if err != nil {
+				return err
+			}
+		} else {
+			tree, err := tree.ParseCode(args[0])
+			if err != nil {
+				return err
+			}
+			program = koza.Program{Tree: tree}
 		}
+
 		// Make the Graphviz representation
 		var str = tree.GraphvizDisplay{}.Apply(program.Tree)
+
 		// Output in the shell
 		if toDOTShell {
 			fmt.Println(str)
 		}
+
 		// Create the output file
 		if toDOTSave {
 			return nil

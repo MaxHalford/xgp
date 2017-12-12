@@ -5,12 +5,13 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/MaxHalford/koza/tree/op"
 )
 
 // ParseCode takes a code representation of a Tree and parses it into a Tree.
 func ParseCode(code string) (*Tree, error) {
 	var tree Tree
-
 	// The operator is either a Variable or either a Constant
 	if !strings.HasSuffix(code, ")") {
 
@@ -20,7 +21,7 @@ func ParseCode(code string) (*Tree, error) {
 			if err != nil {
 				return nil, err
 			}
-			tree.Operator = Variable{Index: index}
+			tree.Operator = op.Variable{Index: index}
 			return &tree, nil
 		}
 
@@ -29,14 +30,14 @@ func ParseCode(code string) (*Tree, error) {
 		if err != nil {
 			return nil, err
 		}
-		tree.Operator = Constant{Value: value}
+		tree.Operator = op.Constant{Value: value}
 		return &tree, nil
 	}
 
 	// The operator is a function
 	var (
 		parts         = regexp.MustCompile("\\(").Split(code, 2)
-		operator, err = parseFuncName(parts[0])
+		operator, err = op.ParseFuncName(parts[0])
 	)
 	if err != nil {
 		return nil, err

@@ -1,4 +1,4 @@
-package tree
+package op
 
 import (
 	"strings"
@@ -19,7 +19,7 @@ func ParseStringFuncs(str string) ([]Operator, error) {
 		funcs = make([]Operator, len(strs))
 	)
 	for i, s := range strs {
-		var f, err = parseFuncName(s)
+		var f, err = ParseFuncName(s)
 		if err != nil {
 			return nil, err
 		}

@@ -13,6 +13,7 @@ import (
 
 	"github.com/MaxHalford/koza/metrics"
 	"github.com/MaxHalford/koza/tree"
+	"github.com/MaxHalford/koza/tree/op"
 )
 
 // An Estimator links all the different components together and can be used to
@@ -23,7 +24,7 @@ type Estimator struct {
 
 	EvalMetric       metrics.Metric
 	LossMetric       metrics.Metric
-	Functions        []tree.Operator
+	Functions        []op.Operator
 	TreeInitializer  tree.Initializer
 	GA               *gago.GA
 	TuningGA         *gago.GA
@@ -33,7 +34,7 @@ type Estimator struct {
 	SubTreeCrossover tree.SubTreeCrossover
 
 	cache    *tree.Cache
-	fm       map[int][]tree.Operator
+	fm       map[int][]op.Operator
 	XTrain   [][]float64
 	YTrain   []float64
 	WTrain   []float64
@@ -194,32 +195,32 @@ func (est Estimator) Predict(X [][]float64, predictProba bool) ([]float64, error
 	return yPred, nil
 }
 
-func (est Estimator) newConstant(rng *rand.Rand) tree.Constant {
-	return tree.Constant{
+func (est Estimator) newConstant(rng *rand.Rand) op.Constant {
+	return op.Constant{
 		Value: est.Config.ConstMin + rng.Float64()*(est.Config.ConstMax-est.ConstMin),
 	}
 }
 
-func (est Estimator) newVariable(rng *rand.Rand) tree.Variable {
-	return tree.Variable{Index: rng.Intn(len(est.XTrain))}
+func (est Estimator) newVariable(rng *rand.Rand) op.Variable {
+	return op.Variable{Index: rng.Intn(len(est.XTrain))}
 }
 
-func (est Estimator) newFunction(rng *rand.Rand) tree.Operator {
+func (est Estimator) newFunction(rng *rand.Rand) op.Operator {
 	return est.Functions[rng.Intn(len(est.Functions))]
 }
 
-func (est Estimator) newFunctionOfArity(arity int, rng *rand.Rand) tree.Operator {
+func (est Estimator) newFunctionOfArity(arity int, rng *rand.Rand) op.Operator {
 	return est.fm[arity][rng.Intn(len(est.fm[arity]))]
 }
 
-func (est Estimator) mutateOperator(op tree.Operator, rng *rand.Rand) tree.Operator {
-	switch op.(type) {
-	case tree.Constant:
-		return tree.Constant{Value: op.(tree.Constant).Value * rng.NormFloat64()}
-	case tree.Variable:
+func (est Estimator) mutateOperator(operator op.Operator, rng *rand.Rand) op.Operator {
+	switch operator.(type) {
+	case op.Constant:
+		return op.Constant{Value: operator.(op.Constant).Value * rng.NormFloat64()}
+	case op.Variable:
 		return est.newVariable(rng)
 	default:
-		return est.newFunctionOfArity(op.Arity(), rng)
+		return est.newFunctionOfArity(operator.Arity(), rng)
 	}
 }
 

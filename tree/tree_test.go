@@ -5,6 +5,8 @@ import (
 	"math/rand"
 	"reflect"
 	"testing"
+
+	"github.com/MaxHalford/koza/tree/op"
 )
 
 // randTree is a convenience method that produces a random Tree for testing
@@ -16,12 +18,19 @@ func randTree(rng *rand.Rand) *Tree {
 			FullInitializer: FullInitializer{},
 			GrowInitializer: GrowInitializer{0.5},
 		}
-		funcs = []Operator{Cos{}, Sin{}, Sum{}, Difference{}, Product{}, Division{}}
-		of    = OperatorFactory{
+		funcs = []op.Operator{
+			op.Cos{},
+			op.Sin{},
+			op.Sum{},
+			op.Difference{},
+			op.Product{},
+			op.Division{},
+		}
+		of = OperatorFactory{
 			PConstant:   0.5,
-			NewConstant: func(rng *rand.Rand) Constant { return Constant{randFloat64(-5, 5, rng)} },
-			NewVariable: func(rng *rand.Rand) Variable { return Variable{randInt(0, 5, rng)} },
-			NewFunction: func(rng *rand.Rand) Operator { return funcs[rng.Intn(len(funcs))] },
+			NewConstant: func(rng *rand.Rand) op.Constant { return op.Constant{randFloat64(-5, 5, rng)} },
+			NewVariable: func(rng *rand.Rand) op.Variable { return op.Variable{randInt(0, 5, rng)} },
+			NewFunction: func(rng *rand.Rand) op.Operator { return funcs[rng.Intn(len(funcs))] },
 		}
 	)
 	return init.Apply(3, 5, of, rng)

@@ -11,6 +11,7 @@ import (
 
 	"github.com/MaxHalford/koza/metrics"
 	"github.com/MaxHalford/koza/tree"
+	"github.com/MaxHalford/koza/tree/op"
 )
 
 // A Config contains all the information needed to instantiate an Estimator.
@@ -120,7 +121,7 @@ func (c Config) NewEstimator() (*Estimator, error) {
 	}
 
 	// Determine the functions to use
-	functions, err := tree.ParseStringFuncs(c.Funcs)
+	functions, err := op.ParseStringFuncs(c.Funcs)
 	if err != nil {
 		return nil, err
 	}
@@ -164,13 +165,13 @@ func (c Config) NewEstimator() (*Estimator, error) {
 	}
 
 	// Build fm which maps arities to functions
-	estimator.fm = make(map[int][]tree.Operator)
+	estimator.fm = make(map[int][]op.Operator)
 	for _, f := range estimator.Functions {
 		var arity = f.Arity()
 		if _, ok := estimator.fm[arity]; ok {
 			estimator.fm[arity] = append(estimator.fm[arity], f)
 		} else {
-			estimator.fm[arity] = []tree.Operator{f}
+			estimator.fm[arity] = []op.Operator{f}
 		}
 	}
 
@@ -194,8 +195,8 @@ func (c Config) NewEstimator() (*Estimator, error) {
 			PVariable: c.PointMutationRate,
 			PFunction: c.PointMutationRate,
 		},
-		MutateOperator: func(op tree.Operator, rng *rand.Rand) tree.Operator {
-			return estimator.mutateOperator(op, rng)
+		MutateOperator: func(operator op.Operator, rng *rand.Rand) op.Operator {
+			return estimator.mutateOperator(operator, rng)
 		},
 	}
 

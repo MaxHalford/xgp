@@ -4,14 +4,16 @@ import (
 	"fmt"
 	"math/rand"
 	"testing"
+
+	"github.com/MaxHalford/koza/tree/op"
 )
 
 func TestFullInitializer(t *testing.T) {
 	var (
 		of = OperatorFactory{
 			PConstant:   1,
-			NewConstant: func(rng *rand.Rand) Constant { return Constant{1} },
-			NewFunction: func(rng *rand.Rand) Operator { return Sum{} },
+			NewConstant: func(rng *rand.Rand) op.Constant { return op.Constant{1} },
+			NewFunction: func(rng *rand.Rand) op.Operator { return op.Sum{} },
 		}
 		rng       = newRand()
 		testCases = []struct {
@@ -52,8 +54,8 @@ func TestGrowInitializer(t *testing.T) {
 	var (
 		of = OperatorFactory{
 			PConstant:   1,
-			NewConstant: func(rng *rand.Rand) Constant { return Constant{1} },
-			NewFunction: func(rng *rand.Rand) Operator { return Sum{} },
+			NewConstant: func(rng *rand.Rand) op.Constant { return op.Constant{1} },
+			NewFunction: func(rng *rand.Rand) op.Operator { return op.Sum{} },
 		}
 		rng       = newRand()
 		testCases = []struct {

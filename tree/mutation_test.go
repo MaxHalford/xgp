@@ -5,6 +5,8 @@ import (
 	"math/rand"
 	"reflect"
 	"testing"
+
+	"github.com/MaxHalford/koza/tree/op"
 )
 
 func TestModification(t *testing.T) {
@@ -45,8 +47,8 @@ func TestModification(t *testing.T) {
 						PVariable: 1,
 						PFunction: 0,
 					},
-					MutateOperator: func(op Operator, rng *rand.Rand) Operator {
-						return Constant{42}
+					MutateOperator: func(op.Operator, *rand.Rand) op.Operator {
+						return op.Constant{42}
 					},
 				},
 			},

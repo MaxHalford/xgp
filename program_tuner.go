@@ -5,6 +5,7 @@ import (
 
 	"github.com/MaxHalford/gago"
 	"github.com/MaxHalford/koza/tree"
+	"github.com/MaxHalford/koza/tree/op"
 )
 
 // A ProgramTuner optimizes a Program by tuning the Program's Constants.
@@ -27,7 +28,7 @@ func newProgramTuner(prog *Program) ProgramTuner {
 		constSetters = make([]ConstantSetter, nConsts)
 		i            int
 		addConst     = func(t *tree.Tree, depth int) (stop bool) {
-			if c, ok := t.Operator.(tree.Constant); ok {
+			if c, ok := t.Operator.(op.Constant); ok {
 				consts[i] = c.Value
 				constSetters[i] = newConstantSetter(t)
 				i++
