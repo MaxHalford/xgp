@@ -32,7 +32,7 @@
 
 :warning: koza is still in active development phase.
 
-koza is a tool for performing symbolic regression oriented towards machine learning. It can be used for regression and classification tasks. Please refer to [the documentation](maxhalford.github.io/koza) for an in-depth introduction to symbolic regression.
+koza is a tool for performing symbolic regression oriented towards machine learning. It can be used for regression and classification tasks. Please refer to [the documentation](https://maxhalford.github.io/koza) for an in-depth introduction to symbolic regression.
 
 <br/>
 <div align="center">
