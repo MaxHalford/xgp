@@ -46,9 +46,9 @@ koza is a tool for performing symbolic regression oriented towards machine learn
 
 The core library is written in Go but can be used in different ways.
 
-- [Command-line interface (CLI)](maxhalford.github.io/koza/cli)
-- [Go API](maxhalford.github.io/koza/go)
-- [Python API](maxhalford.github.io/koza/python)
+- [Command-line interface (CLI)](https://maxhalford.github.io/koza/cli/)
+- [Go API](https://maxhalford.github.io/koza/go/)
+- [Python API](https://maxhalford.github.io/koza/python/)
 
 ## Thanks
 
