@@ -42,13 +42,49 @@ koza is a tool for performing symbolic regression oriented towards machine learn
 </div>
 <br/>
 
-## Usage
+## Interfaces
 
 The core library is written in Go but can be used in different ways.
 
 - [Command-line interface (CLI)](https://maxhalford.github.io/koza/cli/)
 - [Go API](https://maxhalford.github.io/koza/go/)
 - [Python API](https://maxhalford.github.io/koza/python/)
+
+## Usage examples
+
+### CLI
+
+```sh
+>>> koza fit train.csv
+>>> koza predict test.csv
+```
+
+### Go
+
+```go
+package main
+
+import "github.com/MaxHalford/koza"
+
+func main() {
+    config := koza.NewConfigWithDefaults()
+    estimator := config.NewEstimator()
+
+    estimator.Fit(XTrain, YTrain)
+    yPred := estimator.Predict()
+}
+```
+
+### Python
+
+```python
+import koza
+
+model = koza.SymbolicRegressor()
+
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
+```
 
 ## Thanks
 
