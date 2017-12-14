@@ -52,7 +52,7 @@ The core library is written in Go but can be used in different ways.
 
 ## Usage examples
 
-### CLI
+### Command-line interface (CLI)
 
 ```sh
 >>> koza fit train.csv
