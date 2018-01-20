@@ -20,12 +20,11 @@ func (metric BinaryLogLoss) Apply(yTrue, yPred, weights []float64) (float64, err
 	var (
 		score float64
 		ws    float64
-		log   = math.Log
 	)
 	for i, yt := range yTrue {
 		var (
 			yp   = clip(yPred[i], 0.00001, 0.99999)
-			loss = yt*log(yp) + (1-yt)*log(1-yp)
+			loss = yt*math.Log(yp) + (1-yt)*math.Log(1-yp)
 		)
 		if weights != nil {
 			score += weights[i] * loss
@@ -34,6 +33,7 @@ func (metric BinaryLogLoss) Apply(yTrue, yPred, weights []float64) (float64, err
 			score += loss
 		}
 	}
+	score *= -1
 
 	if weights != nil {
 		return score / ws, nil
@@ -58,5 +58,5 @@ func (metric BinaryLogLoss) NeedsProbabilities() bool {
 
 // String method of BinaryLogLoss.
 func (metric BinaryLogLoss) String() string {
-	return "binary_logloss"
+	return "logloss"
 }

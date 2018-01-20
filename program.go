@@ -32,12 +32,7 @@ func (prog Program) clone() *Program {
 
 // Predict predicts the output of a slice of features.
 func (prog *Program) Predict(X [][]float64, predictProba bool) (yPred []float64, err error) {
-	// Check if a cache exists
-	var cache *tree.Cache
-	if prog.Estimator != nil {
-		cache = prog.Estimator.cache
-	}
-	yPred, err = prog.Tree.EvaluateCols(X, cache)
+	yPred, err = prog.Tree.EvaluateCols(X)
 	if err != nil {
 		return nil, err
 	}

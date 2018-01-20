@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/MaxHalford/koza"
 	"github.com/spf13/cobra"
@@ -38,6 +39,7 @@ var (
 
 	fitSeed int64
 
+	fitIgnoredCols string
 	fitNotifyEvery uint
 	fitOutputName  string
 	fitTargetCol   string
@@ -53,7 +55,7 @@ func init() {
 	fitCmd.Flags().StringVarP(&fitEvalMetricName, "eval", "", "", "metric used for monitoring progress, defaults to fit_metric if not provided")
 	fitCmd.Flags().StringVarP(&fitLossMetricName, "loss", "", "mae", "metric used for scoring program, determines the task to perform")
 
-	fitCmd.Flags().StringVarP(&fitFuncs, "funcs", "", "sum,sub,mul,div", "allowed operators")
+	fitCmd.Flags().StringVarP(&fitFuncs, "funcs", "", "sum,sub,mul,div", "comma-separated authorised operators")
 
 	fitCmd.Flags().IntVarP(&fitMinHeight, "min_height", "", 3, "min program height used in ramped half-and-half initialization")
 	fitCmd.Flags().IntVarP(&fitMaxHeight, "max_height", "", 5, "max program height used in ramped half-and-half initialization")
@@ -78,6 +80,7 @@ func init() {
 
 	fitCmd.Flags().Int64VarP(&fitSeed, "seed", "", 0, "seed for random number generation")
 
+	fitCmd.Flags().StringVarP(&fitIgnoredCols, "ignore", "", "", "comma-separated columns to ignore")
 	fitCmd.Flags().UintVarP(&fitNotifyEvery, "notify", "", 1, "frequency at which progress should be displayed")
 	fitCmd.Flags().StringVarP(&fitOutputName, "output", "", "program.json", "path where to save the JSON representation of the best program ")
 	fitCmd.Flags().StringVarP(&fitTargetCol, "target", "", "y", "name of the target column in the training and validation datasets")
@@ -135,10 +138,11 @@ var fitCmd = &cobra.Command{
 		}
 
 		// Load the training set in memory
-		train, err := ReadCSV(args[0])
+		train, duration, err := ReadFile(args[0])
 		if err != nil {
 			return err
 		}
+		fmt.Println(fmt.Sprintf("Training set took %v to load", duration))
 
 		// Check the target column exists
 		var columns = train.Names()
@@ -146,6 +150,11 @@ var fitCmd = &cobra.Command{
 			return fmt.Errorf("No column named %s", fitTargetCol)
 		}
 		var featureColumns = removeString(columns, fitTargetCol)
+
+		// Remove ignored columns
+		for _, col := range strings.Split(fitIgnoredCols, ",") {
+			featureColumns = removeString(featureColumns, col)
+		}
 
 		// Extract the features and target from the training set
 		var (
@@ -159,10 +168,11 @@ var fitCmd = &cobra.Command{
 			YVal []float64
 		)
 		if fitValPath != "" {
-			val, err := ReadCSV(fitValPath)
+			val, duration, err := ReadFile(fitValPath)
 			if err != nil {
 				return err
 			}
+			fmt.Println(fmt.Sprintf("Validation set took %v to load", duration))
 			XVal = dataFrameToFloat64(val.Select(featureColumns))
 			YVal = val.Col(fitTargetCol).Float()
 		}

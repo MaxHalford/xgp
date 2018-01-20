@@ -33,7 +33,6 @@ type Estimator struct {
 	HoistMutation    tree.HoistMutation
 	SubTreeCrossover tree.SubTreeCrossover
 
-	cache    *tree.Cache
 	fm       map[int][]op.Operator
 	XTrain   [][]float64
 	YTrain   []float64
@@ -136,13 +135,6 @@ func (est *Estimator) Fit(
 
 	// Initialize the GA
 	est.GA.Initialize()
-
-	// Initialize the cache
-	if est.CacheDuration > 0 {
-		est.cache = tree.NewCache()
-	}
-
-	fmt.Println(est)
 
 	// Display initial statistics
 	if notifyEvery > 0 {

@@ -21,8 +21,8 @@ func (metric BinaryF1) Apply(yTrue, yPred, weights []float64) (float64, error) {
 	if precision == 0 || recall == 0 {
 		return 0, nil
 	}
-	var f1Score = 2 * (precision * recall) / (precision + recall)
-	return f1Score, nil
+	var f1 = 2 * (precision * recall) / (precision + recall)
+	return f1, nil
 }
 
 // Classification method of BinaryF1.
@@ -42,7 +42,7 @@ func (metric BinaryF1) NeedsProbabilities() bool {
 
 // String method of BinaryF1.
 func (metric BinaryF1) String() string {
-	return "f1_score"
+	return "f1"
 }
 
 // MicroF1 measures the global F1 score.
@@ -79,7 +79,7 @@ func (metric MicroF1) NeedsProbabilities() bool {
 
 // String method of MicroF1.
 func (metric MicroF1) String() string {
-	return "micro_f1_score"
+	return "micro_f1"
 }
 
 // MacroF1 measures the global F1 score.
@@ -116,7 +116,7 @@ func (metric MacroF1) NeedsProbabilities() bool {
 
 // String method of MacroF1.
 func (metric MacroF1) String() string {
-	return "macro_f1_score"
+	return "macro_f1"
 }
 
 // WeightedF1 measures the weighted average F1 score across all classes.
@@ -135,11 +135,11 @@ func (metric WeightedF1) Apply(yTrue, yPred, weights []float64) (float64, error)
 	)
 	for _, class := range cm.Classes() {
 		var (
-			f1Score, _ = BinaryF1{Class: class}.Apply(yTrue, yPred, weights)
-			TP         = cm.TruePositives(class)
-			FN         = cm.FalseNegatives(class)
+			f1, _ = BinaryF1{Class: class}.Apply(yTrue, yPred, weights)
+			TP    = cm.TruePositives(class)
+			FN    = cm.FalseNegatives(class)
 		)
-		sum += (TP + FN) * f1Score
+		sum += (TP + FN) * f1
 		n += (TP + FN)
 	}
 	return sum / n, nil
@@ -162,5 +162,5 @@ func (metric WeightedF1) NeedsProbabilities() bool {
 
 // String method of WeightedF1.
 func (metric WeightedF1) String() string {
-	return "weighted_f1_score"
+	return "weighted_f1"
 }

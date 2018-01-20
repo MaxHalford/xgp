@@ -28,6 +28,7 @@ func GetMetric(metricName string, class int) (Metric, error) {
 			WeightedF1{}.String():                 WeightedF1{},
 			MeanAbsoluteError{}.String():          MeanAbsoluteError{},
 			MeanSquaredError{}.String():           MeanSquaredError{},
+			RootMeanSquaredError{}.String():       RootMeanSquaredError{},
 			R2{}.String():                         R2{},
 			ROCAUC{}.String():                     ROCAUC{},
 			AbsolutePearsonCorrelation{}.String(): AbsolutePearsonCorrelation{},

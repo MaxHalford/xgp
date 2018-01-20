@@ -17,7 +17,7 @@ func (cm ConfusionMatrix) NClasses() int {
 }
 
 // Classes returns a slice of classes included in a ConfusionMatrix. The
-// resulting slice of classes is ordered increasingly.
+// result is ordered in ascending order.
 func (cm ConfusionMatrix) Classes() []float64 {
 	var (
 		classes = make([]float64, len(cm))

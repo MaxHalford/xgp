@@ -6,6 +6,10 @@ To generate the datasets for the following examples you need to have Python alon
 
 For development you can replace `koza` with `go run main.go`. For example instead of running `koza fit examples/boston/train.csv --loss mae` you can run `go run main.go fit examples/boston/train.csv --loss mae`.
 
+```sh
+go run main.go fit examples/restaurants/train.csv --loss rmse --val examples/restaurants/test.csv --indis 500 --gens 50 --target visitors_log1p --seed 5
+```
+
 ### Boston house prices
 
 ```sh
@@ -29,7 +33,6 @@ The data munging is adapted from this [Kaggle kernel](https://www.kaggle.com/sci
 
 ```sh
 python examples/titanic/create_datasets.py
-koza fit examples/titanic/train.csv --loss mae
-koza score examples/titanic/val.csv --eval mae
-koza predict examples/titanic/test.csv examples/titanic/test_prediction.csv
+go run .\main.go fit .\examples\titanic\train.csv --loss accuracy --val .\examples\titanic\val.csv --target Survived --ignore PassengerId --parsimony 0.0001 --gens 100 --indis 500 --funcs sum,sub,mul,div,cos,sin,min,max,pow
+go run .\main.go predict examples/titanic/test.csv --output examples/titanic/submission.csv --keep PassengerId --target Survived
 ```

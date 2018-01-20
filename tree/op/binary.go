@@ -206,3 +206,123 @@ func (op Power) Arity() int {
 func (op Power) String() string {
 	return "pow"
 }
+
+// OR boolean operator.
+type OR struct{}
+
+// ApplyRow OR.
+func (op OR) ApplyRow(x []float64) float64 {
+	if (x[0] == 1) || (x[1] == 1) {
+		return 1
+	}
+	return 0
+}
+
+// ApplyCols OR.
+func (op OR) ApplyCols(X [][]float64) []float64 {
+	var Y = make([]float64, len(X[0]))
+	for i := range X[0] {
+		Y[i] = op.ApplyRow([]float64{X[0][i], X[1][i]})
+	}
+	return Y
+}
+
+// Arity of OR.
+func (op OR) Arity() int {
+	return 2
+}
+
+// String representation of OR.
+func (op OR) String() string {
+	return "OR"
+}
+
+// AND boolean operator.
+type AND struct{}
+
+// ApplyRow AND.
+func (op AND) ApplyRow(x []float64) float64 {
+	if (x[0] == 1) && (x[1] == 1) {
+		return 1
+	}
+	return 0
+}
+
+// ApplyCols AND.
+func (op AND) ApplyCols(X [][]float64) []float64 {
+	var Y = make([]float64, len(X[0]))
+	for i := range X[0] {
+		Y[i] = op.ApplyRow([]float64{X[0][i], X[1][i]})
+	}
+	return Y
+}
+
+// Arity of AND.
+func (op AND) Arity() int {
+	return 2
+}
+
+// String representation of AND.
+func (op AND) String() string {
+	return "AND"
+}
+
+// XOR boolean operator.
+type XOR struct{}
+
+// ApplyRow XOR.
+func (op XOR) ApplyRow(x []float64) float64 {
+	if ((x[0] == 1) && (x[1] == 0)) || ((x[0] == 0) && (x[1] == 1)) {
+		return 1
+	}
+	return 0
+}
+
+// ApplyCols XOR.
+func (op XOR) ApplyCols(X [][]float64) []float64 {
+	var Y = make([]float64, len(X[0]))
+	for i := range X[0] {
+		Y[i] = op.ApplyRow([]float64{X[0][i], X[1][i]})
+	}
+	return Y
+}
+
+// Arity of XOR.
+func (op XOR) Arity() int {
+	return 2
+}
+
+// String representation of XOR.
+func (op XOR) String() string {
+	return "XOR"
+}
+
+// NAND boolean operator.
+type NAND struct{}
+
+// ApplyRow NAND.
+func (op NAND) ApplyRow(x []float64) float64 {
+	if (x[0] == 1) && (x[1] == 1) {
+		return 0
+	}
+	return 1
+}
+
+// ApplyCols NAND.
+func (op NAND) ApplyCols(X [][]float64) []float64 {
+	var Y = make([]float64, len(X[0]))
+	for i := range X[0] {
+		Y[i] = op.ApplyRow([]float64{X[0][i], X[1][i]})
+	}
+	return Y
+}
+
+// Arity of NAND.
+func (op NAND) Arity() int {
+	return 2
+}
+
+// String representation of NAND.
+func (op NAND) String() string {
+	return "NAND"
+}

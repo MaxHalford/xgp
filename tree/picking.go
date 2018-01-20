@@ -13,7 +13,7 @@ type Picker interface {
 	Apply(tree *Tree, minHeight, maxHeight int, rng *rand.Rand) *Tree
 }
 
-// WeightPicker picks a sub-Tree at random by weighting each sub-Tree
+// WeightedPicker picks a sub-Tree at random by weighting each sub-Tree
 // according to it's Operator's type.
 type WeightedPicker struct {
 	Weighting Weighting

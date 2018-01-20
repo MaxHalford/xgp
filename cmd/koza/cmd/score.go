@@ -47,10 +47,11 @@ var scoreCmd = &cobra.Command{
 		}
 
 		// Load the test set in memory
-		df, err := ReadCSV(args[0])
+		df, duration, err := ReadFile(args[0])
 		if err != nil {
 			return err
 		}
+		fmt.Println(fmt.Sprintf("Scoring set took %v to load", duration))
 
 		// Check the target column exists
 		var columns = df.Names()

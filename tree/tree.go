@@ -99,29 +99,20 @@ func (tree Tree) evaluateRow(x []float64) float64 {
 }
 
 // EvaluateCols blabla
-func (tree *Tree) EvaluateCols(X [][]float64, cache *Cache) (yPred []float64, err error) {
+func (tree *Tree) EvaluateCols(X [][]float64) (yPred []float64, err error) {
 	// Simplify the tree to remove unnecessary evaluation parts
 	tree.simplify()
-	// Check the cache
-	if cache != nil {
-		var str = tree.String()
-		// If the result is in the cache then it can be returned
-		yPred = cache.Get(str)
-		if yPred != nil {
-			return
-		}
-		// If the result is not in the cache then it can be added to
-		defer cache.Set(str, yPred)
-	}
+
 	// If the Tree has no branches then it can be evaluated directly
 	if len(tree.Branches) == 0 {
 		yPred = tree.Operator.ApplyCols(X)
 		return
 	}
+
 	// If the Tree has branches then they have to be evaluated first
 	var evals = make([][]float64, len(tree.Branches))
 	for i, branch := range tree.Branches {
-		var eval, err = branch.EvaluateCols(X, cache)
+		var eval, err = branch.EvaluateCols(X)
 		if err != nil {
 			return nil, err
 		}
@@ -165,7 +156,7 @@ func (tree *Tree) simplify() bool {
 	}
 	// If the branches are all Variables then a simplification can be made if
 	// the mother Operator is of type Difference
-	if varBranches {
+	if varBranches && len(tree.Branches) == 2 {
 		// Check if the variables have the same index
 		if tree.Branches[0].Operator.(op.Variable).Index == tree.Branches[1].Operator.(op.Variable).Index {
 			switch tree.Operator.(type) {

@@ -16,8 +16,6 @@ import (
 
 // A Config contains all the information needed to instantiate an Estimator.
 type Config struct {
-	CacheDuration int
-
 	ConstMax float64
 	ConstMin float64
 
@@ -161,7 +159,8 @@ func (c Config) NewEstimator() (*Estimator, error) {
 			pMutate:    c.PHoistMutation + c.PPointMutation + c.PSubTreeMutation,
 			pCrossover: c.PSubTreeCrossover,
 		},
-		RNG: rng,
+		RNG:          rng,
+		ParallelEval: true,
 	}
 
 	// Build fm which maps arities to functions
