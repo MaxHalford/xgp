@@ -192,7 +192,7 @@ var fitCmd = &cobra.Command{
 
 		// Instantiate an ensemble
 		var bag = ensemble.BaggingRegressor{
-			NEstimators:   5,
+			NEstimators:   30,
 			RowSampling:   1,
 			ColSampling:   1,
 			BootstrapRows: true,
