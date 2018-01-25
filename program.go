@@ -6,7 +6,7 @@ import (
 
 // A Program is simply an abstraction of top of a Tree.
 type Program struct {
-	Tree      *tree.Tree             `json:"tree"`
+	Tree      tree.Tree              `json:"tree"`
 	Task      Task                   `json:"task"`
 	DRS       *DynamicRangeSelection `json:"drs"`
 	Estimator *Estimator             `json:"-"`
@@ -18,8 +18,8 @@ func (prog Program) String() string {
 }
 
 // Clone a Program.
-func (prog Program) clone() *Program {
-	var clone = &Program{
+func (prog Program) clone() Program {
+	var clone = Program{
 		Tree:      prog.Tree.Clone(),
 		Task:      prog.Task,
 		Estimator: prog.Estimator,
@@ -31,7 +31,25 @@ func (prog Program) clone() *Program {
 }
 
 // Predict predicts the output of a slice of features.
-func (prog *Program) Predict(X [][]float64, predictProba bool) (yPred []float64, err error) {
+func (prog Program) PredictRow(x []float64, predictProba bool) (yPred float64, err error) {
+	yPred = prog.Tree.EvaluateRow(x)
+	// Binary classification
+	if prog.Task.binaryClassification() {
+		if predictProba {
+			return sigmoid(yPred), nil
+		}
+		return binary(yPred), nil
+	}
+	// Multi-class classification
+	if prog.Task.multiClassification() {
+		return prog.DRS.PredictRow(yPred), nil
+	}
+	// Regression
+	return yPred, nil
+}
+
+// Predict predicts the output of a slice of features.
+func (prog Program) Predict(X [][]float64, predictProba bool) (yPred []float64, err error) {
 	yPred, err = prog.Tree.EvaluateCols(X)
 	if err != nil {
 		return nil, err
@@ -39,9 +57,15 @@ func (prog *Program) Predict(X [][]float64, predictProba bool) (yPred []float64,
 	// Binary classification
 	if prog.Task.binaryClassification() {
 		if predictProba {
-			return sigmoid(yPred), nil
+			for i, y := range yPred {
+				yPred[i] = sigmoid(y)
+			}
+			return yPred, nil
 		}
-		return binary(yPred), nil
+		for i, y := range yPred {
+			yPred[i] = binary(y)
+		}
+		return yPred, nil
 	}
 	// Multi-class classification
 	if prog.Task.multiClassification() {

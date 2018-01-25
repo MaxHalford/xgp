@@ -1,4 +1,4 @@
-package tree
+package koza
 
 // func TestSubTreeCrossover(t *testing.T) {
 // 	var (

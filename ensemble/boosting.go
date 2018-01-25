@@ -1,11 +1,6 @@
-package boosting
+package ensemble
 
-import (
-	"encoding/json"
-	"math"
-)
-
-// AdaBoostClassifier implements adaptive boosting for classification. The
+/*// AdaBoostClassifier implements adaptive boosting for classification. The
 // implementation is based on the SAMME algorithm proposed in Zhu et al (2009).
 type AdaBoostClassifier struct {
 	rowWeights       []float64   `json:"row_weights"`
@@ -110,8 +105,6 @@ func (ada *AdaBoostClassifier) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON parses JSON into an AdaBoostClassifier.
 func (ada *AdaBoostClassifier) UnmarshalJSON(bytes []byte) error {
-	if err := json.Unmarshal(bytes, &ada); err != nil {
-		return err
-	}
-	return nil
-}
+	var err = json.Unmarshal(bytes, &ada)
+	return err
+}*/

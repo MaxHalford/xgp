@@ -2,9 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"math/rand"
 	"strings"
+	"time"
 
 	"github.com/MaxHalford/koza"
+	"github.com/MaxHalford/koza/ensemble"
 	"github.com/spf13/cobra"
 )
 
@@ -24,6 +27,7 @@ var (
 	fitNIndividuals       int
 	fitNGenerations       int
 	fitNTuningGenerations int
+	fitNRounds            int
 
 	fitPConstant float64
 	fitPFull     float64
@@ -40,10 +44,10 @@ var (
 	fitSeed int64
 
 	fitIgnoredCols string
-	fitNotifyEvery uint
 	fitOutputName  string
 	fitTargetCol   string
 	fitValPath     string
+	fitVerbose     bool
 )
 
 func init() {
@@ -64,6 +68,7 @@ func init() {
 	fitCmd.Flags().IntVarP(&fitNIndividuals, "indis", "", 50, "number of individuals to use for each population in the GA")
 	fitCmd.Flags().IntVarP(&fitNGenerations, "gens", "", 30, "number of generations used to evolve the GA")
 	fitCmd.Flags().IntVarP(&fitNTuningGenerations, "tune_gens", "", 0, "number of generations used to evolve the tuning GA")
+	fitCmd.Flags().IntVarP(&fitNRounds, "rounds", "", 1, "number of weak learners used in the ensemble")
 
 	fitCmd.Flags().Float64VarP(&fitPConstant, "p_constant", "", 0.5, "probability of picking a constant and not a constant when generating terminal nodes")
 	fitCmd.Flags().Float64VarP(&fitPFull, "p_full", "", 0.5, "probability of use full initialization during ramped half-and-half initialization")
@@ -81,10 +86,10 @@ func init() {
 	fitCmd.Flags().Int64VarP(&fitSeed, "seed", "", 0, "seed for random number generation")
 
 	fitCmd.Flags().StringVarP(&fitIgnoredCols, "ignore", "", "", "comma-separated columns to ignore")
-	fitCmd.Flags().UintVarP(&fitNotifyEvery, "notify", "", 1, "frequency at which progress should be displayed")
 	fitCmd.Flags().StringVarP(&fitOutputName, "output", "", "program.json", "path where to save the JSON representation of the best program ")
 	fitCmd.Flags().StringVarP(&fitTargetCol, "target", "", "y", "name of the target column in the training and validation datasets")
 	fitCmd.Flags().StringVarP(&fitValPath, "val", "", "", "path to a validation dataset that can be used to monitor out-of-bag performance")
+	fitCmd.Flags().BoolVarP(&fitVerbose, "verbose", "", true, "display progress in the shell")
 }
 
 var fitCmd = &cobra.Command{
@@ -93,6 +98,14 @@ var fitCmd = &cobra.Command{
 	Long:  "Fits a program to a dataset",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+
+		// Instantiate a random number generator
+		var rng *rand.Rand
+		if fitSeed == 0 {
+			rng = rand.New(rand.NewSource(time.Now().UnixNano()))
+		} else {
+			rng = rand.New(rand.NewSource(fitSeed))
+		}
 
 		// By default the evaluation metric is equal to the loss metric
 		if fitEvalMetricName == "" {
@@ -130,7 +143,7 @@ var fitCmd = &cobra.Command{
 
 			ParsimonyCoeff: fitParsimonyCoeff,
 
-			Seed: fitSeed,
+			RNG: rng,
 		}
 		var estimator, err = config.NewEstimator()
 		if err != nil {
@@ -177,23 +190,34 @@ var fitCmd = &cobra.Command{
 			YVal = val.Col(fitTargetCol).Float()
 		}
 
-		// Fit the estimator
-		err = estimator.Fit(
+		// Instantiate an ensemble
+		var bag = ensemble.BaggingRegressor{
+			NEstimators:   5,
+			RowSampling:   1,
+			ColSampling:   1,
+			BootstrapRows: true,
+			BootstrapCols: false,
+		}
+
+		// Fit the ensemble
+		err = bag.Fit(
+			estimator,
 			XTrain,
 			YTrain,
 			nil,
 			XVal,
 			YVal,
 			nil,
-			fitNotifyEvery,
+			fitVerbose,
+			estimator.EvalMetric,
+			rng,
 		)
 		if err != nil {
 			return err
 		}
 
-		// Save the best Program
-		var bestProg = estimator.BestProgram()
-		err = koza.SaveProgramToJSON(*bestProg, fitOutputName)
+		// Save the model
+		err = ensemble.SaveEnsembleToJSON(&bag, fitOutputName)
 		if err != nil {
 			return err
 		}

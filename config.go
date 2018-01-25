@@ -4,14 +4,13 @@ import (
 	"bytes"
 	"math/rand"
 	"strconv"
-	"time"
 
 	"github.com/MaxHalford/gago"
 	"github.com/olekukonko/tablewriter"
 
 	"github.com/MaxHalford/koza/metrics"
+	"github.com/MaxHalford/koza/op"
 	"github.com/MaxHalford/koza/tree"
-	"github.com/MaxHalford/koza/tree/op"
 )
 
 // A Config contains all the information needed to instantiate an Estimator.
@@ -45,7 +44,7 @@ type Config struct {
 
 	ParsimonyCoeff float64
 
-	Seed int64
+	RNG *rand.Rand
 }
 
 // String representation of a Config.
@@ -130,21 +129,13 @@ func (c Config) NewEstimator() (*Estimator, error) {
 		Functions:  functions,
 		EvalMetric: eval,
 		LossMetric: loss,
-		TreeInitializer: tree.RampedHaldAndHalfInitializer{
+		Initializer: RampedHaldAndHalfInitializer{
 			PFull:           c.PFull,
-			FullInitializer: tree.FullInitializer{},
-			GrowInitializer: tree.GrowInitializer{
+			FullInitializer: FullInitializer{},
+			GrowInitializer: GrowInitializer{
 				PTerminal: c.PTerminal,
 			},
 		},
-	}
-
-	// Determine the random number generator of the GA
-	var rng *rand.Rand
-	if c.Seed == 0 {
-		rng = rand.New(rand.NewSource(time.Now().UnixNano()))
-	} else {
-		rng = rand.New(rand.NewSource(c.Seed))
 	}
 
 	// Set the initial GA
@@ -159,7 +150,7 @@ func (c Config) NewEstimator() (*Estimator, error) {
 			pMutate:    c.PHoistMutation + c.PPointMutation + c.PSubTreeMutation,
 			pCrossover: c.PSubTreeCrossover,
 		},
-		RNG:          rng,
+		RNG:          c.RNG,
 		ParallelEval: true,
 	}
 
@@ -176,9 +167,9 @@ func (c Config) NewEstimator() (*Estimator, error) {
 
 	// Set crossover methods
 
-	estimator.SubTreeCrossover = tree.SubTreeCrossover{
-		Picker: tree.WeightedPicker{
-			Weighting: tree.Weighting{
+	estimator.SubTreeCrossover = SubTreeCrossover{
+		Picker: WeightedPicker{
+			Weighting: Weighting{
 				PConstant: 0.1, // MAGIC
 				PVariable: 0.1, // MAGIC
 				PFunction: 0.8, // MAGIC
@@ -188,8 +179,8 @@ func (c Config) NewEstimator() (*Estimator, error) {
 
 	// Set mutation methods
 
-	estimator.PointMutation = tree.PointMutation{
-		Weighting: tree.Weighting{
+	estimator.PointMutation = PointMutation{
+		Weighting: Weighting{
 			PConstant: c.PointMutationRate,
 			PVariable: c.PointMutationRate,
 			PFunction: c.PointMutationRate,
@@ -199,9 +190,9 @@ func (c Config) NewEstimator() (*Estimator, error) {
 		},
 	}
 
-	estimator.HoistMutation = tree.HoistMutation{
-		Picker: tree.WeightedPicker{
-			Weighting: tree.Weighting{
+	estimator.HoistMutation = HoistMutation{
+		Picker: WeightedPicker{
+			Weighting: Weighting{
 				PConstant: 0.1, // MAGIC
 				PVariable: 0.1, // MAGIC
 				PFunction: 0.8, // MAGIC
@@ -209,17 +200,17 @@ func (c Config) NewEstimator() (*Estimator, error) {
 		},
 	}
 
-	estimator.SubTreeMutation = tree.SubTreeMutation{
-		Crossover: tree.SubTreeCrossover{
-			Picker: tree.WeightedPicker{
-				Weighting: tree.Weighting{
+	estimator.SubTreeMutation = SubTreeMutation{
+		Crossover: SubTreeCrossover{
+			Picker: WeightedPicker{
+				Weighting: Weighting{
 					PConstant: 0.1, // MAGIC
 					PVariable: 0.1, // MAGIC
 					PFunction: 0.8, // MAGIC
 				},
 			},
 		},
-		NewTree: func(rng *rand.Rand) *tree.Tree {
+		NewTree: func(rng *rand.Rand) tree.Tree {
 			return estimator.newTree(rng)
 		},
 	}

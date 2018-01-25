@@ -2,39 +2,9 @@ package tree
 
 import (
 	"fmt"
-	"math/rand"
 	"reflect"
 	"testing"
-
-	"github.com/MaxHalford/koza/tree/op"
 )
-
-// randTree is a convenience method that produces a random Tree for testing
-// purposes.
-func randTree(rng *rand.Rand) *Tree {
-	var (
-		init = RampedHaldAndHalfInitializer{
-			PFull:           0.5,
-			FullInitializer: FullInitializer{},
-			GrowInitializer: GrowInitializer{0.5},
-		}
-		funcs = []op.Operator{
-			op.Cos{},
-			op.Sin{},
-			op.Sum{},
-			op.Difference{},
-			op.Product{},
-			op.Division{},
-		}
-		of = OperatorFactory{
-			PConstant:   0.5,
-			NewConstant: func(rng *rand.Rand) op.Constant { return op.Constant{randFloat64(-5, 5, rng)} },
-			NewVariable: func(rng *rand.Rand) op.Variable { return op.Variable{randInt(0, 5, rng)} },
-			NewFunction: func(rng *rand.Rand) op.Operator { return funcs[rng.Intn(len(funcs))] },
-		}
-	)
-	return init.Apply(3, 5, of, rng)
-}
 
 func TestHeight(t *testing.T) {
 	// Initial tree has no branches and thus has a height of 0
@@ -43,69 +13,69 @@ func TestHeight(t *testing.T) {
 		t.Errorf("Wrong height, expected %d got %d", 0, tree.Height())
 	}
 	// Add a branch
-	tree.Branches = []*Tree{&Tree{}}
+	tree.branches = []*Tree{&Tree{}}
 	if tree.Height() != 1 {
 		t.Errorf("Wrong height, expected %d got %d", 1, tree.Height())
 	}
 	// Add another branch
-	tree.Branches = append(tree.Branches, &Tree{})
+	tree.branches = append(tree.branches, &Tree{})
 	if tree.Height() != 1 {
 		t.Errorf("Wrong height, expected %d got %d", 1, tree.Height())
 	}
 	// Add a sub-branch to the first branch
-	tree.Branches[0].Branches = []*Tree{&Tree{}}
+	tree.branches[0].branches = []*Tree{&Tree{}}
 	if tree.Height() != 2 {
 		t.Errorf("Wrong height, expected %d got %d", 2, tree.Height())
 	}
 }
 
-func TestNOperators(t *testing.T) {
+func TestSize(t *testing.T) {
 	// Initial tree only has a root and thus has a single operator
 	var tree = &Tree{}
-	if tree.NOperators() != 1 {
-		t.Errorf("Expected %d got %d", 1, tree.NOperators())
+	if tree.Size() != 1 {
+		t.Errorf("Expected %d got %d", 1, tree.Size())
 	}
 	// Add a branch
-	tree.Branches = []*Tree{&Tree{}}
-	if tree.NOperators() != 2 {
-		t.Errorf("Expected %d got %d", 2, tree.NOperators())
+	tree.branches = []*Tree{&Tree{}}
+	if tree.Size() != 2 {
+		t.Errorf("Expected %d got %d", 2, tree.Size())
 	}
 	// Add a branch child
-	tree.Branches = append(tree.Branches, &Tree{})
-	if tree.NOperators() != 3 {
-		t.Errorf("Expected %d got %d", 3, tree.NOperators())
+	tree.branches = append(tree.branches, &Tree{})
+	if tree.Size() != 3 {
+		t.Errorf("Expected %d got %d", 3, tree.Size())
 	}
 	// Add a sub-branch to the first branch
-	tree.Branches[0].Branches = []*Tree{&Tree{}}
-	if tree.NOperators() != 4 {
-		t.Errorf("Expected %d got %d", 4, tree.NOperators())
+	tree.branches[0].branches = []*Tree{&Tree{}}
+	if tree.Size() != 4 {
+		t.Errorf("Expected %d got %d", 4, tree.Size())
 	}
 }
 
 func TestTreeSimplify(t *testing.T) {
 	var testCases = []struct {
-		tree           *Tree
-		simplifiedTree *Tree
+		tree           Tree
+		simplifiedTree Tree
 	}{
 		{
-			tree:           mustParseCode("sum(1, 2)"),
-			simplifiedTree: mustParseCode("3"),
+			tree:           MustParseCode("sum(1, 2)"),
+			simplifiedTree: MustParseCode("3"),
 		},
 		{
-			tree:           mustParseCode("sum(X[0], 2)"),
-			simplifiedTree: mustParseCode("sum(X[0], 2)"),
+			tree:           MustParseCode("sum(X[0], 2)"),
+			simplifiedTree: MustParseCode("sum(X[0], 2)"),
 		},
 		{
-			tree:           mustParseCode("sub(X[0], X[0])"),
-			simplifiedTree: mustParseCode("0"),
+			tree:           MustParseCode("sub(X[0], X[0])"),
+			simplifiedTree: MustParseCode("0"),
 		},
 		{
-			tree:           mustParseCode("div(X[0], X[0])"),
-			simplifiedTree: mustParseCode("1"),
+			tree:           MustParseCode("div(X[0], X[0])"),
+			simplifiedTree: MustParseCode("1"),
 		},
 		{
-			tree:           mustParseCode("sum(sum(1, 2), sum(3, 4))"),
-			simplifiedTree: mustParseCode("10"),
+			tree:           MustParseCode("sum(sum(1, 2), sum(3, 4))"),
+			simplifiedTree: MustParseCode("10"),
 		},
 	}
 	for i, tc := range testCases {

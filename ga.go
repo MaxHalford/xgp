@@ -21,7 +21,7 @@ func (prog *Program) Evaluate() float64 {
 	}
 	// Apply the parsimony coefficient
 	if prog.Estimator.ParsimonyCoeff != 0 {
-		fitness += prog.Estimator.ParsimonyCoeff * float64(prog.Tree.NOperators())
+		fitness += prog.Estimator.ParsimonyCoeff * float64(prog.Tree.Size())
 	}
 	return fitness
 }
@@ -36,26 +36,27 @@ func (prog *Program) Mutate(rng *rand.Rand) {
 	)
 	// Apply hoist mutation
 	if dice < pHoist {
-		prog.Estimator.HoistMutation.Apply(prog.Tree, rng)
+		prog.Estimator.HoistMutation.Apply(&prog.Tree, rng)
 		return
 	}
 	// Apply sub-tree mutation
 	if dice < pHoist+pSubTree {
-		prog.Estimator.SubTreeMutation.Apply(prog.Tree, rng)
+		prog.Estimator.SubTreeMutation.Apply(&prog.Tree, rng)
 		return
 	}
 	// Apply point mutation
-	prog.Estimator.PointMutation.Apply(prog.Tree, rng)
+	prog.Estimator.PointMutation.Apply(&prog.Tree, rng)
 }
 
 // Crossover is required to implement gago.Genome.
 func (prog *Program) Crossover(prog2 gago.Genome, rng *rand.Rand) {
-	prog.Estimator.SubTreeCrossover.Apply(prog.Tree, prog2.(*Program).Tree, rng)
+	prog.Estimator.SubTreeCrossover.Apply(&prog.Tree, &prog2.(*Program).Tree, rng)
 }
 
 // Clone is required to implement gago.Genome.
 func (prog Program) Clone() gago.Genome {
-	return prog.clone()
+	var clone = prog.clone()
+	return &clone
 }
 
 type gaModel struct {

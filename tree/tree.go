@@ -1,19 +1,47 @@
 package tree
 
-import "github.com/MaxHalford/koza/tree/op"
+import "github.com/MaxHalford/koza/op"
 
-// A Tree holds an Operator and leaf trees called branches.
+// A Tree holds an Operator and branches.
 type Tree struct {
-	Operator op.Operator
-	Branches []*Tree
+	op       op.Operator
+	branches []*Tree
+}
+
+// Operator returns a Tree's Operator.
+func (tr Tree) Operator() op.Operator {
+	return tr.op
+}
+
+// SetBranch replaces the ith branch with a given Tree.
+func (tr *Tree) SetBranch(i int, br Tree) {
+	tr.branches[i] = &br
+}
+
+// SetOperator replaces a Tree's Operator.
+func (tr *Tree) SetOperator(op op.Operator) {
+	tr.op = op
+}
+
+// NBranches returns the number of branches of a Tree.
+func (tr Tree) NBranches() int {
+	return len(tr.branches)
+}
+
+// NewTree returns a Tree with a given Operator.
+func NewTree(op op.Operator) Tree {
+	return Tree{
+		op:       op,
+		branches: make([]*Tree, op.Arity()),
+	}
 }
 
 // String representation of a tree.
-func (tree *Tree) String() string {
+func (tree Tree) String() string {
 	return CodeDisplay{}.Apply(tree)
 }
 
-// Walk recursively applies a function to a Tree and it's branches.
+// Walk recursively applies a function to a Tree and it's branches recursively.
 func (tree *Tree) Walk(f func(tree *Tree, depth int) (stop bool)) {
 	var apply func(tree *Tree, depth int) bool
 	apply = func(tree *Tree, depth int) bool {
@@ -22,7 +50,7 @@ func (tree *Tree) Walk(f func(tree *Tree, depth int) (stop bool)) {
 			return true
 		}
 		// Apply recursion to each branch
-		for _, branch := range tree.Branches {
+		for _, branch := range tree.branches {
 			if apply(branch, depth+1) {
 				break
 			}
@@ -58,44 +86,41 @@ func (tree Tree) count(filter func(*Tree) bool) (n int) {
 	return n
 }
 
-// NOperators returns the number of Operators in a Tree.
-func (tree Tree) NOperators() int {
+// Size returns the number of Operators in a Tree.
+func (tree Tree) Size() int {
 	return tree.count(func(*Tree) bool { return true })
 }
 
 // NConstants returns the number of Constants in a Tree.
 func (tree Tree) NConstants() int {
 	var isConstant = func(tree *Tree) bool {
-		var _, ok = tree.Operator.(op.Constant)
+		var _, ok = tree.op.(op.Constant)
 		return ok
 	}
 	return tree.count(isConstant)
 }
 
 // Clone a tree by recursively copying it's branches's attributes.
-func (tree Tree) Clone() *Tree {
-	var branches = make([]*Tree, len(tree.Branches))
-	for i, branch := range tree.Branches {
-		branches[i] = branch.Clone()
+func (tr Tree) Clone() Tree {
+	var clone = NewTree(tr.Operator())
+	for i, branch := range tr.branches {
+		clone.SetBranch(i, branch.Clone())
 	}
-	return &Tree{
-		Operator: tree.Operator,
-		Branches: branches,
-	}
+	return clone
 }
 
 // evaluateRow blabla
-func (tree Tree) evaluateRow(x []float64) float64 {
+func (tree Tree) EvaluateRow(x []float64) float64 {
 	// Either the tree is a leaf tree
-	if len(tree.Branches) == 0 {
-		return tree.Operator.ApplyRow(x)
+	if len(tree.branches) == 0 {
+		return tree.op.ApplyRow(x)
 	}
-	// Either the tree has branches trees
-	var evals = make([]float64, len(tree.Branches))
-	for i, branch := range tree.Branches {
-		evals[i] = branch.evaluateRow(x)
+	// Either the tree has branches that have to be evaluated first
+	var evals = make([]float64, len(tree.branches))
+	for i, branch := range tree.branches {
+		evals[i] = branch.EvaluateRow(x)
 	}
-	return tree.Operator.ApplyRow(evals)
+	return tree.op.ApplyRow(evals)
 }
 
 // EvaluateCols blabla
@@ -104,21 +129,21 @@ func (tree *Tree) EvaluateCols(X [][]float64) (yPred []float64, err error) {
 	tree.simplify()
 
 	// If the Tree has no branches then it can be evaluated directly
-	if len(tree.Branches) == 0 {
-		yPred = tree.Operator.ApplyCols(X)
+	if len(tree.branches) == 0 {
+		yPred = tree.op.ApplyCols(X)
 		return
 	}
 
 	// If the Tree has branches then they have to be evaluated first
-	var evals = make([][]float64, len(tree.Branches))
-	for i, branch := range tree.Branches {
+	var evals = make([][]float64, len(tree.branches))
+	for i, branch := range tree.branches {
 		var eval, err = branch.EvaluateCols(X)
 		if err != nil {
 			return nil, err
 		}
 		evals[i] = eval
 	}
-	yPred = tree.Operator.ApplyCols(evals)
+	yPred = tree.op.ApplyCols(evals)
 	return
 }
 
@@ -127,18 +152,18 @@ func (tree *Tree) EvaluateCols(X [][]float64) (yPred []float64, err error) {
 // indicate if a simplification was performed or not.
 func (tree *Tree) simplify() bool {
 	// A tree with no branches can't be simplified
-	if len(tree.Branches) == 0 {
+	if len(tree.branches) == 0 {
 		return false
 	}
 	var (
 		constBranches = true
 		varBranches   = true
 	)
-	for _, branch := range tree.Branches {
+	for _, branch := range tree.branches {
 		// Call the function recursively first so as to start from the bottom
 		branch.simplify()
 		// Check the type of the branch's operator
-		switch branch.Operator.(type) {
+		switch branch.op.(type) {
 		case op.Constant:
 			varBranches = false
 		case op.Variable:
@@ -150,23 +175,23 @@ func (tree *Tree) simplify() bool {
 	}
 	// If the branches are all Constants then a simplification can be made
 	if constBranches {
-		tree.Operator = op.Constant{Value: tree.evaluateRow([]float64{})}
-		tree.Branches = nil
+		tree.op = op.Constant{Value: tree.EvaluateRow([]float64{})}
+		tree.branches = nil
 		return true
 	}
 	// If the branches are all Variables then a simplification can be made if
 	// the mother Operator is of type Difference
-	if varBranches && len(tree.Branches) == 2 {
+	if varBranches && tree.NBranches() == 2 {
 		// Check if the variables have the same index
-		if tree.Branches[0].Operator.(op.Variable).Index == tree.Branches[1].Operator.(op.Variable).Index {
-			switch tree.Operator.(type) {
+		if tree.branches[0].op.(op.Variable).Index == tree.branches[1].op.(op.Variable).Index {
+			switch tree.op.(type) {
 			case op.Difference:
-				tree.Operator = op.Constant{Value: 0}
-				tree.Branches = nil
+				tree.op = op.Constant{Value: 0}
+				tree.branches = nil
 				return true
 			case op.Division:
-				tree.Operator = op.Constant{Value: 1}
-				tree.Branches = nil
+				tree.op = op.Constant{Value: 1}
+				tree.branches = nil
 				return true
 			default:
 				return false

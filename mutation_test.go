@@ -1,4 +1,4 @@
-package tree
+package koza
 
 import (
 	"fmt"
@@ -6,7 +6,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/MaxHalford/koza/tree/op"
+	"github.com/MaxHalford/koza/op"
+	"github.com/MaxHalford/koza/tree"
 )
 
 func TestModification(t *testing.T) {
@@ -60,7 +61,7 @@ func TestModification(t *testing.T) {
 				tree   = randTree(rng)
 				mutant = tree.Clone()
 			)
-			tc.mutator.Apply(mutant, rng)
+			tc.mutator.Apply(&mutant, rng)
 			if reflect.DeepEqual(mutant, tree) {
 				t.Error("Mutation did not make any difference")
 			}
@@ -72,12 +73,12 @@ func TestHoistMutation(t *testing.T) {
 	var (
 		rng       = newRand()
 		testCases = []struct {
-			in      *Tree
+			in      tree.Tree
 			mutator HoistMutation
-			out     *Tree
+			out     tree.Tree
 		}{
 			{
-				in: mustParseCode("cos(42)"),
+				in: tree.MustParseCode("cos(42)"),
 				mutator: HoistMutation{
 					Picker: WeightedPicker{
 						Weighting: Weighting{
@@ -87,13 +88,13 @@ func TestHoistMutation(t *testing.T) {
 						},
 					},
 				},
-				out: mustParseCode("42"),
+				out: tree.MustParseCode("42"),
 			},
 		}
 	)
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
-			tc.mutator.Apply(tc.in, rng)
+			tc.mutator.Apply(&tc.in, rng)
 			if !reflect.DeepEqual(tc.in, tc.out) {
 				t.Errorf("Expected %s, got %s", tc.out, tc.in)
 			}

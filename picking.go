@@ -1,16 +1,17 @@
-package tree
+package koza
 
 import (
 	"math/rand"
 	"sort"
 
+	"github.com/MaxHalford/koza/tree"
 	"gonum.org/v1/gonum/floats"
 )
 
 // A Picker picks a sub-Tree from a Tree. The sub-Tree can be forced to have
 // a height in range [minHeight, maxHeight].
 type Picker interface {
-	Apply(tree *Tree, minHeight, maxHeight int, rng *rand.Rand) *Tree
+	Apply(tree *tree.Tree, minHeight, maxHeight int, rng *rand.Rand) *tree.Tree
 }
 
 // WeightedPicker picks a sub-Tree at random by weighting each sub-Tree
@@ -20,29 +21,29 @@ type WeightedPicker struct {
 }
 
 // Apply WeightedPicker.
-func (wp WeightedPicker) Apply(tree *Tree, minHeight, maxHeight int, rng *rand.Rand) *Tree {
+func (wp WeightedPicker) Apply(tr *tree.Tree, minHeight, maxHeight int, rng *rand.Rand) *tree.Tree {
 	// Assign weight to each Tree and calculate the total weight
 	var (
-		trees        []*Tree
+		trees        []*tree.Tree
 		weights      []float64
 		totalWeight  float64
-		assignWeight = func(tree *Tree, depth int) (stop bool) {
+		assignWeight = func(tr *tree.Tree, depth int) (stop bool) {
 			var (
 				w float64
-				h = tree.Height()
+				h = tr.Height()
 			)
 			if h < minHeight || h > maxHeight {
 				w = 0
 			} else {
-				w = wp.Weighting.apply(tree.Operator)
+				w = wp.Weighting.apply(tr.Operator())
 			}
 			weights = append(weights, w)
-			trees = append(trees, tree)
+			trees = append(trees, tr)
 			totalWeight += w
 			return
 		}
 	)
-	tree.Walk(assignWeight)
+	tr.Walk(assignWeight)
 
 	// Calculate the cumulative sum of the weights
 	var cumSum = make([]float64, len(weights))

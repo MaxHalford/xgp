@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"strconv"
 
-	"github.com/MaxHalford/koza/tree/op"
+	"github.com/MaxHalford/koza/op"
 )
 
 // A serialtree can be serialized and holds information that can be used to
@@ -16,69 +16,69 @@ type serialtree struct {
 }
 
 // serializetree recursively transforms a *tree into a serialtree.
-func serializetree(tree *Tree) (serialtree, error) {
+func serializetree(tree Tree) (serialtree, error) {
 	var serial = serialtree{
-		Branches: make([]serialtree, len(tree.Branches)),
+		Branches: make([]serialtree, len(tree.branches)),
 	}
-	switch tree.Operator.(type) {
+	switch tree.op.(type) {
 	case op.Constant:
 		serial.OpType = "constant"
-		serial.OpValue = strconv.FormatFloat(tree.Operator.(op.Constant).Value, 'f', -1, 64)
+		serial.OpValue = strconv.FormatFloat(tree.op.(op.Constant).Value, 'f', -1, 64)
 	case op.Variable:
 		serial.OpType = "variable"
-		serial.OpValue = strconv.Itoa(tree.Operator.(op.Variable).Index)
+		serial.OpValue = strconv.Itoa(tree.op.(op.Variable).Index)
 	default:
 		serial.OpType = "function"
-		serial.OpValue = tree.Operator.String()
+		serial.OpValue = tree.op.String()
 	}
-	for i, branches := range tree.Branches {
-		var serialChild, err = serializetree(branches)
+	for i, branch := range tree.branches {
+		var serialBranch, err = serializetree(*branch)
 		if err != nil {
 			return serial, err
 		}
-		serial.Branches[i] = serialChild
+		serial.Branches[i] = serialBranch
 	}
 	return serial, nil
 }
 
 // parseSerialtree recursively transforms a serialtree into a *tree.
-func parseSerialtree(serial serialtree) (*Tree, error) {
-	var tree = &Tree{
-		Branches: make([]*Tree, len(serial.Branches)),
+func parseSerialtree(serial serialtree) (Tree, error) {
+	var tree = Tree{
+		branches: make([]*Tree, len(serial.Branches)),
 	}
 	switch serial.OpType {
 	case "constant":
 		var val, err = strconv.ParseFloat(serial.OpValue, 64)
 		if err != nil {
-			return nil, err
+			return tree, err
 		}
-		tree.Operator = op.Constant{val}
+		tree.op = op.Constant{val}
 	case "variable":
 		var idx, err = strconv.Atoi(serial.OpValue)
 		if err != nil {
-			return nil, err
+			return tree, err
 		}
-		tree.Operator = op.Variable{idx}
+		tree.op = op.Variable{idx}
 	default:
 		var function, err = op.ParseFuncName(serial.OpValue)
 		if err != nil {
-			return nil, err
+			return tree, err
 		}
-		tree.Operator = function
+		tree.op = function
 	}
 	for i, branches := range serial.Branches {
 		var treeChild, err = parseSerialtree(branches)
 		if err != nil {
 			return tree, err
 		}
-		tree.Branches[i] = treeChild
+		tree.SetBranch(i, treeChild)
 	}
 	return tree, nil
 }
 
 // MarshalJSON serializes a *tree into JSON bytes. A serialtree is used as an
 // intermediary.
-func (tree *Tree) MarshalJSON() ([]byte, error) {
+func (tree Tree) MarshalJSON() ([]byte, error) {
 	var serial, err = serializetree(tree)
 	if err != nil {
 		return nil, err
@@ -97,6 +97,6 @@ func (tree *Tree) UnmarshalJSON(bytes []byte) error {
 	if err != nil {
 		return err
 	}
-	*tree = *parsedtree
+	*tree = parsedtree
 	return nil
 }

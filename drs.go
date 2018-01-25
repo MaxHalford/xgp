@@ -1,8 +1,10 @@
 package koza
 
 import (
+	"encoding/json"
 	"math"
 	"sort"
+	"strconv"
 )
 
 // closestFloat64 performs a binary search to find the index of closest float in
@@ -110,4 +112,72 @@ func (drs DynamicRangeSelection) clone() *DynamicRangeSelection {
 		cutPoints: cutPoints,
 		rangeMap:  rangeMap,
 	}
+}
+
+// A serialDRS can be serialized and holds information that can be used to
+// initialize a DynamicRangeSelection.
+type serialDRS struct {
+	CutPoints []float64         `json:"cut_points"`
+	RangeMap  map[string]string `json:"range_map"`
+}
+
+// serializeDRS transforms a *DynamicRangeSelection into a serialDRS.
+func serializeDRS(drs *DynamicRangeSelection) (serialDRS, error) {
+	var serial = serialDRS{
+		CutPoints: drs.cutPoints,
+		RangeMap:  make(map[string]string),
+	}
+	for k, v := range drs.rangeMap {
+		var (
+			ks = strconv.FormatFloat(k, 'f', -1, 64)
+			vs = strconv.FormatFloat(v, 'f', -1, 64)
+		)
+		serial.RangeMap[ks] = vs
+	}
+	return serial, nil
+}
+
+// parseSerialDRS recursively transforms a serialDRS into a *DynamicRangeSelection.
+func parseSerialDRS(serial serialDRS) (*DynamicRangeSelection, error) {
+	var drs = &DynamicRangeSelection{
+		cutPoints: serial.CutPoints,
+		rangeMap:  make(map[float64]float64),
+	}
+	for k, v := range serial.RangeMap {
+		kf, err := strconv.ParseFloat(k, 64)
+		if err != nil {
+			return nil, err
+		}
+		vf, err := strconv.ParseFloat(v, 64)
+		if err != nil {
+			return nil, err
+		}
+		drs.rangeMap[kf] = vf
+	}
+	return drs, nil
+}
+
+// MarshalJSON serializes a *DynamicRangeSelection into JSON bytes. A serialDRS
+// is used as an intermediary.
+func (drs *DynamicRangeSelection) MarshalJSON() ([]byte, error) {
+	var serial, err = serializeDRS(drs)
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(&serial)
+}
+
+// UnmarshalJSON parses JSON bytes into a *DynamicRangeSelection. A serialDRS is
+// used as an intermediary.
+func (drs *DynamicRangeSelection) UnmarshalJSON(bytes []byte) error {
+	var serial serialDRS
+	if err := json.Unmarshal(bytes, &serial); err != nil {
+		return err
+	}
+	var parsedDRS, err = parseSerialDRS(serial)
+	if err != nil {
+		return err
+	}
+	*drs = *parsedDRS
+	return nil
 }

@@ -93,7 +93,8 @@ koza uses the following projects which are a joy to work with.
 - [olekukonko/tablewriter](https://github.com/olekukonko/tablewriter) for displaying parameters in a pretty way
 - [gonum/gonum](https://github.com/gonum/gonum) for [SIMD operations](https://www.wikiwand.com/en/SIMD) and calculating metrics
 - [spf13/cobra](https://github.com/spf13/cobra) for building the CLI
-- [kniren/gota](https://github.com/kniren/gota) for manipulating dataframes in the CLI
+- [kniren/gota](https://github.com/kniren/gota) for manipulating dataframes from the CLI
+- [gosuri/uiprogress](https://github.com/gosuri/uiprogress) for displaying progress bars in the CLI
 - [mkdocs/mkdocs](https://github.com/mkdocs/mkdocs/) and [squidfunk/mkdocs-material](https://github.com/squidfunk/mkdocs-material) for building the documentation
 
 ## License

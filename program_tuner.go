@@ -4,13 +4,13 @@ import (
 	"math/rand"
 
 	"github.com/MaxHalford/gago"
+	"github.com/MaxHalford/koza/op"
 	"github.com/MaxHalford/koza/tree"
-	"github.com/MaxHalford/koza/tree/op"
 )
 
 // A ProgramTuner optimizes a Program by tuning the Program's Constants.
 type ProgramTuner struct {
-	Program      *Program
+	Program      Program
 	ConstValues  []float64
 	ConstSetters []ConstantSetter
 }
@@ -21,16 +21,16 @@ func (progTuner ProgramTuner) String() string {
 }
 
 // newProgramTuner returns a ProgramTuner from a Program.
-func newProgramTuner(prog *Program) ProgramTuner {
+func newProgramTuner(prog Program) ProgramTuner {
 	var (
 		nConsts      = prog.Tree.NConstants()
 		consts       = make([]float64, nConsts)
 		constSetters = make([]ConstantSetter, nConsts)
 		i            int
-		addConst     = func(t *tree.Tree, depth int) (stop bool) {
-			if c, ok := t.Operator.(op.Constant); ok {
+		addConst     = func(tr *tree.Tree, depth int) (stop bool) {
+			if c, ok := tr.Operator().(op.Constant); ok {
 				consts[i] = c.Value
-				constSetters[i] = newConstantSetter(t)
+				constSetters[i] = newConstantSetter(tr)
 				i++
 			}
 			return

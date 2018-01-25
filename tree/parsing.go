@@ -6,11 +6,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/MaxHalford/koza/tree/op"
+	"github.com/MaxHalford/koza/op"
 )
 
 // ParseCode takes a code representation of a Tree and parses it into a Tree.
-func ParseCode(code string) (*Tree, error) {
+func ParseCode(code string) (Tree, error) {
 	var tree Tree
 	// The operator is either a Variable or either a Constant
 	if !strings.HasSuffix(code, ")") {
@@ -19,19 +19,19 @@ func ParseCode(code string) (*Tree, error) {
 		if strings.HasSuffix(code, "]") {
 			var index, err = strconv.Atoi(code[2 : len(code)-1])
 			if err != nil {
-				return nil, err
+				return tree, err
 			}
-			tree.Operator = op.Variable{Index: index}
-			return &tree, nil
+			tree.op = op.Variable{Index: index}
+			return tree, nil
 		}
 
 		// The operator is a Constant
 		var value, err = strconv.ParseFloat(code, 64)
 		if err != nil {
-			return nil, err
+			return tree, err
 		}
-		tree.Operator = op.Constant{Value: value}
-		return &tree, nil
+		tree.op = op.Constant{Value: value}
+		return tree, nil
 	}
 
 	// The operator is a function
@@ -40,7 +40,7 @@ func ParseCode(code string) (*Tree, error) {
 		operator, err = op.ParseFuncName(parts[0])
 	)
 	if err != nil {
-		return nil, err
+		return tree, err
 	}
 
 	// Remove the trailing closing parenthesis
@@ -73,25 +73,26 @@ func ParseCode(code string) (*Tree, error) {
 
 	// Check the number of operands if consistent with the arity of the operator
 	if len(operands) != operator.Arity() {
-		return nil, errors.New("Number of operands does not match with operator arity")
+		return tree, errors.New("Number of operands does not match with operator arity")
 	}
 
-	tree.Operator = operator
-	tree.Branches = make([]*Tree, len(operands))
+	tree.op = operator
+	tree.branches = make([]*Tree, len(operands))
 	for i, operand := range operands {
 		// Parse the operand
-		tree.Branches[i], err = ParseCode(operand)
+		var branch, err = ParseCode(operand)
 		if err != nil {
-			return nil, err
+			return tree, err
 		}
+		tree.SetBranch(i, branch)
 	}
 
-	return &tree, nil
+	return tree, nil
 }
 
-// mustParseCode is identical to ParseCode but doesn't return an error. This
+// MustParseCode is identical to ParseCode but doesn't return an error. This
 // method should only be used for testing purposes.
-func mustParseCode(code string) *Tree {
+func MustParseCode(code string) Tree {
 	var tree, _ = ParseCode(code)
 	return tree
 }

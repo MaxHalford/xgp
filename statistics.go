@@ -17,7 +17,7 @@ func collectStats(GA *gago.GA) statistics {
 	for _, pop := range GA.Populations {
 		for _, indi := range pop.Individuals {
 			stats.avgHeight += float64(indi.Genome.(*Program).Tree.Height())
-			stats.avgNOperators += float64(indi.Genome.(*Program).Tree.NOperators())
+			stats.avgNOperators += float64(indi.Genome.(*Program).Tree.Size())
 			n++
 		}
 	}

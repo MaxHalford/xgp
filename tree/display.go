@@ -25,24 +25,24 @@ type DirDisplay struct {
 }
 
 // Apply directory-style display.
-func (displayer DirDisplay) Apply(tree *Tree) string {
+func (displayer DirDisplay) Apply(tree Tree) string {
 	var (
 		disp       func(tree *Tree, str string, depth int, carriage bool) string
 		whitespace = strings.Repeat(" ", displayer.TabSize)
 	)
 
 	disp = func(tree *Tree, str string, depth int, carriage bool) string {
-		str += strings.Repeat(whitespace, depth) + tree.Operator.String()
+		str += strings.Repeat(whitespace, depth) + tree.op.String()
 		if carriage {
 			str += "\n"
 		}
-		for i := len(tree.Branches) - 1; i >= 0; i-- {
-			str = disp(tree.Branches[i], str, depth+1, i > 0)
+		for i := len(tree.branches) - 1; i >= 0; i-- {
+			str = disp(tree.branches[i], str, depth+1, i > 0)
 		}
 		return str
 	}
 
-	return disp(tree, "", 0, len(tree.Branches) > 0)
+	return disp(&tree, "", 0, len(tree.branches) > 0)
 }
 
 // GraphvizDisplay outputs a Graphviz representation of a Tree. Each branch is
@@ -68,22 +68,22 @@ func (displayer DirDisplay) Apply(tree *Tree) string {
 type GraphvizDisplay struct{}
 
 // Apply Graphviz display.
-func (displayer GraphvizDisplay) Apply(tree *Tree) string {
+func (displayer GraphvizDisplay) Apply(tree Tree) string {
 	var (
 		counter int
 		disp    func(tree *Tree, str string) string
 	)
 	disp = func(tree *Tree, str string) string {
 		var idx = counter
-		str += fmt.Sprintf("\t%d [label=\"%s\"];\n", idx, tree.Operator.String())
-		for _, branch := range tree.Branches {
+		str += fmt.Sprintf("\t%d [label=\"%s\"];\n", idx, tree.op.String())
+		for _, branch := range tree.branches {
 			counter++
 			str += fmt.Sprintf("\t%d -> %d;\n", idx, counter)
 			str = disp(branch, str)
 		}
 		return str
 	}
-	var str = disp(tree, "digraph G {\n")
+	var str = disp(&tree, "digraph G {\n")
 	str += "}"
 	return str
 }
@@ -95,20 +95,20 @@ func (displayer GraphvizDisplay) Apply(tree *Tree) string {
 type CodeDisplay struct{}
 
 // Apply CodeDisplay.
-func (displayer CodeDisplay) Apply(tree *Tree) string {
-	switch len(tree.Branches) {
+func (displayer CodeDisplay) Apply(tree Tree) string {
+	switch len(tree.branches) {
 	case 0:
-		return tree.Operator.String()
+		return tree.op.String()
 	case 1:
-		return fmt.Sprintf("%s(%s)", tree.Operator.String(), displayer.Apply(tree.Branches[0]))
+		return fmt.Sprintf("%s(%s)", tree.op.String(), displayer.Apply(*tree.branches[0]))
 	case 2:
 		return fmt.Sprintf(
 			"%s(%s, %s)",
-			tree.Operator.String(),
-			displayer.Apply(tree.Branches[0]),
-			displayer.Apply(tree.Branches[1]),
+			tree.op.String(),
+			displayer.Apply(*tree.branches[0]),
+			displayer.Apply(*tree.branches[1]),
 		)
 	default:
-		return tree.Operator.String()
+		return tree.op.String()
 	}
 }

@@ -3,17 +3,15 @@ package koza
 import (
 	"errors"
 	"fmt"
-	"io"
 	"math/rand"
-	"os"
-	"text/tabwriter"
-	"time"
 
 	"github.com/MaxHalford/gago"
+	"github.com/gosuri/uiprogress"
 
+	"github.com/MaxHalford/koza/ensemble"
 	"github.com/MaxHalford/koza/metrics"
+	"github.com/MaxHalford/koza/op"
 	"github.com/MaxHalford/koza/tree"
-	"github.com/MaxHalford/koza/tree/op"
 )
 
 // An Estimator links all the different components together and can be used to
@@ -25,13 +23,13 @@ type Estimator struct {
 	EvalMetric       metrics.Metric
 	LossMetric       metrics.Metric
 	Functions        []op.Operator
-	TreeInitializer  tree.Initializer
+	Initializer      Initializer
 	GA               *gago.GA
 	TuningGA         *gago.GA
-	PointMutation    tree.PointMutation
-	SubTreeMutation  tree.SubTreeMutation
-	HoistMutation    tree.HoistMutation
-	SubTreeCrossover tree.SubTreeCrossover
+	PointMutation    PointMutation
+	SubTreeMutation  SubTreeMutation
+	HoistMutation    HoistMutation
+	SubTreeCrossover SubTreeCrossover
 
 	fm       map[int][]op.Operator
 	XTrain   [][]float64
@@ -53,56 +51,6 @@ func (est Estimator) BestProgram() *Program {
 	return est.GA.HallOfFame[0].Genome.(*Program)
 }
 
-func notifyProgress(est *Estimator, generation int, duration time.Duration, w io.Writer) error {
-	var (
-		writer = tabwriter.NewWriter(w, 0, 0, 4, ' ', 0)
-		best   = est.BestProgram()
-		stats  = collectStats(est.GA)
-	)
-
-	// Get the score on the training set
-	yTrainPred, err := best.Predict(est.XTrain, est.EvalMetric.NeedsProbabilities())
-	if err != nil {
-		return err
-	}
-	trainScore, err := est.EvalMetric.Apply(est.YTrain, yTrainPred, nil)
-	if err != nil {
-		return err
-	}
-
-	// Get the score on the evaluation set
-	var evalScoreStr = "/"
-	if est.XVal != nil && est.YVal != nil {
-		yEvalPred, err := best.Predict(est.XVal, est.EvalMetric.NeedsProbabilities())
-		if err != nil {
-			return err
-		}
-		evalScore, err := est.EvalMetric.Apply(est.YVal, yEvalPred, est.WVal)
-		if err != nil {
-			return err
-		}
-		evalScoreStr = fmt.Sprintf("%.5f", evalScore)
-	}
-
-	// Produce the output message
-	var message = "[%d]\ttrain %s: %.5f\tval %s: %s\tbest size: %d\tmean size: %.2f\tduration: %s\n"
-	fmt.Fprintf(
-		writer,
-		message,
-		generation,
-		est.EvalMetric.String(),
-		trainScore,
-		est.EvalMetric.String(),
-		evalScoreStr,
-		best.Tree.NOperators(),
-		stats.avgNOperators,
-		fmtDuration(duration),
-	)
-	writer.Flush()
-
-	return nil
-}
-
 // Fit an Estimator to a dataset.Dataset.
 func (est *Estimator) Fit(
 	XTrain [][]float64,
@@ -111,8 +59,8 @@ func (est *Estimator) Fit(
 	XVal [][]float64,
 	YVal []float64,
 	WVal []float64,
-	notifyEvery uint,
-) error {
+	verbose bool,
+) (ensemble.Predictor, error) {
 
 	// Set the training set
 	est.XTrain = XTrain
@@ -129,53 +77,80 @@ func (est *Estimator) Fit(
 		est.nClasses = countDistinct(YTrain)
 		// Check that the task to perform is not multi-class classification
 		if est.nClasses > 2 {
-			return errors.New("Multi-class classification is not supported")
+			return nil, errors.New("Multi-class classification is not supported")
 		}
 	}
 
 	// Initialize the GA
 	est.GA.Initialize()
 
-	// Display initial statistics
-	if notifyEvery > 0 {
-		err := notifyProgress(est, 0, 0, os.Stdout)
-		if err != nil {
-			return err
-		}
-	}
-
 	// Keep track of the time spent evolving
-	var start = time.Now()
+	//var start = time.Now()
 
 	// Evolve the GA
+	var (
+		bar      *uiprogress.Bar
+		progress *uiprogress.Progress
+	)
+	if verbose {
+		progress = uiprogress.New()
+		progress.Start()
+		bar = progress.AddBar(est.NGenerations)
+		bar.PrependCompleted()
+		bar.AppendFunc(func(b *uiprogress.Bar) string {
+			var (
+				best            = est.BestProgram()
+				yTrainPred, err = best.Predict(est.XTrain, est.EvalMetric.NeedsProbabilities())
+			)
+			if err != nil {
+				return "ERROR"
+			}
+			trainScore, err := est.EvalMetric.Apply(est.YTrain, yTrainPred, nil)
+			if err != nil {
+				return "ERROR"
+			}
+			var message = fmt.Sprintf("train %s: %.5f", est.EvalMetric.String(), trainScore)
+			if est.XVal != nil && est.YVal != nil {
+				yEvalPred, err := best.Predict(est.XVal, est.EvalMetric.NeedsProbabilities())
+				if err != nil {
+					return "ERROR"
+				}
+				evalScore, err := est.EvalMetric.Apply(est.YVal, yEvalPred, est.WVal)
+				if err != nil {
+					return "ERROR"
+				}
+				message += fmt.Sprintf(" val %s: %.5f", est.EvalMetric.String(), evalScore)
+			}
+			return message
+		})
+	}
+
 	for i := 0; i < est.NGenerations; i++ {
+		if verbose {
+			bar.Incr()
+		}
 
 		// Make sure each tree has at least a height of 2
 		for _, pop := range est.GA.Populations {
 			for _, indi := range pop.Individuals {
 				var prog = indi.Genome.(*Program)
 				if prog.Tree.Height() < 2 {
-					est.SubTreeMutation.Apply(prog.Tree, pop.RNG)
+					est.SubTreeMutation.Apply(&prog.Tree, pop.RNG)
 					prog.Evaluate()
 				}
 			}
 		}
 
 		est.GA.Evolve()
-
-		// Display current statistics
-		if notifyEvery > 0 && uint(i+1)%notifyEvery == 0 {
-			err := notifyProgress(est, i+1, time.Since(start), os.Stdout)
-			if err != nil {
-				return err
-			}
-		}
 	}
 
-	// Display the best program
-	fmt.Printf("Best program: %s\n", est.BestProgram())
+	if verbose {
+		progress.Stop()
+	}
 
-	return nil
+	var best = est.BestProgram()
+
+	return *best, nil
 }
 
 // Predict the output of a slice of features.
@@ -216,11 +191,11 @@ func (est Estimator) mutateOperator(operator op.Operator, rng *rand.Rand) op.Ope
 	}
 }
 
-func (est Estimator) newTree(rng *rand.Rand) *tree.Tree {
-	return est.TreeInitializer.Apply(
+func (est Estimator) newTree(rng *rand.Rand) tree.Tree {
+	return est.Initializer.Apply(
 		est.MinHeight,
 		est.MaxHeight,
-		tree.OperatorFactory{
+		OperatorFactory{
 			PConstant:   est.PConstant,
 			NewConstant: est.newConstant,
 			NewVariable: est.newVariable,
@@ -240,7 +215,7 @@ func (est *Estimator) newProgram(rng *rand.Rand) gago.Genome {
 		},
 		Estimator: est,
 	}
-	if est.LossMetric.Classification() {
+	if prog.Task.multiClassification() {
 		prog.DRS = &DynamicRangeSelection{}
 	}
 	return &prog
@@ -250,7 +225,7 @@ func (est *Estimator) newProgram(rng *rand.Rand) gago.Genome {
 func (est *Estimator) newProgramTuner(rng *rand.Rand) gago.Genome {
 	var (
 		bestProg  = est.GA.HallOfFame[0].Genome.(*Program)
-		progTuner = newProgramTuner(bestProg)
+		progTuner = newProgramTuner(*bestProg)
 	)
 	progTuner.jitterConstants(rng)
 	return &progTuner

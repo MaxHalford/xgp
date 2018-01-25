@@ -1,11 +1,11 @@
-package tree
+package koza
 
 import (
 	"fmt"
 	"math/rand"
 	"testing"
 
-	"github.com/MaxHalford/koza/tree/op"
+	"github.com/MaxHalford/koza/op"
 )
 
 func TestFullInitializer(t *testing.T) {
@@ -17,24 +17,24 @@ func TestFullInitializer(t *testing.T) {
 		}
 		rng       = newRand()
 		testCases = []struct {
-			maxHeight  int
-			minHeight  int
-			nOperators int
+			maxHeight int
+			minHeight int
+			size      int
 		}{
 			{
-				minHeight:  0,
-				maxHeight:  0,
-				nOperators: 1,
+				minHeight: 0,
+				maxHeight: 0,
+				size:      1,
 			},
 			{
-				minHeight:  1,
-				maxHeight:  1,
-				nOperators: 3,
+				minHeight: 1,
+				maxHeight: 1,
+				size:      3,
 			},
 			{
-				minHeight:  2,
-				maxHeight:  2,
-				nOperators: 7,
+				minHeight: 2,
+				maxHeight: 2,
+				size:      7,
 			},
 		}
 	)
@@ -42,8 +42,8 @@ func TestFullInitializer(t *testing.T) {
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
 			var tree = FullInitializer{}.Apply(tc.minHeight, tc.maxHeight, of, rng)
-			if tree.NOperators() != tc.nOperators {
-				t.Errorf("Expected %d, got %d", tc.nOperators, tree.NOperators())
+			if tree.Size() != tc.size {
+				t.Errorf("Expected %d, got %d", tc.size, tree.Size())
 			}
 		})
 	}
@@ -59,46 +59,46 @@ func TestGrowInitializer(t *testing.T) {
 		}
 		rng       = newRand()
 		testCases = []struct {
-			minHeight  int
-			maxHeight  int
-			pLeaf      float64
-			nOperators int
+			minHeight int
+			maxHeight int
+			pLeaf     float64
+			size      int
 		}{
 			{
-				pLeaf:      0,
-				minHeight:  0,
-				maxHeight:  0,
-				nOperators: 1,
+				pLeaf:     0,
+				minHeight: 0,
+				maxHeight: 0,
+				size:      1,
 			},
 			{
-				pLeaf:      1,
-				minHeight:  0,
-				maxHeight:  0,
-				nOperators: 1,
+				pLeaf:     1,
+				minHeight: 0,
+				maxHeight: 0,
+				size:      1,
 			},
 			{
-				pLeaf:      0,
-				minHeight:  1,
-				maxHeight:  1,
-				nOperators: 3,
+				pLeaf:     0,
+				minHeight: 1,
+				maxHeight: 1,
+				size:      3,
 			},
 			{
-				pLeaf:      1,
-				minHeight:  0,
-				maxHeight:  1,
-				nOperators: 1,
+				pLeaf:     1,
+				minHeight: 0,
+				maxHeight: 1,
+				size:      1,
 			},
 			{
-				pLeaf:      0,
-				minHeight:  2,
-				maxHeight:  2,
-				nOperators: 7,
+				pLeaf:     0,
+				minHeight: 2,
+				maxHeight: 2,
+				size:      7,
 			},
 			{
-				pLeaf:      1,
-				minHeight:  0,
-				maxHeight:  2,
-				nOperators: 1,
+				pLeaf:     1,
+				minHeight: 0,
+				maxHeight: 2,
+				size:      1,
 			},
 		}
 	)
@@ -111,8 +111,8 @@ func TestGrowInitializer(t *testing.T) {
 				}
 				tree = initializer.Apply(tc.minHeight, tc.maxHeight, of, rng)
 			)
-			if tree.NOperators() != tc.nOperators {
-				t.Errorf("Expected %d operator(s), got %d", tc.nOperators, tree.NOperators())
+			if tree.Size() != tc.size {
+				t.Errorf("Expected %d operator(s), got %d", tc.size, tree.Size())
 			}
 		})
 	}

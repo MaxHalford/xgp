@@ -1,6 +1,6 @@
-package tree
+package koza
 
-import "github.com/MaxHalford/koza/tree/op"
+import "github.com/MaxHalford/koza/op"
 
 // A Weighting is a convinience structure for assigning weights to Operators
 // for selection purposes.

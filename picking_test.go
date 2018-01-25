@@ -1,9 +1,11 @@
-package tree
+package koza
 
 import (
 	"fmt"
 	"reflect"
 	"testing"
+
+	"github.com/MaxHalford/koza/tree"
 )
 
 func TestWeightedPicker(t *testing.T) {
@@ -13,8 +15,8 @@ func TestWeightedPicker(t *testing.T) {
 			w         Weighting
 			minHeight int
 			maxHeight int
-			in        *Tree
-			out       *Tree
+			in        tree.Tree
+			out       tree.Tree
 		}{
 			{
 				w: Weighting{
@@ -24,8 +26,8 @@ func TestWeightedPicker(t *testing.T) {
 				},
 				minHeight: 0,
 				maxHeight: 1,
-				in:        mustParseCode("sum(42, X[0])"),
-				out:       mustParseCode("42"),
+				in:        tree.MustParseCode("sum(42, X[0])"),
+				out:       tree.MustParseCode("42"),
 			},
 			{
 				w: Weighting{
@@ -35,8 +37,8 @@ func TestWeightedPicker(t *testing.T) {
 				},
 				minHeight: 0,
 				maxHeight: 1,
-				in:        mustParseCode("sum(42, X[0])"),
-				out:       mustParseCode("X[0]"),
+				in:        tree.MustParseCode("sum(42, X[0])"),
+				out:       tree.MustParseCode("X[0]"),
 			},
 			{
 				w: Weighting{
@@ -46,8 +48,8 @@ func TestWeightedPicker(t *testing.T) {
 				},
 				minHeight: 0,
 				maxHeight: 1,
-				in:        mustParseCode("sum(42, X[0])"),
-				out:       mustParseCode("sum(42, X[0])"),
+				in:        tree.MustParseCode("sum(42, X[0])"),
+				out:       tree.MustParseCode("sum(42, X[0])"),
 			},
 			{
 				w: Weighting{
@@ -57,8 +59,8 @@ func TestWeightedPicker(t *testing.T) {
 				},
 				minHeight: 0,
 				maxHeight: 0,
-				in:        mustParseCode("cos(sin(42))"),
-				out:       mustParseCode("42"),
+				in:        tree.MustParseCode("cos(sin(42))"),
+				out:       tree.MustParseCode("42"),
 			},
 			{
 				w: Weighting{
@@ -68,8 +70,8 @@ func TestWeightedPicker(t *testing.T) {
 				},
 				minHeight: 1,
 				maxHeight: 1,
-				in:        mustParseCode("cos(sin(42))"),
-				out:       mustParseCode("sin(42)"),
+				in:        tree.MustParseCode("cos(sin(42))"),
+				out:       tree.MustParseCode("sin(42)"),
 			},
 			{
 				w: Weighting{
@@ -79,8 +81,8 @@ func TestWeightedPicker(t *testing.T) {
 				},
 				minHeight: 2,
 				maxHeight: 2,
-				in:        mustParseCode("cos(sin(42))"),
-				out:       mustParseCode("cos(sin(42))"),
+				in:        tree.MustParseCode("cos(sin(42))"),
+				out:       tree.MustParseCode("cos(sin(42))"),
 			},
 		}
 	)
@@ -88,9 +90,9 @@ func TestWeightedPicker(t *testing.T) {
 		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
 			var (
 				wp  = WeightedPicker{Weighting: tc.w}
-				out = wp.Apply(tc.in, tc.minHeight, tc.maxHeight, rng)
+				out = wp.Apply(&tc.in, tc.minHeight, tc.maxHeight, rng)
 			)
-			if !reflect.DeepEqual(out, tc.out) {
+			if !reflect.DeepEqual(out, &tc.out) {
 				t.Errorf("Expected %s, got %s", tc.out, out)
 			}
 		})

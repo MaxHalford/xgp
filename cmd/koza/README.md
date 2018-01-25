@@ -14,7 +14,7 @@ go run main.go fit examples/restaurants/train.csv --loss rmse --val examples/res
 
 ```sh
 python examples/boston/create_datasets.py
-koza fit examples/boston/train.csv --loss mae --val_set examples/boston/test.csv --indis 500 --gens 50 --seed 5
+go run main.go fit .\examples\boston\train.csv --val examples/boston/test.csv --loss mae --seed 42
 ```
 
 ### gplearn polynomial example
@@ -23,7 +23,7 @@ This example is derived from [gplearn's documentation](http://gplearn.readthedoc
 
 ```sh
 python examples/gplearn/create_datasets.py
-koza fit examples/gplearn/train.csv --loss mae
+go run main.go fit examples/gplearn/train.csv --loss mae
 koza score examples/gplearn/test.csv --eval mae
 ```
 
@@ -33,6 +33,6 @@ The data munging is adapted from this [Kaggle kernel](https://www.kaggle.com/sci
 
 ```sh
 python examples/titanic/create_datasets.py
-go run .\main.go fit .\examples\titanic\train.csv --loss accuracy --val .\examples\titanic\val.csv --target Survived --ignore PassengerId --parsimony 0.0001 --gens 100 --indis 500 --funcs sum,sub,mul,div,cos,sin,min,max,pow
+go run .\main.go fit .\examples\titanic\train.csv --loss accuracy --val .\examples\titanic\val.csv --target Survived --ignore PassengerId --parsimony 0.0001 --gens 100 --indis 2000 --funcs sum,sub,mul,div,cos,sin,min,max,pow
 go run .\main.go predict examples/titanic/test.csv --output examples/titanic/submission.csv --keep PassengerId --target Survived
 ```

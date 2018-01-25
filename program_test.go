@@ -2,12 +2,40 @@ package koza
 
 import (
 	"fmt"
+	"math/rand"
 	"testing"
 
 	"github.com/MaxHalford/koza/metrics"
+	"github.com/MaxHalford/koza/op"
 	"github.com/MaxHalford/koza/tree"
-	"github.com/MaxHalford/koza/tree/op"
 )
+
+// randTree is a convenience method that produces a random Tree for testing
+// purposes.
+func randTree(rng *rand.Rand) tree.Tree {
+	var (
+		init = RampedHaldAndHalfInitializer{
+			PFull:           0.5,
+			FullInitializer: FullInitializer{},
+			GrowInitializer: GrowInitializer{0.5},
+		}
+		funcs = []op.Operator{
+			op.Cos{},
+			op.Sin{},
+			op.Sum{},
+			op.Difference{},
+			op.Product{},
+			op.Division{},
+		}
+		of = OperatorFactory{
+			PConstant:   0.5,
+			NewConstant: func(rng *rand.Rand) op.Constant { return op.Constant{randFloat64(-5, 5, rng)} },
+			NewVariable: func(rng *rand.Rand) op.Variable { return op.Variable{randInt(0, 5, rng)} },
+			NewFunction: func(rng *rand.Rand) op.Operator { return funcs[rng.Intn(len(funcs))] },
+		}
+	)
+	return init.Apply(3, 5, of, rng)
+}
 
 func TestPredict(t *testing.T) {
 	var testCases = []struct {
@@ -22,13 +50,7 @@ func TestPredict(t *testing.T) {
 				[]float64{1, 3},
 			},
 			program: Program{
-				Tree: &tree.Tree{
-					Operator: op.Sum{},
-					Branches: []*tree.Tree{
-						&tree.Tree{Operator: op.Variable{0}},
-						&tree.Tree{Operator: op.Variable{1}},
-					},
-				},
+				Tree: tree.MustParseCode("sum(X[0], X[1])"),
 				Task: Task{
 					Metric: metrics.MeanAbsoluteError{},
 				},

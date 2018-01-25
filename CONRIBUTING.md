@@ -17,8 +17,8 @@ mkdocs serve
 ## Performance
 
 ```sh
-go test -bench . -cpuprofile=cpu.prof
-go tool pprof -pdf koza.test cpu.prof > profile.pdf
+go test -bench . --cpuprofile=cpu.prof
+go tool pprof --pdf koza.test cpu.prof > profile.pdf
 ```
 
 ## Magic numbers
