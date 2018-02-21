@@ -140,22 +140,25 @@ func MakeConfusionMatrix(yTrue, yPred, weights []float64) (ConfusionMatrix, erro
 
 	var cm = make(ConfusionMatrix)
 
-	for i, yt := range yTrue {
-		if _, ok := cm[yt]; ok {
-			if weights != nil {
+	if weights != nil {
+		for i, yt := range yTrue {
+			if _, ok := cm[yt]; ok {
 				cm[yt][yPred[i]] += weights[i]
 			} else {
-				cm[yt][yPred[i]]++
-			}
-		} else {
-			cm[yt] = make(map[float64]float64)
-			if weights != nil {
+				cm[yt] = make(map[float64]float64)
 				cm[yt][yPred[i]] = weights[i]
-			} else {
-				cm[yt][yPred[i]] = 1
 			}
 		}
+		return cm, nil
 	}
 
+	for i, yt := range yTrue {
+		if _, ok := cm[yt]; ok {
+			cm[yt][yPred[i]]++
+		} else {
+			cm[yt] = make(map[float64]float64)
+			cm[yt][yPred[i]] = 1
+		}
+	}
 	return cm, nil
 }

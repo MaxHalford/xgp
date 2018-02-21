@@ -68,7 +68,7 @@ func init() {
 	fitCmd.Flags().IntVarP(&fitNIndividuals, "indis", "", 50, "number of individuals to use for each population in the GA")
 	fitCmd.Flags().IntVarP(&fitNGenerations, "gens", "", 30, "number of generations used to evolve the GA")
 	fitCmd.Flags().IntVarP(&fitNTuningGenerations, "tune_gens", "", 0, "number of generations used to evolve the tuning GA")
-	fitCmd.Flags().IntVarP(&fitNRounds, "rounds", "", 1, "number of weak learners used in the ensemble")
+	fitCmd.Flags().IntVarP(&fitNRounds, "rounds", "", 1, "number of programs used in the ensemble")
 
 	fitCmd.Flags().Float64VarP(&fitPConstant, "p_constant", "", 0.5, "probability of picking a constant and not a constant when generating terminal nodes")
 	fitCmd.Flags().Float64VarP(&fitPFull, "p_full", "", 0.5, "probability of use full initialization during ramped half-and-half initialization")
@@ -192,7 +192,7 @@ var fitCmd = &cobra.Command{
 
 		// Instantiate an ensemble
 		var bag = ensemble.BaggingRegressor{
-			NEstimators:   30,
+			NEstimators:   fitNRounds,
 			RowSampling:   1,
 			ColSampling:   1,
 			BootstrapRows: true,

@@ -14,20 +14,17 @@ func (metric MeanAbsoluteError) Apply(yTrue, yPred, weights []float64) (float64,
 		return math.Inf(1), &errMismatchedLengths{len(yTrue), len(weights)}
 	}
 
-	var (
-		sum float64
-		ws  float64
-	)
-	for i := range yTrue {
-		if weights != nil {
+	var sum float64
+	if weights != nil {
+		var ws float64
+		for i := range yTrue {
 			sum += math.Abs(yTrue[i]-yPred[i]) * weights[i]
 			ws += weights[i]
-		} else {
-			sum += math.Abs(yTrue[i] - yPred[i])
 		}
-	}
-	if weights != nil {
 		return sum / ws, nil
+	}
+	for i := range yTrue {
+		sum += math.Abs(yTrue[i] - yPred[i])
 	}
 	return sum / float64(len(yTrue)), nil
 }
@@ -64,20 +61,18 @@ func (metric MeanSquaredError) Apply(yTrue, yPred, weights []float64) (float64, 
 		return math.Inf(1), &errMismatchedLengths{len(yTrue), len(weights)}
 	}
 
-	var (
-		sum float64
-		ws  float64
-	)
-	for i := range yTrue {
-		if weights != nil {
+	var sum float64
+	if weights != nil {
+		var ws float64
+
+		for i := range yTrue {
 			sum += math.Pow(yTrue[i]-yPred[i], 2) * weights[i]
 			ws += weights[i]
-		} else {
-			sum += math.Pow(yTrue[i]-yPred[i], 2)
 		}
-	}
-	if weights != nil {
 		return sum / ws, nil
+	}
+	for i := range yTrue {
+		sum += math.Pow(yTrue[i]-yPred[i], 2)
 	}
 	return sum / float64(len(yTrue)), nil
 }
@@ -147,21 +142,18 @@ func (metric R2) Apply(yTrue, yPred, weights []float64) (float64, error) {
 	}
 
 	// Compute the mean of the observed data
-	var (
-		yMean float64
-		ws    float64
-	)
-	for i, y := range yTrue {
-		if weights != nil {
+	var yMean float64
+	if weights != nil {
+		var ws float64
+		for i, y := range yTrue {
 			yMean += y * weights[i]
 			ws += weights[i]
-		} else {
-			yMean += y
 		}
-	}
-	if weights != nil {
 		yMean /= ws
 	} else {
+		for _, y := range yTrue {
+			yMean += y
+		}
 		yMean /= float64(len(yTrue))
 	}
 
@@ -169,16 +161,17 @@ func (metric R2) Apply(yTrue, yPred, weights []float64) (float64, error) {
 		SSR float64
 		SST float64
 	)
-	for i := range yTrue {
-		if weights != nil {
+	if weights != nil {
+		for i := range yTrue {
 			SSR += math.Pow(yPred[i]-yTrue[i], 2) * weights[i]
 			SST += math.Pow(yTrue[i]-yMean, 2) * weights[i]
-		} else {
-			SSR += math.Pow(yPred[i]-yTrue[i], 2)
-			SST += math.Pow(yTrue[i]-yMean, 2)
 		}
+		return 1 - SSR/SST, nil
 	}
-
+	for i := range yTrue {
+		SSR += math.Pow(yPred[i]-yTrue[i], 2)
+		SST += math.Pow(yTrue[i]-yMean, 2)
+	}
 	return 1 - SSR/SST, nil
 }
 

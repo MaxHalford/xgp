@@ -14,7 +14,7 @@ go run main.go fit examples/restaurants/train.csv --loss rmse --val examples/res
 
 ```sh
 python examples/boston/create_datasets.py
-go run main.go fit ./examples/boston/train.csv --val examples/boston/test.csv --loss mae --seed 42 --indis 500 --gens 100
+go run main.go fit ./examples/boston/train.csv --val examples/boston/test.csv --loss mae --seed 42 --indis 50 --gens 30
 ```
 
 ### gplearn polynomial example

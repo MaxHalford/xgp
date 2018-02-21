@@ -71,3 +71,55 @@ func sumFloat64s(floats []float64) (sum float64) {
 func meanFloat64s(floats []float64) float64 {
 	return sumFloat64s(floats) / float64(len(floats))
 }
+
+func sample(
+	X [][]float64,
+	Y []float64,
+	W []float64,
+	rowSampling float64,
+	colSampling float64,
+	boostrapRows bool,
+	bootstrapCols bool,
+	rng *rand.Rand,
+) ([][]float64, []float64, []float64, []int, []int, error) {
+
+	// Sample row indexes
+	var n = int(rowSampling * float64(len(X[0])))
+	rowIdxs, err := randomInts(n, 0, len(X[0]), boostrapRows, rng)
+	if err != nil {
+		return nil, nil, nil, nil, nil, err
+	}
+
+	// Sample column indexes
+	var p = int(colSampling * float64(len(X)))
+	colIdxs, err := randomInts(p, 0, len(X), bootstrapCols, rng)
+	if err != nil {
+		return nil, nil, nil, nil, nil, err
+	}
+
+	// Create the sample
+	var (
+		XSam = make([][]float64, len(colIdxs))
+		YSam = make([]float64, len(rowIdxs))
+		WSam []float64
+	)
+	if W != nil {
+		WSam = make([]float64, len(rowIdxs))
+	}
+	for i := range colIdxs {
+		XSam[i] = make([]float64, len(rowIdxs))
+	}
+	for i, r := range rowIdxs {
+		for j, c := range colIdxs {
+			XSam[j][i] = X[c][r]
+		}
+		YSam[i] = Y[r]
+		if W != nil {
+			WSam[i] = W[r]
+		}
+	}
+	if W != nil {
+		return XSam, YSam, WSam, rowIdxs, colIdxs, nil
+	}
+	return XSam, YSam, nil, rowIdxs, colIdxs, nil
+}

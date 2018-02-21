@@ -82,10 +82,10 @@ func (est *Estimator) Fit(
 	}
 
 	// Initialize the GA
-	est.GA.Initialize()
-
-	// Keep track of the time spent evolving
-	//var start = time.Now()
+	var err = est.GA.Initialize()
+	if err != nil {
+		return nil, err
+	}
 
 	// Evolve the GA
 	var (
@@ -131,17 +131,20 @@ func (est *Estimator) Fit(
 		}
 
 		// Make sure each tree has at least a height of 2
-		for _, pop := range est.GA.Populations {
-			for _, indi := range pop.Individuals {
+		for i, pop := range est.GA.Populations {
+			for j, indi := range pop.Individuals {
 				var prog = indi.Genome.(*Program)
 				if prog.Tree.Height() < 2 {
 					est.SubTreeMutation.Apply(&prog.Tree, pop.RNG)
-					prog.Evaluate()
+					est.GA.Populations[i].Individuals[j].Evaluate()
 				}
 			}
 		}
 
-		est.GA.Evolve()
+		err = est.GA.Evolve()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if verbose {

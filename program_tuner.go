@@ -66,7 +66,7 @@ func (progTuner *ProgramTuner) jitterConstants(rng *rand.Rand) {
 // Implementation of the Genome interface from the gago package
 
 // Evaluate method required to implement gago.Genome.
-func (progTuner *ProgramTuner) Evaluate() float64 {
+func (progTuner *ProgramTuner) Evaluate() (float64, error) {
 	progTuner.setProgConstants()
 	return progTuner.Program.Evaluate()
 }

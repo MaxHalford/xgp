@@ -8,22 +8,25 @@ import (
 )
 
 // Evaluate is required to implement gago.Genome.
-func (prog *Program) Evaluate() float64 {
+func (prog *Program) Evaluate() (float64, error) {
 	// Run the training set through the Program
 	var yPred, err = prog.Predict(prog.Estimator.XTrain, prog.Task.Metric.NeedsProbabilities())
 	if err != nil {
-		return math.Inf(1)
+		return math.Inf(1), err
 	}
 	// Use the Metric defined in the Estimator
 	fitness, err := prog.Task.Metric.Apply(prog.Estimator.YTrain, yPred, prog.Estimator.WTrain)
-	if err != nil || math.IsNaN(fitness) {
-		return math.Inf(1)
+	if err != nil {
+		return math.Inf(1), err
+	}
+	if math.IsNaN(fitness) {
+		return math.Inf(1), nil
 	}
 	// Apply the parsimony coefficient
 	if prog.Estimator.ParsimonyCoeff != 0 {
 		fitness += prog.Estimator.ParsimonyCoeff * float64(prog.Tree.Size())
 	}
-	return fitness
+	return fitness, nil
 }
 
 // Mutate is required to implement gago.Genome.

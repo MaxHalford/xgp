@@ -14,25 +14,21 @@ func (metric Accuracy) Apply(yTrue, yPred, weights []float64) (float64, error) {
 		return 0, &errMismatchedLengths{len(yTrue), len(weights)}
 	}
 
-	var (
-		accuracy float64
-		ws       float64
-	)
-	for i, y := range yTrue {
-		if y == yPred[i] {
-			if weights != nil {
+	var accuracy float64
+	if weights != nil {
+		var ws float64
+		for i, y := range yTrue {
+			if y == yPred[i] {
 				accuracy += weights[i]
-			} else {
-				accuracy++
 			}
-		}
-		if weights != nil {
 			ws += weights[i]
 		}
-	}
-
-	if weights != nil {
 		return accuracy / ws, nil
+	}
+	for i, y := range yTrue {
+		if y == yPred[i] {
+			accuracy++
+		}
 	}
 	return accuracy / float64(len(yTrue)), nil
 }
