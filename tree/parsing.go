@@ -38,20 +38,18 @@ func ParseCode(code string) (Tree, error) {
 	var (
 		parts         = regexp.MustCompile("\\(").Split(code, 2)
 		operator, err = op.ParseFuncName(parts[0])
+		inside        = parts[1][:len(parts[1])-1]
 	)
 	if err != nil {
 		return tree, err
 	}
-
-	// Remove the trailing closing parenthesis
-	parts[len(parts)-1] = parts[len(parts)-1][:len(parts[len(parts)-1])-1]
 
 	var (
 		operands           = []string{}
 		operand            = ""
 		parenthesesCounter int
 	)
-	for _, r := range parts[1] {
+	for _, r := range inside {
 		var s = string(r)
 		if s == " " {
 			continue

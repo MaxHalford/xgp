@@ -1,9 +1,9 @@
 package ensemble
 
 import (
-	"fmt"
 	"math"
 	"math/rand"
+	"sort"
 	"time"
 )
 
@@ -32,31 +32,9 @@ func randInt(min, max int, rng *rand.Rand) int {
 	return min + rng.Intn(max-min)
 }
 
-// Sample k ints in [min, max) using Vitter's reservoir sampling algorithm if
-// bootstrap is false.
-func randomInts(k int, min, max int, bootstrap bool, rng *rand.Rand) ([]int, error) {
-	if max < min {
-		return nil, fmt.Errorf("max has to be greater or equal to min: %d < %d", max, min)
-	}
-	var ints = make([]int, k)
-	// With replacement
-	if bootstrap {
-		for i := 0; i < k; i++ {
-			ints[i] = randInt(min, max, rng)
-		}
-		return ints, nil
-	}
-	// Without replacement
-	for i := 0; i < k; i++ {
-		ints[i] = i + min
-	}
-	for i := k; i < max-min; i++ {
-		var j = rng.Intn(i + 1)
-		if j < k {
-			ints[j] = i + min
-		}
-	}
-	return ints, nil
+// randFloat64 returns a random float64 in [min, max).
+func randFloat64(min, max float64, rng *rand.Rand) float64 {
+	return min + rng.Float64()*(max-min)
 }
 
 // Compute the sum of a float64 slice.
@@ -72,54 +50,58 @@ func meanFloat64s(floats []float64) float64 {
 	return sumFloat64s(floats) / float64(len(floats))
 }
 
-func sample(
-	X [][]float64,
-	Y []float64,
-	W []float64,
-	rowSampling float64,
-	colSampling float64,
-	boostrapRows bool,
-	bootstrapCols bool,
-	rng *rand.Rand,
-) ([][]float64, []float64, []float64, []int, []int, error) {
-
-	// Sample row indexes
-	var n = int(rowSampling * float64(len(X[0])))
-	rowIdxs, err := randomInts(n, 0, len(X[0]), boostrapRows, rng)
-	if err != nil {
-		return nil, nil, nil, nil, nil, err
-	}
-
-	// Sample column indexes
-	var p = int(colSampling * float64(len(X)))
-	colIdxs, err := randomInts(p, 0, len(X), bootstrapCols, rng)
-	if err != nil {
-		return nil, nil, nil, nil, nil, err
-	}
-
-	// Create the sample
+// Divide each element in a float64 slice by it's sum.
+func normalizeFloat64s(floats []float64) []float64 {
 	var (
-		XSam = make([][]float64, len(colIdxs))
-		YSam = make([]float64, len(rowIdxs))
-		WSam []float64
+		sum        = sumFloat64s(floats)
+		normalized = make([]float64, len(floats))
 	)
-	if W != nil {
-		WSam = make([]float64, len(rowIdxs))
+	for i, f := range floats {
+		normalized[i] = f / sum
 	}
-	for i := range colIdxs {
-		XSam[i] = make([]float64, len(rowIdxs))
+	return normalized
+}
+
+// Compute the cumulative sum of a float64 slice.
+func cumsum(floats []float64) []float64 {
+	var summed = make([]float64, len(floats))
+	copy(summed, floats)
+	for i := 1; i < len(summed); i++ {
+		summed[i] += summed[i-1]
 	}
-	for i, r := range rowIdxs {
-		for j, c := range colIdxs {
-			XSam[j][i] = X[c][r]
+	return summed
+}
+
+// Sample k integers from a list of weights of size n. Sampling is done with
+// replacement.
+func sampleIndices(k int, weights []float64, rng *rand.Rand) []int {
+	var (
+		sample = make([]int, k)
+		wheel  = cumsum(weights)
+		a      = wheel[0]
+		b      = wheel[len(wheel)-1]
+	)
+	for i := range sample {
+		sample[i] = sort.SearchFloat64s(wheel, randFloat64(a, b, rng))
+	}
+	return sample
+}
+
+func subsetFloat64Matrix(X [][]float64, rowIdxs []int, colIdxs []int) [][]float64 {
+	var S = make([][]float64, len(colIdxs))
+	for i, c := range colIdxs {
+		S[i] = make([]float64, len(rowIdxs))
+		for j, r := range rowIdxs {
+			S[i][j] = X[c][r]
 		}
-		YSam[i] = Y[r]
-		if W != nil {
-			WSam[i] = W[r]
-		}
 	}
-	if W != nil {
-		return XSam, YSam, WSam, rowIdxs, colIdxs, nil
+	return S
+}
+
+func subsetFloat64Slice(X []float64, idxs []int) []float64 {
+	var S = make([]float64, len(idxs))
+	for i, idx := range idxs {
+		S[i] = X[idx]
 	}
-	return XSam, YSam, nil, rowIdxs, colIdxs, nil
+	return S
 }

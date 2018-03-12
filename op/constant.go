@@ -1,7 +1,7 @@
 package op
 
 import (
-	"fmt"
+	"strconv"
 
 	"gonum.org/v1/gonum/floats"
 )
@@ -30,5 +30,5 @@ func (c Constant) Arity() int {
 
 // String representation of a Constant.
 func (c Constant) String() string {
-	return fmt.Sprintf("%.3f", c.Value)
+	return strconv.FormatFloat(c.Value, 'f', -1, 64)
 }

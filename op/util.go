@@ -2,8 +2,6 @@ package op
 
 import "fmt"
 
-const zeroThreshold = 0.001
-
 // ParseFuncName returns a functional Operator from it's String representation.
 func ParseFuncName(funcName string) (Operator, error) {
 	var f, ok = map[string]Operator{

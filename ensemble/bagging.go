@@ -1,63 +1,50 @@
 package ensemble
 
 import (
-	"fmt"
 	"math/rand"
-
-	"github.com/MaxHalford/koza/metrics"
 )
 
 // BaggingRegressor implements boostrap aggregation for regression tasks.
 type BaggingRegressor struct {
-	NEstimators   int     `json:"-"`
-	RowSampling   float64 `json:"-"` // Percentage of rows sampled for each estimator
-	ColSampling   float64 `json:"-"` // Percentage of columns sampled for each estimator
-	BootstrapRows bool    `json:"-"` // Whether to sample columns with replacement or not
-	BootstrapCols bool    `json:"-"` // Whether to sample columns with replacement or not
+	NEstimators int        `json:"-"`
+	RowSampling float64    `json:"-"` // Percentage of rows sampled for each estimator
+	ColSampling float64    `json:"-"` // Percentage of columns sampled for each estimator
+	RNG         *rand.Rand `json:"-"`
 
 	Predictors    []Predictor `json:"predictors"`
 	PredictorCols [][]int     `json:"predictor_cols"`
 }
 
-func (bag *BaggingRegressor) Fit(
-	learner Learner,
-	XTrain [][]float64,
-	YTrain []float64,
-	WTrain []float64,
-	XVal [][]float64,
-	YVal []float64,
-	WVal []float64,
-	verbose bool,
-	evalMetric metrics.Metric,
-	rng *rand.Rand,
-) error {
+func (bag *BaggingRegressor) Fit(learner Learner, X [][]float64, Y []float64, W []float64, verbose bool) error {
 
-	bag.Predictors = make([]Predictor, 0)
-	bag.PredictorCols = make([][]int, 0)
+	bag.Predictors = make([]Predictor, bag.NEstimators)
+	bag.PredictorCols = make([][]int, bag.NEstimators)
+
+	// If no weights are provided then uniform weights are used
+	if W == nil {
+		W = make([]float64, len(X[0]))
+		for i := range W {
+			W[i]++
+		}
+	}
+
+	// Determine how many rows and columns to sample
+	var (
+		n = int(bag.RowSampling * float64(len(X[0])))
+		p = int(bag.ColSampling * float64(len(X)))
+	)
 
 	for i := 0; i < bag.NEstimators; i++ {
-		// Sample
-		var XSam, YSam, WSam, _, colIdxs, err = sample(
-			XTrain,
-			YTrain,
-			WTrain,
-			bag.RowSampling,
-			bag.ColSampling,
-			bag.BootstrapRows,
-			bag.BootstrapCols,
-			rng,
+		// Sample row and columns indices
+		var (
+			rowIdxs = sampleIndices(n, W, bag.RNG)
+			colIdxs = sampleIndices(p, W, bag.RNG)
 		)
-		if err != nil {
-			return err
-		}
 		// Train on the sample
-		predictor, err := learner.Fit(
-			XSam,
-			YSam,
-			WSam,
-			XVal,
-			YVal,
-			WVal,
+		var predictor, err = learner.Fit(
+			subsetFloat64Matrix(X, rowIdxs, colIdxs),
+			subsetFloat64Slice(Y, rowIdxs),
+			nil,
 			verbose,
 		)
 		if err != nil {
@@ -66,31 +53,6 @@ func (bag *BaggingRegressor) Fit(
 		// Store the resulting predictor and the associated columns
 		bag.Predictors = append(bag.Predictors, predictor)
 		bag.PredictorCols = append(bag.PredictorCols, colIdxs)
-		// Calculate the current scores
-		if !verbose || evalMetric == nil {
-			continue
-		}
-		YTrainPred, err := bag.Predict(XTrain, false)
-		if err != nil {
-			return err
-		}
-		trainScore, err := evalMetric.Apply(YTrain, YTrainPred, WTrain)
-		if err != nil {
-			return err
-		}
-		fmt.Printf("Bagging train %s: %.5f", evalMetric, trainScore)
-		if XVal != nil && YVal != nil {
-			YValPred, err := bag.Predict(XVal, false)
-			if err != nil {
-				return err
-			}
-			valScore, err := evalMetric.Apply(YVal, YValPred, WVal)
-			if err != nil {
-				return err
-			}
-			fmt.Printf(", val %s: %.5f", evalMetric, valScore)
-		}
-		fmt.Printf("\n")
 	}
 
 	return nil
@@ -99,13 +61,13 @@ func (bag *BaggingRegressor) Fit(
 func (bag BaggingRegressor) Predict(X [][]float64, predictProba bool) ([]float64, error) {
 
 	var (
-		Y       = make([]float64, len(X[0]))
-		rowPred = make([]float64, len(bag.Predictors))
+		YAll = make([]float64, len(bag.Predictors))
+		Y    = make([]float64, len(X[0]))
 	)
 
 	// Iterate over each feature vector
 	for i := range X[0] {
-		// Get the individual predictions
+		// Collect each predictor's output
 		for j, predictor := range bag.Predictors {
 			var x = make([]float64, len(X))
 			for k, c := range bag.PredictorCols[j] {
@@ -115,10 +77,10 @@ func (bag BaggingRegressor) Predict(X [][]float64, predictProba bool) ([]float64
 			if err != nil {
 				return nil, err
 			}
-			rowPred[j] = pred
+			YAll[j] = pred
 		}
 		// Aggregate the individual predictions
-		Y[i] = meanFloat64s(rowPred)
+		Y[i] = meanFloat64s(YAll)
 	}
 
 	return Y, nil
