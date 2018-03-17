@@ -73,7 +73,7 @@ func (bag BaggingRegressor) Predict(X [][]float64, predictProba bool) ([]float64
 			for k, c := range bag.PredictorCols[j] {
 				x[k] = X[c][i]
 			}
-			var pred, err = predictor.PredictRow(x, false)
+			var pred, err = predictor.PredictPartial(x, false)
 			if err != nil {
 				return nil, err
 			}

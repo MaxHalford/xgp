@@ -1,4 +1,4 @@
-package koza
+package xgp
 
 import (
 	"errors"
@@ -8,10 +8,10 @@ import (
 	"github.com/MaxHalford/gago"
 	"github.com/gosuri/uiprogress"
 
-	"github.com/MaxHalford/koza/ensemble"
-	"github.com/MaxHalford/koza/metrics"
-	"github.com/MaxHalford/koza/op"
-	"github.com/MaxHalford/koza/tree"
+	"github.com/MaxHalford/xgp/ensemble"
+	"github.com/MaxHalford/xgp/metrics"
+	"github.com/MaxHalford/xgp/op"
+	"github.com/MaxHalford/xgp/tree"
 )
 
 // An Estimator links all the different components together and can be used to

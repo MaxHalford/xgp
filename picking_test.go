@@ -1,11 +1,11 @@
-package koza
+package xgp
 
 import (
 	"fmt"
 	"reflect"
 	"testing"
 
-	"github.com/MaxHalford/koza/tree"
+	"github.com/MaxHalford/xgp/tree"
 )
 
 func TestWeightedPicker(t *testing.T) {

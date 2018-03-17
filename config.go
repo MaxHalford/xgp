@@ -1,4 +1,4 @@
-package koza
+package xgp
 
 import (
 	"bytes"
@@ -8,9 +8,9 @@ import (
 	"github.com/MaxHalford/gago"
 	"github.com/olekukonko/tablewriter"
 
-	"github.com/MaxHalford/koza/metrics"
-	"github.com/MaxHalford/koza/op"
-	"github.com/MaxHalford/koza/tree"
+	"github.com/MaxHalford/xgp/metrics"
+	"github.com/MaxHalford/xgp/op"
+	"github.com/MaxHalford/xgp/tree"
 )
 
 // A Config contains all the information needed to instantiate an Estimator.

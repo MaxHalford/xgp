@@ -1,9 +1,9 @@
-package koza
+package xgp
 
 import (
 	"encoding/json"
 
-	"github.com/MaxHalford/koza/metrics"
+	"github.com/MaxHalford/xgp/metrics"
 )
 
 // A Task contains information a Program needs to know in order to at least
@@ -29,10 +29,10 @@ type serialTask struct {
 }
 
 // serializeTask transforms a Task into a serialTask.
-func serializeTask(task Task) (serialTask, error) {
+func serializeTask(t Task) (serialTask, error) {
 	return serialTask{
-		MetricName: task.Metric.String(),
-		NClasses:   task.NClasses,
+		MetricName: t.Metric.String(),
+		NClasses:   t.NClasses,
 	}, nil
 }
 
@@ -50,8 +50,8 @@ func parseSerialTask(serial serialTask) (*Task, error) {
 
 // MarshalJSON serializes a Task into JSON bytes. A serialTask is used as an
 // intermediary.
-func (task Task) MarshalJSON() ([]byte, error) {
-	var serial, err = serializeTask(task)
+func (t Task) MarshalJSON() ([]byte, error) {
+	var serial, err = serializeTask(t)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +60,7 @@ func (task Task) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON parses JSON bytes into a *Task. A serialTask is used as an
 // intermediary.
-func (task *Task) UnmarshalJSON(bytes []byte) error {
+func (t *Task) UnmarshalJSON(bytes []byte) error {
 	var serial serialTask
 	if err := json.Unmarshal(bytes, &serial); err != nil {
 		return err
@@ -69,6 +69,6 @@ func (task *Task) UnmarshalJSON(bytes []byte) error {
 	if err != nil {
 		return err
 	}
-	*task = *parsedTask
+	*t = *parsedTask
 	return nil
 }

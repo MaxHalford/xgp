@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/MaxHalford/koza/op"
+	"github.com/MaxHalford/xgp/op"
 )
 
 // ParseCode takes a code representation of a Tree and parses it into a Tree.

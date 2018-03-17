@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/MaxHalford/koza"
+	"github.com/MaxHalford/xgp"
 	"github.com/kniren/gota/series"
 	"github.com/spf13/cobra"
 )
@@ -34,7 +34,7 @@ var predCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		// Load the program
-		prog, err := koza.LoadProgramFromJSON(predProgramName)
+		prog, err := xgp.LoadProgramFromJSON(predProgramName)
 		if err != nil {
 			return err
 		}

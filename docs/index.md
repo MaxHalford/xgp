@@ -8,11 +8,11 @@
 
 <div align="center">
   <!-- godoc -->
-  <a href="https://godoc.org/github.com/MaxHalford/koza">
+  <a href="https://godoc.org/github.com/MaxHalford/xgp">
     <img src="https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square" alt="godoc" />
   </a>
   <!-- Build status -->
-  <a href="https://travis-ci.org/MaxHalford/koza">
+  <a href="https://travis-ci.org/MaxHalford/xgp">
     <img src="https://img.shields.io/travis/MaxHalford/gago/master.svg?style=flat-square" alt="build_status" />
   </a>
   <!-- License -->
@@ -23,8 +23,8 @@
 
 <br/>
 
-koza is a tool for performing [symbolic regression](https://www.wikiwand.com/en/Symbolic_regression) oriented towards machine learning. It can be used for classification and regression tasks. Please refer to the ["How it works" section](how-it-works.md) for an in-depth introduction to symbolic regression.
+XGP is a tool for performing [symbolic regression](https://www.wikiwand.com/en/Symbolic_regression) oriented towards machine learning. It can be used for classification and regression tasks. Please refer to the ["How it works" section](how-it-works.md) for an in-depth introduction to symbolic regression.
 
-Symbolic regression is a heavy algorithm to run, hence a good implementation is paramount to make it usable in practice. koza is written in Go, a compiled language which is both [fast](https://julialang.org/benchmarks/) and easy to write readable code with. The downside is that Go is not very practical for common data wrangling tasks. koza is thus available as a CLI tool and can be imported by other languages to facililate it's usage and integration into an existing data science pipeline.
+Symbolic regression is a heavy algorithm to run, hence a good implementation is paramount to make it usable in practice. XGP is written in Go, a compiled language which is both [fast](https://julialang.org/benchmarks/) and easy to write readable code with. The downside is that Go is not very practical for common data wrangling tasks. XGP is thus available as a CLI tool and can be imported by other languages to facililate it's usage and integration into an existing data science pipeline.
 
 Regarding performance the results are very encouraging. Clearly symbolic regression can beat "simple" methods such as lasso/ridge regression and decision trees. It isn't clear yet if an ensemble (bagging or boosting) of symbolic regression models can compete with random forests and gradient boosted trees. Thorough benchmarks are in the pipe.

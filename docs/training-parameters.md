@@ -2,7 +2,7 @@
 
 ## Quick overview
 
-The following table gives an overview of all the parameters that can be used for training koza. The defaults are the same regardless of the API. The values indicated for Go are the ones that can be passed to a `Config` struct.
+The following table gives an overview of all the parameters that can be used for training XGP. The defaults are the same regardless of the API. The values indicated for Go are the ones that can be passed to a `Config` struct.
 
 | Name | CLI | Go | Python | Default |
 |------|-----|----|--------|---------|

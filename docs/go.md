@@ -2,19 +2,19 @@
 
 ## Installation
 
-Once you have [installed Go](https://golang.org/dl/), you can install koza like any other Go package.
+Once you have [installed Go](https://golang.org/dl/), you can install xgp like any other Go package.
 
 ```sh
-go get github.com/MaxHalford/koza
+go get github.com/MaxHalford/xgp
 ```
 
 ## Usage
 
-Although the full API is available on [godoc](https://godoc.org/github.com/MaxHalford/koza), only a subset of it is relevant if all you want to do is train a program on a dataset.
+Although the full API is available on [godoc](https://godoc.org/github.com/MaxHalford/xgp), only a subset of it is relevant if all you want to do is train a program on a dataset.
 
 ### Instantiation
 
-The core struct for learning in koza is the `Estimator`. An `Estimator` encapsulates all the logic for generating, evaluating, and evolving programs. Although you can instantiate an `Estimator` directly, you can (and should) do it by instantiating a `Config` and calling it's `NewEstimator` method. You can also use the `NewConfigWithDefaults` method to instantiate a `Config` with the default values outlines in the [training parameters section](training-parameters.md). Even if you don't want to use the default values, it's a good idea to use `NewConfigWithDefaults` and then to set the fields you want to modify afterwards.
+The core struct for learning in XGP is the `Estimator`. An `Estimator` encapsulates all the logic for generating, evaluating, and evolving programs. Although you can instantiate an `Estimator` directly, you can (and should) do it by instantiating a `Config` and calling it's `NewEstimator` method. You can also use the `NewConfigWithDefaults` method to instantiate a `Config` with the default values outlines in the [training parameters section](training-parameters.md). Even if you don't want to use the default values, it's a good idea to use `NewConfigWithDefaults` and then to set the fields you want to modify afterwards.
 
 ```go
 var config = NewConfigWithDefaults()
@@ -48,7 +48,7 @@ func (est *Estimator) Fit(
 Just like the in CLI, the only required arguments to the `Estimator`'s `Fit` are a matrix of features `XTrain` and a list of targets `YTrain`. `WTrain` can be used to weight the samples in `XTrain` during program evaluation, this is particularly useful for higher-level learning algorithms such as [boosting](https://www.wikiwand.com/en/Boosting_(machine_learning)). One important thing to not is that `XTrain` and `XVal` should be **ordered column-wise**; that is `X[0]` should access the first column in the dataset, not the first row.
 
 !!! warning
-    For the while koza does not handle missing values.
+    For the while XGP does not handle missing values.
 
 Like the `val_set` argument in the CLI, `XVal`, `YVal`, and `WVal` can be used to track the performance of the best program on out-of-bag data. `notifyEvery` can be used to indicate at what frequency (in terms of genetic algorithm generations) progress should be displayed.
 

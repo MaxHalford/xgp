@@ -1,13 +1,13 @@
-package koza
+package xgp
 
 import (
 	"fmt"
 	"math/rand"
 	"testing"
 
-	"github.com/MaxHalford/koza/metrics"
-	"github.com/MaxHalford/koza/op"
-	"github.com/MaxHalford/koza/tree"
+	"github.com/MaxHalford/xgp/metrics"
+	"github.com/MaxHalford/xgp/op"
+	"github.com/MaxHalford/xgp/tree"
 )
 
 // randTree is a convenience method that produces a random Tree for testing

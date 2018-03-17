@@ -4,7 +4,7 @@
 
 To generate the datasets for the following examples you need to have Python alongside with the [pandas](https://pandas.pydata.org/) and [scikit-learn](http://scikit-learn.org/stable/) libraries. The versions do not matter much.
 
-For development you can replace `koza` with `go run main.go`. For example instead of running `koza fit examples/boston/train.csv --loss mae` you can run `go run main.go fit examples/boston/train.csv --loss mae`.
+For development you can replace `xgp` with `go run main.go`. For example instead of running `xgp fit examples/boston/train.csv --loss mae` you can run `go run main.go fit examples/boston/train.csv --loss mae`.
 
 ```sh
 go run main.go fit examples/restaurants/train.csv --loss rmse --val examples/restaurants/test.csv --indis 500 --gens 50 --target visitors_log1p --seed 5
@@ -24,7 +24,7 @@ This example is derived from [gplearn's documentation](http://gplearn.readthedoc
 ```sh
 python examples/gplearn/create_datasets.py
 go run main.go fit examples/gplearn/train.csv --loss mae
-koza score examples/gplearn/test.csv --eval mae
+xgp score examples/gplearn/test.csv --eval mae
 ```
 
 ### Titanic survivors

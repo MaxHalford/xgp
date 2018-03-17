@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"strconv"
 
-	"github.com/MaxHalford/koza/op"
+	"github.com/MaxHalford/xgp/op"
 )
 
 // A serialtree can be serialized and holds information that can be used to

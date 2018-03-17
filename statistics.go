@@ -1,4 +1,4 @@
-package koza
+package xgp
 
 import (
 	"github.com/MaxHalford/gago"

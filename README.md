@@ -7,15 +7,15 @@
 
 <div align="center">
   <!-- Documentation -->
-  <a href="https://maxhalford.github.io/koza">
+  <a href="https://maxhalford.github.io/xgp">
     <img src="https://img.shields.io/website-up-down-green-red/http/shields.io.svg?label=documentation" alt="documentation" />
   </a>
   <!-- godoc -->
-  <a href="https://godoc.org/github.com/MaxHalford/koza">
+  <a href="https://godoc.org/github.com/MaxHalford/xgp">
     <img src="https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square" alt="godoc" />
   </a>
   <!-- Build status -->
-  <a href="https://travis-ci.org/MaxHalford/koza">
+  <a href="https://travis-ci.org/MaxHalford/xgp">
     <img src="https://img.shields.io/travis/MaxHalford/gago/master.svg?style=flat-square" alt="build_status" />
   </a>
   <!-- License -->
@@ -30,9 +30,9 @@
 
 <br/>
 
-:warning: koza is still in active development phase.
+:warning: xgp is still in active development phase.
 
-koza is a tool for performing symbolic regression oriented towards machine learning. It can be used for regression and classification tasks. Please refer to [the documentation](https://maxhalford.github.io/koza) for an in-depth introduction to symbolic regression.
+xgp is a tool for performing symbolic regression oriented towards machine learning. It can be used for regression and classification tasks. Please refer to [the documentation](https://maxhalford.github.io/xgp) for an in-depth introduction to symbolic regression.
 
 <br/>
 <div align="center">
@@ -46,17 +46,17 @@ koza is a tool for performing symbolic regression oriented towards machine learn
 
 The core library is written in Go but can be used in different ways.
 
-- [Command-line interface (CLI)](https://maxhalford.github.io/koza/cli/)
-- [Go API](https://maxhalford.github.io/koza/go/)
-- [Python API](https://maxhalford.github.io/koza/python/)
+- [Command-line interface (CLI)](https://maxhalford.github.io/xgp/cli/)
+- [Go API](https://maxhalford.github.io/xgp/go/)
+- [Python API](https://maxhalford.github.io/xgp/python/)
 
 ## Usage examples
 
 ### Command-line interface (CLI)
 
 ```sh
->>> koza fit train.csv
->>> koza predict test.csv
+>>> xgp fit train.csv
+>>> xgp predict test.csv
 ```
 
 ### Go
@@ -64,10 +64,10 @@ The core library is written in Go but can be used in different ways.
 ```go
 package main
 
-import "github.com/MaxHalford/koza"
+import "github.com/MaxHalford/xgp"
 
 func main() {
-    config := koza.NewConfigWithDefaults()
+    config := xgp.NewConfigWithDefaults()
     estimator := config.NewEstimator()
 
     estimator.Fit(XTrain, YTrain)
@@ -78,9 +78,9 @@ func main() {
 ### Python
 
 ```python
-import koza
+import xgp
 
-model = koza.SymbolicRegressor()
+model = xgp.SymbolicRegressor()
 
 model.fit(X_train, y_train)
 y_pred = model.predict(X_test)
@@ -88,7 +88,7 @@ y_pred = model.predict(X_test)
 
 ## Thanks
 
-koza uses the following projects which are a joy to work with.
+xgp uses the following projects which are a joy to work with.
 
 - [olekukonko/tablewriter](https://github.com/olekukonko/tablewriter) for displaying parameters in a pretty way
 - [gonum/gonum](https://github.com/gonum/gonum) for [SIMD operations](https://www.wikiwand.com/en/SIMD) and calculating metrics

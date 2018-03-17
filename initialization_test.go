@@ -1,11 +1,11 @@
-package koza
+package xgp
 
 import (
 	"fmt"
 	"math/rand"
 	"testing"
 
-	"github.com/MaxHalford/koza/op"
+	"github.com/MaxHalford/xgp/op"
 )
 
 func TestFullInitializer(t *testing.T) {

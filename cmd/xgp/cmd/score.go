@@ -3,8 +3,8 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/MaxHalford/koza"
-	"github.com/MaxHalford/koza/metrics"
+	"github.com/MaxHalford/xgp"
+	"github.com/MaxHalford/xgp/metrics"
 	"github.com/spf13/cobra"
 )
 
@@ -30,7 +30,7 @@ var scoreCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		// Load the program
-		prog, err := koza.LoadProgramFromJSON(scoreProgramName)
+		prog, err := xgp.LoadProgramFromJSON(scoreProgramName)
 		if err != nil {
 			return err
 		}

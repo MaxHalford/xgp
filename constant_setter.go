@@ -1,8 +1,8 @@
-package koza
+package xgp
 
 import (
-	"github.com/MaxHalford/koza/op"
-	"github.com/MaxHalford/koza/tree"
+	"github.com/MaxHalford/xgp/op"
+	"github.com/MaxHalford/xgp/tree"
 )
 
 // A ConstantSetter can replace a tree's Operator with a Constant.

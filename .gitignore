@@ -1,7 +1,7 @@
 *.csv
 site/
 build/
-koza.egg-info/
+xgp.egg-info/
 *.dot
 *.json
 *.h
@@ -11,3 +11,4 @@ koza.egg-info/
 *.pdf
 *.test
 .cache
+*.svg

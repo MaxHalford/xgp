@@ -1,4 +1,4 @@
-package koza
+package xgp
 
 import (
 	"math/rand"

@@ -8,36 +8,36 @@ First, [install Go](https://golang.org/dl/), set your `GOPATH`, and make sure `$
 - [Mac](http://sourabhbajaj.com/mac-setup/Go/README.html)
 - [Windows](http://www.wadewegner.com/2014/12/easy-go-programming-setup-for-windows/)
 
-Next, regardless of your OS, you can install the `koza` CLI with the following command.
+Next, regardless of your OS, you can install the `xgp` CLI with the following command.
 
 ```sh
-go install github.com/MaxHalford/koza/cmd/koza
+go install github.com/MaxHalford/xgp/cmd/xgp
 ```
 
-If `koza --help` runs without any errors then the installation was successful. If you encounter an error feel free to [open an issue on GitHub](https://github.com/MaxHalford/koza/issues/new).
+If `xgp --help` runs without any errors then the installation was successful. If you encounter an error feel free to [open an issue on GitHub](https://github.com/MaxHalford/xgp/issues/new).
 
 ## Usage
 
 !!! tip
-    Apart from the following documentation you can also check out [these command-line usage examples](https://github.com/MaxHalford/koza/blob/1a396bc24df5cf8c9766bc5e25b6e12e41361684/cmd/koza/README.md#examples).
+    Apart from the following documentation you can also check out [these command-line usage examples](https://github.com/MaxHalford/xgp/blob/1a396bc24df5cf8c9766bc5e25b6e12e41361684/cmd/xgp/README.md#examples).
 
 !!! tip
-    Run `koza <command> -h` to get help with a command. For example `koza fit -h` will display the help for the `fit` command.
+    Run `xgp <command> -h` to get help with a command. For example `xgp fit -h` will display the help for the `fit` command.
 
 ### fit
 
 The `fit` command trains programs against a training dataset and saves the best one to a JSON file. The only required argument is a path to a CSV file which acts as the training dataset. The dataset is that it should contain only numerical data. Moreover the first row should contain column names.
 
 !!! warning
-    For the while koza does not handle categorical data. You should preemptively encode the categorical features in your dataset before feeding it to koza. The recommended way is to use [one-hot encoding](http://scikit-learn.org/stable/modules/preprocessing.html#encoding-categorical-features) for ordinal data [label encoding](http://scikit-learn.org/stable/modules/preprocessing_targets.html#label-encoding) for non-ordinal data.
+    For the while XGP does not handle categorical data. You should preemptively encode the categorical features in your dataset before feeding it to XGP. The recommended way is to use [one-hot encoding](http://scikit-learn.org/stable/modules/preprocessing.html#encoding-categorical-features) for ordinal data [label encoding](http://scikit-learn.org/stable/modules/preprocessing_targets.html#label-encoding) for non-ordinal data.
 
 !!! warning
-    For the while koza does not handle missing values.
+    For the while xgp does not handle missing values.
 
-Once your dataset is ready, you can train koza on it with the following command.
+Once your dataset is ready, you can train XGP on it with the following command.
 
 ```sh
-koza fit train.csv
+xgp fit train.csv
 ```
 
 This will evaluate and evolve many programs with default values before finally outputting the best obtained program to a JSON file. By default the JSON file is named `program.json`. The JSON file can then be used by the `predict` command to make predictions on another dataset.
@@ -58,7 +58,7 @@ If you use the `val` argument then the best model will be scored against the val
 Once you have produced a program with the `fit` command you can use it to make predictions on a dataset. The test set should have exactly the same format as the training set. Specifically **the columns in the test set should be ordered in the same way they were in the training set**.
 
 ```sh
-koza predict test.csv
+xgp predict test.csv
 ```
 
 This will make predictions on `test.csv` and save them to a specificied path. The default path is `y_pred.csv`. The following arguments are available for the `predict` command.
@@ -75,7 +75,7 @@ This will make predictions on `test.csv` and save them to a specificied path. Th
 If you don't necessarily want to save predictions but only want to evaluate a program then you can use the `score` command. The `score` command will open a program, make predictions against a given dataset, and output a prediction score. By default the loss metric used during training is used.
 
 ```sh
-koza score test.csv
+xgp score test.csv
 ```
 
 The following arguments are available for the `score` command.
@@ -92,13 +92,13 @@ The following arguments are available for the `score` command.
 Because programs can be represented as trees, [Graphviz](https://www.graphviz.org/) can be used to visualize them. The `todot` command takes a program as input and outputs the Graphviz representation of the program. You can then copy/paste the output and use a service such as [webgraphviz](http://www.webgraphviz.com/) to obtain the visualization. By default the output will not be saved to a file but will however be displayed in the terminal.
 
 ```sh
-koza todot program.json
+xgp todot program.json
 ```
 
 You can also feed the `todot` command a formula instead of a JSON file.
 
 ```sh
-koza todot "sum(X[13], 42)"
+xgp todot "sum(X[13], 42)"
 ```
 
 The following arguments are available for the `todot` command.

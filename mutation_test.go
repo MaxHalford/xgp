@@ -1,4 +1,4 @@
-package koza
+package xgp
 
 import (
 	"fmt"
@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/MaxHalford/koza/op"
-	"github.com/MaxHalford/koza/tree"
+	"github.com/MaxHalford/xgp/op"
+	"github.com/MaxHalford/xgp/tree"
 )
 
 func TestModification(t *testing.T) {

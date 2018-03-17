@@ -1,4 +1,4 @@
-package koza
+package xgp
 
 // func TestSubTreeCrossover(t *testing.T) {
 // 	var (

@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/MaxHalford/koza/op"
+	"github.com/MaxHalford/xgp/op"
 )
 
 func TestParseCode(t *testing.T) {

@@ -1,9 +1,9 @@
-package koza
+package xgp
 
 import (
 	"testing"
 
-	"github.com/MaxHalford/koza/tree"
+	"github.com/MaxHalford/xgp/tree"
 )
 
 func TestSetProgConstants(t *testing.T) {

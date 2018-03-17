@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MaxHalford/koza"
-	"github.com/MaxHalford/koza/ensemble"
+	"github.com/MaxHalford/xgp"
+	"github.com/MaxHalford/xgp/ensemble"
 	"github.com/spf13/cobra"
 )
 
@@ -113,7 +113,7 @@ var fitCmd = &cobra.Command{
 		}
 
 		// Instantiate an Estimator
-		var config = koza.Config{
+		var config = xgp.Config{
 			ConstMin: fitConstMin,
 			ConstMax: fitConstMax,
 

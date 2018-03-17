@@ -1,9 +1,9 @@
-package koza
+package xgp
 
 import (
 	"math/rand"
 
-	"github.com/MaxHalford/koza/tree"
+	"github.com/MaxHalford/xgp/tree"
 )
 
 // A Crossover mixes two Programs in-place.

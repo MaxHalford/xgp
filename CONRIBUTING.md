@@ -2,7 +2,7 @@
 
 ## To do
 
-See [here](https://github.com/MaxHalford/koza/projects).
+See [here](https://github.com/MaxHalford/xgp/projects).
 
 ## Documentation
 
@@ -10,7 +10,7 @@ The documentation is rendered with [MkDocs](http://www.mkdocs.org/). Run the fol
 
 ```sh
 pip install mkdocs mkdocs-material pygments
-cd /path/to/koza
+cd /path/to/xgp
 mkdocs serve
 ```
 
@@ -18,12 +18,12 @@ mkdocs serve
 
 ```sh
 go test -bench . --cpuprofile=cpu.prof
-go tool pprof --pdf koza.test cpu.prof > profile.pdf
+go tool pprof --pdf xgp.test cpu.prof > profile.pdf
 ```
 
 ## Magic numbers
 
-Most of the behavior of koza can be determined by the user. However for various reasons some fields/numbers have to be hard-coded. When this is done the habit I took is to annotate the line of code with a `// MAGIC` comment. In some cases this is due to bad design and should be fixed.
+Most of the behavior of xgp can be determined by the user. However for various reasons some fields/numbers have to be hard-coded. When this is done the habit I took is to annotate the line of code with a `// MAGIC` comment. In some cases this is due to bad design and should be fixed.
 
 ## Steps for adding a new parameter
 

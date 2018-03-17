@@ -1,7 +1,7 @@
-package koza
+package xgp
 
 import (
-	"github.com/MaxHalford/koza/tree"
+	"github.com/MaxHalford/xgp/tree"
 )
 
 // A Program is simply an abstraction of top of a Tree.
@@ -30,9 +30,9 @@ func (prog Program) clone() Program {
 	return clone
 }
 
-// Predict predicts the output of a slice of features.
-func (prog Program) PredictRow(x []float64, predictProba bool) (yPred float64, err error) {
-	yPred = prog.Tree.EvaluateRow(x)
+// PredictPartial predicts the output of a slice of features.
+func (prog Program) PredictPartial(x []float64, predictProba bool) (yPred float64, err error) {
+	yPred = prog.Tree.EvaluatePartial(x)
 	// Binary classification
 	if prog.Task.binaryClassification() {
 		if predictProba {
@@ -42,7 +42,7 @@ func (prog Program) PredictRow(x []float64, predictProba bool) (yPred float64, e
 	}
 	// Multi-class classification
 	if prog.Task.multiClassification() {
-		return prog.DRS.PredictRow(yPred), nil
+		return prog.DRS.PredictPartial(yPred), nil
 	}
 	// Regression
 	return yPred, nil

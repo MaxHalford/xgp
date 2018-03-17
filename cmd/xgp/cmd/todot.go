@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/MaxHalford/koza"
-	"github.com/MaxHalford/koza/tree"
+	"github.com/MaxHalford/xgp"
+	"github.com/MaxHalford/xgp/tree"
 	"github.com/spf13/cobra"
 )
 
@@ -33,9 +33,9 @@ var toDOTCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 
 		// Load the program
-		var program koza.Program
+		var program xgp.Program
 		if strings.Contains(args[0], `"`) {
-			program, err = koza.LoadProgramFromJSON(args[0])
+			program, err = xgp.LoadProgramFromJSON(args[0])
 			if err != nil {
 				return err
 			}
@@ -44,7 +44,7 @@ var toDOTCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			program = koza.Program{Tree: tree}
+			program = xgp.Program{Tree: tree}
 		}
 
 		// Make the Graphviz representation

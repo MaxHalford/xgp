@@ -1,10 +1,10 @@
-package koza
+package xgp
 
 import (
 	"math/rand"
 
-	"github.com/MaxHalford/koza/op"
-	"github.com/MaxHalford/koza/tree"
+	"github.com/MaxHalford/xgp/op"
+	"github.com/MaxHalford/xgp/tree"
 )
 
 // A Mutator modifies a Tree in-place.

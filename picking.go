@@ -1,10 +1,10 @@
-package koza
+package xgp
 
 import (
 	"math/rand"
 	"sort"
 
-	"github.com/MaxHalford/koza/tree"
+	"github.com/MaxHalford/xgp/tree"
 	"gonum.org/v1/gonum/floats"
 )
 

@@ -1,6 +1,6 @@
 package tree
 
-import "github.com/MaxHalford/koza/op"
+import "github.com/MaxHalford/xgp/op"
 
 // A Tree holds an Operator and branches.
 type Tree struct {
