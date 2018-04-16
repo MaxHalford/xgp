@@ -83,8 +83,8 @@ func (drs *DynamicRangeSelection) Fit(yTrue, yPred []float64) error {
 	return nil
 }
 
-// PredictRow DynamicRangeSelection.
-func (drs DynamicRangeSelection) PredictRow(y float64) float64 {
+// PredictPartial DynamicRangeSelection.
+func (drs DynamicRangeSelection) PredictPartial(y float64) float64 {
 	var cutPoint = closestFloat64(drs.cutPoints, y)
 	return drs.rangeMap[cutPoint]
 }
@@ -93,7 +93,7 @@ func (drs DynamicRangeSelection) PredictRow(y float64) float64 {
 func (drs DynamicRangeSelection) Predict(yPred []float64) []float64 {
 	var classes = make([]float64, len(yPred))
 	for i, y := range yPred {
-		classes[i] = drs.PredictRow(y)
+		classes[i] = drs.PredictPartial(y)
 	}
 	return classes
 }

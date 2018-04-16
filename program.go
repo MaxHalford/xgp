@@ -32,7 +32,7 @@ func (prog Program) clone() Program {
 
 // PredictPartial predicts the output of a slice of features.
 func (prog Program) PredictPartial(x []float64, predictProba bool) (yPred float64, err error) {
-	yPred = prog.Tree.EvaluatePartial(x)
+	yPred = prog.Tree.EvaluateRow(x)
 	// Binary classification
 	if prog.Task.binaryClassification() {
 		if predictProba {
