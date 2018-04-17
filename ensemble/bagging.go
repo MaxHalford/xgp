@@ -15,35 +15,47 @@ type BaggingRegressor struct {
 	PredictorCols [][]int     `json:"predictor_cols"`
 }
 
-func (bag *BaggingRegressor) Fit(learner Learner, X [][]float64, Y []float64, W []float64, verbose bool) error {
+func (bag *BaggingRegressor) Fit(
+	learner Learner,
+	XTrain [][]float64,
+	YTrain []float64,
+	WTrain []float64,
+	XVal [][]float64,
+	YVal []float64,
+	WVal []float64,
+	verbose bool,
+) error {
 
 	bag.Predictors = make([]Predictor, bag.NEstimators)
 	bag.PredictorCols = make([][]int, bag.NEstimators)
 
 	// If no weights are provided then uniform weights are used
-	if W == nil {
-		W = make([]float64, len(X[0]))
-		for i := range W {
-			W[i]++
+	if WTrain == nil {
+		WTrain = make([]float64, len(XTrain[0]))
+		for i := range WTrain {
+			WTrain[i]++
 		}
 	}
 
 	// Determine how many rows and columns to sample
 	var (
-		n = int(bag.RowSampling * float64(len(X[0])))
-		p = int(bag.ColSampling * float64(len(X)))
+		n = int(bag.RowSampling * float64(len(XTrain[0])))
+		p = int(bag.ColSampling * float64(len(XTrain)))
 	)
 
 	for i := 0; i < bag.NEstimators; i++ {
 		// Sample row and columns indices
 		var (
-			rowIdxs = sampleIndices(n, W, bag.RNG)
-			colIdxs = sampleIndices(p, W, bag.RNG)
+			rowIdxs = sampleIndices(n, WTrain, bag.RNG)
+			colIdxs = sampleIndices(p, WTrain, bag.RNG)
 		)
 		// Train on the sample
 		var predictor, err = learner.Fit(
-			subsetFloat64Matrix(X, rowIdxs, colIdxs),
-			subsetFloat64Slice(Y, rowIdxs),
+			subsetFloat64Matrix(XTrain, rowIdxs, colIdxs),
+			subsetFloat64Slice(YTrain, rowIdxs),
+			nil,
+			nil,
+			nil,
 			nil,
 			verbose,
 		)

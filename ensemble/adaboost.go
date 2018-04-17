@@ -41,6 +41,9 @@ func (ada *AdaBoostRegressor) Fit(learner Learner, X [][]float64, Y []float64, W
 			subsetFloat64Matrix(X, rowIdxs, colIdxs),
 			subsetFloat64Slice(Y, rowIdxs),
 			nil,
+			nil,
+			nil,
+			nil,
 			verbose,
 		)
 		fmt.Println(predictor, err)

@@ -208,8 +208,6 @@ var fitCmd = &cobra.Command{
 			YVal,
 			nil,
 			fitVerbose,
-			estimator.EvalMetric,
-			rng,
 		)
 		if err != nil {
 			return err
