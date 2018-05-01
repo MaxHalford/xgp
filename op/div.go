@@ -15,7 +15,7 @@ func (op Div) ApplyRow(x []float64) float64 {
 // ApplyCols Div.
 func (op Div) ApplyCols(X [][]float64) []float64 {
 	for i, x := range X[1] {
-		if x == 1 {
+		if x == 0 {
 			X[0][i] = 1
 		} else {
 			X[0][i] /= x
