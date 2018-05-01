@@ -180,16 +180,16 @@ func (tree *Tree) simplify() bool {
 		return true
 	}
 	// If the branches are all Variables then a simplification can be made if
-	// the mother Operator is of type Difference
+	// the mother Operator is of type Sub or of type Div
 	if varBranches && tree.NBranches() == 2 {
 		// Check if the variables have the same index
 		if tree.branches[0].op.(op.Variable).Index == tree.branches[1].op.(op.Variable).Index {
 			switch tree.op.(type) {
-			case op.Difference:
+			case op.Sub:
 				tree.op = op.Constant{Value: 0}
 				tree.branches = nil
 				return true
-			case op.Division:
+			case op.Div:
 				tree.op = op.Constant{Value: 1}
 				tree.branches = nil
 				return true
