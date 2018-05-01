@@ -13,7 +13,7 @@ Code-wise the operators are all located in the `op` sub-package, of which the go
 | Maximum | 2 | max | Max | ✗ |
 | Minimum | 2 | min | Min | ✗ |
 | Sum | 2 | sum | Sum | ✔ |
-| Difference | 2 | sub | Difference | ✗ |
-| Division | 2 | div | Division | ✔ |
-| Product | 2 | mul | Product | ✗ |
-| Power | 2 | pow | Power | ✗ |
+| Subtraction | 2 | sub | Sub | ✗ |
+| Division | 2 | div | Div | ✔ |
+| Multiplication | 2 | mul | Mul | ✗ |
+| Power | 2 | pow | Pow | ✗ |
