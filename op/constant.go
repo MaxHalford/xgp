@@ -11,13 +11,8 @@ type Constant struct {
 	Value float64
 }
 
-// ApplyRow Constant.
-func (c Constant) ApplyRow(x []float64) float64 {
-	return c.Value
-}
-
-// ApplyCols Constant.
-func (c Constant) ApplyCols(X [][]float64) []float64 {
+// Eval Constant.
+func (c Constant) Eval(X [][]float64) []float64 {
 	var C = make([]float64, len(X[0]))
 	floats.AddConst(c.Value, C)
 	return C

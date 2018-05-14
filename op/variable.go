@@ -11,13 +11,8 @@ type Variable struct {
 	Index int
 }
 
-// ApplyRow Variable.
-func (v Variable) ApplyRow(x []float64) float64 {
-	return x[v.Index]
-}
-
-// ApplyCols Variable.
-func (v Variable) ApplyCols(X [][]float64) []float64 {
+// Eval Variable.
+func (v Variable) Eval(X [][]float64) []float64 {
 	var V = make([]float64, len(X[v.Index]))
 	copy(V, X[v.Index])
 	return V

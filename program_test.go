@@ -23,18 +23,21 @@ func randTree(rng *rand.Rand) tree.Tree {
 			op.Cos{},
 			op.Sin{},
 			op.Sum{},
-			op.Difference{},
-			op.Product{},
-			op.Division{},
+			op.Sub{},
+			op.Mul{},
+			op.Div{},
 		}
-		of = OperatorFactory{
-			PConstant:   0.5,
-			NewConstant: func(rng *rand.Rand) op.Constant { return op.Constant{randFloat64(-5, 5, rng)} },
-			NewVariable: func(rng *rand.Rand) op.Variable { return op.Variable{randInt(0, 5, rng)} },
-			NewFunction: func(rng *rand.Rand) op.Operator { return funcs[rng.Intn(len(funcs))] },
+		newOp = func(leaf bool, rng *rand.Rand) op.Operator {
+			if leaf {
+				if rng.Float64() < 0.5 {
+					return op.Constant{randFloat64(-5, 5, rng)}
+				}
+				return op.Variable{randInt(0, 5, rng)}
+			}
+			return funcs[rng.Intn(len(funcs))]
 		}
 	)
-	return init.Apply(3, 5, of, rng)
+	return init.Apply(3, 5, newOp, rng)
 }
 
 func TestPredict(t *testing.T) {
@@ -52,7 +55,7 @@ func TestPredict(t *testing.T) {
 			program: Program{
 				Tree: tree.MustParseCode("sum(X[0], X[1])"),
 				Task: Task{
-					Metric: metrics.MeanAbsoluteError{},
+					LossMetric: metrics.MeanAbsoluteError{},
 				},
 			},
 			y: []float64{2, 3, 4},

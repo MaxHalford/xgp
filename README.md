@@ -26,21 +26,9 @@
 
 <br/>
 
-<div align="center">A <a href="https://www.wikiwand.com/en/Symbolic_regression">symbolic regression</a> tool written in Go with bindings to other languages</div>
-
-<br/>
-
 :warning: xgp is still in active development phase.
 
-xgp is a tool for performing symbolic regression oriented towards machine learning. It can be used for regression and classification tasks. Please refer to [the documentation](https://maxhalford.github.io/xgp) for an in-depth introduction to symbolic regression.
-
-<br/>
-<div align="center">
-  <a href="https://asciinema.org/a/x6t8d5PZ4Td6iDoAa4IXeK7IB">
-    <img src="https://asciinema.org/a/x6t8d5PZ4Td6iDoAa4IXeK7IB.png" width="60%" />
-  </a>
-</div>
-<br/>
+xgp is a machine learning library for performing [symbolic regression](https://www.wikiwand.com/en/Symbolic_regression). It can be used both for regression and classification tasks. Please refer to [the documentation](https://maxhalford.github.io/xgp) for an in-depth introduction to symbolic regression.
 
 ## Interfaces
 
@@ -50,7 +38,7 @@ The core library is written in Go but can be used in different ways.
 - [Go API](https://maxhalford.github.io/xgp/go/)
 - [Python API](https://maxhalford.github.io/xgp/python/)
 
-## Usage examples
+## Quick start
 
 ### Command-line interface (CLI)
 
@@ -86,16 +74,15 @@ model.fit(X_train, y_train)
 y_pred = model.predict(X_test)
 ```
 
-## Thanks
+## Dependencies
 
-xgp uses the following projects which are a joy to work with.
+The core xgp library has the following dependencies.
 
 - [olekukonko/tablewriter](https://github.com/olekukonko/tablewriter) for displaying parameters in a pretty way
 - [gonum/gonum](https://github.com/gonum/gonum) for [SIMD operations](https://www.wikiwand.com/en/SIMD) and calculating metrics
 - [spf13/cobra](https://github.com/spf13/cobra) for building the CLI
 - [kniren/gota](https://github.com/kniren/gota) for manipulating dataframes from the CLI
 - [gosuri/uiprogress](https://github.com/gosuri/uiprogress) for displaying progress bars in the CLI
-- [mkdocs/mkdocs](https://github.com/mkdocs/mkdocs/) and [squidfunk/mkdocs-material](https://github.com/squidfunk/mkdocs-material) for building the documentation
 
 ## License
 

@@ -2,7 +2,7 @@ package xgp
 
 import "github.com/MaxHalford/xgp/op"
 
-// A Weighting is a convinience structure for assigning weights to Operators
+// A Weighting is a convenience structure for assigning weights to Operators
 // for selection purposes.
 type Weighting struct {
 	PConstant float64

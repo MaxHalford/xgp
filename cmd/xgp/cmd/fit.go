@@ -1,13 +1,17 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"strings"
 	"time"
 
 	"github.com/MaxHalford/xgp"
-	"github.com/MaxHalford/xgp/ensemble"
+	"github.com/MaxHalford/xgp/meta"
+	"github.com/MaxHalford/xgp/metrics"
+	"github.com/gonum/floats"
 	"github.com/spf13/cobra"
 )
 
@@ -41,6 +45,12 @@ var (
 	fitPSubTreeCrossover float64
 	fitParsimonyCoeff    float64
 
+	fitMode                string
+	fitNPrograms           uint
+	fitRowSampling         float64
+	fitColSampling         float64
+	fitEarlyStoppingRounds uint
+
 	fitSeed int64
 
 	fitIgnoredCols string
@@ -65,7 +75,7 @@ func init() {
 	fitCmd.Flags().IntVarP(&fitMaxHeight, "max_height", "", 5, "max program height used in ramped half-and-half initialization")
 
 	fitCmd.Flags().IntVarP(&fitNPopulations, "pops", "", 1, "number of populations to use in the GA")
-	fitCmd.Flags().IntVarP(&fitNIndividuals, "indis", "", 50, "number of individuals to use for each population in the GA")
+	fitCmd.Flags().IntVarP(&fitNIndividuals, "indis", "", 100, "number of individuals to use for each population in the GA")
 	fitCmd.Flags().IntVarP(&fitNGenerations, "gens", "", 30, "number of generations used to evolve the GA")
 	fitCmd.Flags().IntVarP(&fitNTuningGenerations, "tune_gens", "", 0, "number of generations used to evolve the tuning GA")
 	fitCmd.Flags().IntVarP(&fitNRounds, "rounds", "", 1, "number of programs used in the ensemble")
@@ -81,12 +91,20 @@ func init() {
 
 	fitCmd.Flags().Float64VarP(&fitPSubTreeCrossover, "p_sub_cross", "", 0.5, "probability of applying sub-tree crossover")
 
-	fitCmd.Flags().Float64VarP(&fitParsimonyCoeff, "parsimony", "", 0, "parsimony coefficient by which a program's height is multiplied to decrease it's fitness")
+	fitCmd.Flags().Float64VarP(&fitParsimonyCoeff, "parsimony", "", 0.00001, "parsimony coefficient by which a program's height is multiplied to decrease it's fitness")
 
 	fitCmd.Flags().Int64VarP(&fitSeed, "seed", "", 0, "seed for random number generation")
 
+	// Ensemble parameters
+	fitCmd.Flags().StringVarP(&fitMode, "mode", "", "adaboost", "training mode")
+	fitCmd.Flags().UintVarP(&fitNPrograms, "n_programs", "", 30, "number of programs to use in the ensemble")
+	fitCmd.Flags().Float64VarP(&fitRowSampling, "row_sampling", "", 0.6, "row sampling used for bagging")
+	fitCmd.Flags().Float64VarP(&fitColSampling, "col_sampling", "", 1, "column sampling used for bagging")
+	fitCmd.Flags().UintVarP(&fitEarlyStoppingRounds, "early_stopping", "", 5, "number of rounds after which training stops if the evaluation score worsens")
+
+	// CLI specific parameters
 	fitCmd.Flags().StringVarP(&fitIgnoredCols, "ignore", "", "", "comma-separated columns to ignore")
-	fitCmd.Flags().StringVarP(&fitOutputName, "output", "", "program.json", "path where to save the JSON representation of the best program ")
+	fitCmd.Flags().StringVarP(&fitOutputName, "output", "", "ensemble.json", "path where to save the JSON representation of the best program ")
 	fitCmd.Flags().StringVarP(&fitTargetCol, "target", "", "y", "name of the target column in the training and validation datasets")
 	fitCmd.Flags().StringVarP(&fitValPath, "val", "", "", "path to a validation dataset that can be used to monitor out-of-bag performance")
 	fitCmd.Flags().BoolVarP(&fitVerbose, "verbose", "", true, "display progress in the shell")
@@ -107,9 +125,19 @@ var fitCmd = &cobra.Command{
 			rng = rand.New(rand.NewSource(fitSeed))
 		}
 
-		// By default the evaluation metric is equal to the loss metric
+		// Determine the loss metric
+		lossMetric, err := metrics.GetMetric(fitLossMetricName, 1)
+		if err != nil {
+			return err
+		}
+
+		// Determine the evaluation metric
 		if fitEvalMetricName == "" {
 			fitEvalMetricName = fitLossMetricName
+		}
+		evalMetric, err := metrics.GetMetric(fitEvalMetricName, 1)
+		if err != nil {
+			return err
 		}
 
 		// Instantiate an Estimator
@@ -117,8 +145,8 @@ var fitCmd = &cobra.Command{
 			ConstMin: fitConstMin,
 			ConstMax: fitConstMax,
 
-			EvalMetricName: fitEvalMetricName,
-			LossMetricName: fitLossMetricName,
+			EvalMetric: evalMetric,
+			LossMetric: lossMetric,
 
 			Funcs: fitFuncs,
 
@@ -145,7 +173,7 @@ var fitCmd = &cobra.Command{
 
 			RNG: rng,
 		}
-		var estimator, err = config.NewEstimator()
+		estimator, err := config.NewEstimator()
 		if err != nil {
 			return err
 		}
@@ -155,7 +183,7 @@ var fitCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		fmt.Println(fmt.Sprintf("Training set took %v to load", duration))
+		fmt.Println(fmt.Sprintf("Training dataset took %v to load", duration))
 
 		// Check the target column exists
 		var columns = train.Names()
@@ -175,6 +203,13 @@ var fitCmd = &cobra.Command{
 			YTrain = train.Col(fitTargetCol).Float()
 		)
 
+		// Check XTrain doesn't contain any NaNs
+		for i, x := range XTrain {
+			if floats.HasNaN(x) {
+				return fmt.Errorf("Column '%s' in the training set has NaNs", featureColumns[i])
+			}
+		}
+
 		// Load the validation set in memory
 		var (
 			XVal [][]float64
@@ -185,39 +220,55 @@ var fitCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			fmt.Println(fmt.Sprintf("Validation set took %v to load", duration))
+			fmt.Println(fmt.Sprintf("Validation dataset took %v to load", duration))
 			XVal = dataFrameToFloat64(val.Select(featureColumns))
 			YVal = val.Col(fitTargetCol).Float()
 		}
 
-		// Instantiate an ensemble
-		var bag = ensemble.BaggingRegressor{
-			NEstimators: fitNRounds,
-			RowSampling: 1,
-			ColSampling: 1,
-			RNG:         rng,
+		// Check XVal doesn't contain any NaNs
+		for i, x := range XVal {
+			if floats.HasNaN(x) {
+				return fmt.Errorf("Column '%s' in the validation set has NaNs", featureColumns[i])
+			}
 		}
 
-		// Fit the ensemble
-		err = bag.Fit(
-			estimator,
-			XTrain,
-			YTrain,
-			nil,
-			XVal,
-			YVal,
-			nil,
-			fitVerbose,
-		)
+		// Train
+		var ensemble meta.Ensemble
+		switch fitMode {
+		case "bagging":
+			ensemble, err = meta.Bagging{
+				NPrograms:           fitNPrograms,
+				RowSampling:         fitRowSampling,
+				ColSampling:         fitColSampling,
+				EvalMetric:          evalMetric,
+				EarlyStoppingRounds: fitEarlyStoppingRounds,
+				RNG:                 rng,
+			}.Train(estimator, XTrain, YTrain, XVal, YVal, fitVerbose)
+		case "adaboost":
+			ensemble, err = meta.AdaBoost{
+				NPrograms:           fitNPrograms,
+				RowSampling:         fitRowSampling,
+				EvalMetric:          evalMetric,
+				EarlyStoppingRounds: fitEarlyStoppingRounds,
+				RNG:                 rng,
+			}.Train(estimator, XTrain, YTrain, XVal, YVal, fitVerbose)
+		default:
+			return fmt.Errorf("'%s' is not a recognized mode, has to be one of ('adaboost', 'bagging')", fitMode)
+		}
 		if err != nil {
 			return err
 		}
 
-		// Save the model
-		err = ensemble.SaveEnsembleToJSON(&bag, fitOutputName)
+		// Save the ensemble
+		bytes, err := json.Marshal(ensemble)
 		if err != nil {
 			return err
 		}
+		err = ioutil.WriteFile(fitOutputName, bytes, 0644)
+		if err != nil {
+			return err
+		}
+
 		return nil
 	},
 }

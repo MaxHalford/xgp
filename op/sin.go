@@ -5,13 +5,8 @@ import "math"
 // Sin computes the sine of an operand.
 type Sin struct{}
 
-// ApplyRow Sin.
-func (op Sin) ApplyRow(x []float64) float64 {
-	return math.Sin(x[0])
-}
-
-// ApplyCols Sin.
-func (op Sin) ApplyCols(X [][]float64) []float64 {
+// Eval Sin.
+func (op Sin) Eval(X [][]float64) []float64 {
 	var Y = make([]float64, len(X[0]))
 	for i, x := range X[0] {
 		Y[i] = math.Sin(x)

@@ -3,16 +3,8 @@ package op
 // Min returns the minimum of two operands.
 type Min struct{}
 
-// ApplyRow Min.
-func (op Min) ApplyRow(x []float64) float64 {
-	if x[0] < x[1] {
-		return x[0]
-	}
-	return x[1]
-}
-
-// ApplyCols Min.
-func (op Min) ApplyCols(X [][]float64) []float64 {
+// Eval Min.
+func (op Min) Eval(X [][]float64) []float64 {
 	var Y = make([]float64, len(X[0]))
 	for i := range X[0] {
 		if X[0][i] < X[1][i] {

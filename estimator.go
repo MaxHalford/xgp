@@ -4,11 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"time"
 
 	"github.com/MaxHalford/gago"
 	"github.com/gosuri/uiprogress"
 
-	"github.com/MaxHalford/xgp/ensemble"
 	"github.com/MaxHalford/xgp/metrics"
 	"github.com/MaxHalford/xgp/op"
 	"github.com/MaxHalford/xgp/tree"
@@ -60,7 +60,7 @@ func (est *Estimator) Fit(
 	YVal []float64,
 	WVal []float64,
 	verbose bool,
-) (ensemble.Predictor, error) {
+) (prog Program, err error) {
 
 	// Set the training set
 	est.XTrain = XTrain
@@ -77,14 +77,14 @@ func (est *Estimator) Fit(
 		est.nClasses = countDistinct(YTrain)
 		// Check that the task to perform is not multi-class classification
 		if est.nClasses > 2 {
-			return nil, errors.New("Multi-class classification is not supported")
+			return prog, errors.New("Multi-class classification is not supported")
 		}
 	}
 
 	// Initialize the GA
-	var err = est.GA.Initialize()
+	err = est.GA.Initialize()
 	if err != nil {
-		return nil, err
+		return prog, err
 	}
 
 	// Evolve the GA
@@ -93,33 +93,38 @@ func (est *Estimator) Fit(
 		progress *uiprogress.Progress
 	)
 	if verbose {
+		var start = time.Now()
 		progress = uiprogress.New()
 		progress.Start()
 		bar = progress.AddBar(est.NGenerations)
 		bar.PrependCompleted()
 		bar.AppendFunc(func(b *uiprogress.Bar) string {
+			// Add time spent
+			var message = fmtDuration(time.Since(start))
+			// Add training error
 			var (
 				best            = est.BestProgram()
 				yTrainPred, err = best.Predict(est.XTrain, est.EvalMetric.NeedsProbabilities())
 			)
 			if err != nil {
-				return "ERROR"
+				return ""
 			}
 			trainScore, err := est.EvalMetric.Apply(est.YTrain, yTrainPred, nil)
 			if err != nil {
-				return "ERROR"
+				return ""
 			}
-			var message = fmt.Sprintf("train %s: %.5f", est.EvalMetric.String(), trainScore)
+			message += fmt.Sprintf(", train %s: %.5f", est.EvalMetric.String(), trainScore)
+			// Add validation error
 			if est.XVal != nil && est.YVal != nil {
 				yEvalPred, err := best.Predict(est.XVal, est.EvalMetric.NeedsProbabilities())
 				if err != nil {
-					return "ERROR"
+					return ""
 				}
 				evalScore, err := est.EvalMetric.Apply(est.YVal, yEvalPred, est.WVal)
 				if err != nil {
-					return "ERROR"
+					return ""
 				}
-				message += fmt.Sprintf(" val %s: %.5f", est.EvalMetric.String(), evalScore)
+				message += fmt.Sprintf(", val %s: %.5f", est.EvalMetric.String(), evalScore)
 			}
 			return message
 		})
@@ -134,7 +139,7 @@ func (est *Estimator) Fit(
 		for i, pop := range est.GA.Populations {
 			for j, indi := range pop.Individuals {
 				var prog = indi.Genome.(*Program)
-				if prog.Tree.Height() < 2 {
+				if prog.Tree.Height() < 2 { // MAGIC
 					est.SubTreeMutation.Apply(&prog.Tree, pop.RNG)
 					est.GA.Populations[i].Individuals[j].Evaluate()
 				}
@@ -143,7 +148,7 @@ func (est *Estimator) Fit(
 
 		err = est.GA.Evolve()
 		if err != nil {
-			return nil, err
+			return prog, err
 		}
 	}
 
@@ -198,11 +203,14 @@ func (est Estimator) newTree(rng *rand.Rand) tree.Tree {
 	return est.Initializer.Apply(
 		est.MinHeight,
 		est.MaxHeight,
-		OperatorFactory{
-			PConstant:   est.PConstant,
-			NewConstant: est.newConstant,
-			NewVariable: est.newVariable,
-			NewFunction: est.newFunction,
+		func(leaf bool, rng *rand.Rand) op.Operator {
+			if leaf {
+				if rng.Float64() < est.PConstant {
+					return est.newConstant(rng)
+				}
+				return est.newVariable(rng)
+			}
+			return est.newFunction(rng)
 		},
 		rng,
 	)
@@ -213,8 +221,8 @@ func (est *Estimator) newProgram(rng *rand.Rand) gago.Genome {
 	var prog = Program{
 		Tree: est.newTree(rng),
 		Task: Task{
-			Metric:   est.LossMetric,
-			NClasses: est.nClasses,
+			LossMetric: est.LossMetric,
+			NClasses:   est.nClasses,
 		},
 		Estimator: est,
 	}

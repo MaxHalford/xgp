@@ -3,16 +3,8 @@ package op
 // Max returns the maximum of two operands.
 type Max struct{}
 
-// ApplyRow Max.
-func (op Max) ApplyRow(x []float64) float64 {
-	if x[0] > x[1] {
-		return x[0]
-	}
-	return x[1]
-}
-
-// ApplyCols Max.
-func (op Max) ApplyCols(X [][]float64) []float64 {
+// Eval Max.
+func (op Max) Eval(X [][]float64) []float64 {
 	var Y = make([]float64, len(X[0]))
 	for i := range X[0] {
 		if X[0][i] > X[1][i] {

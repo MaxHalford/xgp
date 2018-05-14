@@ -9,13 +9,18 @@ import (
 
 // Evaluate is required to implement gago.Genome.
 func (prog *Program) Evaluate() (float64, error) {
+	// Simplify the Program's Tree to avoid unnecessary computations
+	prog.Tree.Simplify()
 	// Run the training set through the Program
-	var yPred, err = prog.Predict(prog.Estimator.XTrain, prog.Task.Metric.NeedsProbabilities())
+	var yPred, err = prog.Predict(
+		prog.Estimator.XTrain,
+		prog.Task.LossMetric.NeedsProbabilities(),
+	)
 	if err != nil {
 		return math.Inf(1), err
 	}
 	// Use the Metric defined in the Estimator
-	fitness, err := prog.Task.Metric.Apply(prog.Estimator.YTrain, yPred, prog.Estimator.WTrain)
+	fitness, err := prog.Task.LossMetric.Apply(prog.Estimator.YTrain, yPred, prog.Estimator.WTrain)
 	if err != nil {
 		return math.Inf(1), err
 	}

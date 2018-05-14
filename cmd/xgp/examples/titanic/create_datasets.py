@@ -33,11 +33,12 @@ def munge(data):
 
 if __name__ == '__main__':
 
-    train = munge(pd.read_csv('kaggle/train.csv'))
-    test = munge(pd.read_csv('kaggle/test.csv'))
+    here = os.path.dirname(os.path.realpath(__file__))
+
+    train = munge(pd.read_csv(os.path.join(here, 'kaggle/train.csv')))
+    test = munge(pd.read_csv(os.path.join(here, 'kaggle/test.csv')))
     train, val = model_selection.train_test_split(train, test_size=0.2, random_state=42)
 
-    here = os.path.dirname(os.path.realpath(__file__))
     train.to_csv(os.path.join(here, 'train.csv'), index=False)
     val.to_csv(os.path.join(here, 'val.csv'), index=False)
     test.to_csv(os.path.join(here, 'test.csv'), index=False)

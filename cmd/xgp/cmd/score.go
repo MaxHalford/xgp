@@ -1,49 +1,53 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 
-	"github.com/MaxHalford/xgp"
+	"github.com/MaxHalford/xgp/meta"
 	"github.com/MaxHalford/xgp/metrics"
 	"github.com/spf13/cobra"
 )
 
 var (
-	scoreEvalMetricName string
-	scoreProgramName    string
-	scoreTargetCol      string
+	scoreMetricName   string
+	scoreEnsembleName string
+	scoreTargetCol    string
 )
 
 func init() {
 	RootCmd.AddCommand(scoreCmd)
 
-	scoreCmd.Flags().StringVarP(&scoreEvalMetricName, "eval", "", "", "evaluation metric")
-	scoreCmd.Flags().StringVarP(&scoreProgramName, "program", "", "program.json", "path to the program to score")
+	scoreCmd.Flags().StringVarP(&scoreMetricName, "metric", "", "mse", "evaluation metric")
+	scoreCmd.Flags().StringVarP(&scoreEnsembleName, "ensemble", "", "ensemble.json", "path to the program to score")
 	scoreCmd.Flags().StringVarP(&scoreTargetCol, "target", "", "y", "name of the target column in the dataset")
 }
 
 var scoreCmd = &cobra.Command{
 	Use:   "score",
-	Short: "Predicts a dataset with a program",
-	Long:  "Predicts a dataset with a program",
+	Short: "Loads an ensemble and computes a score for a given dataset",
+	Long:  "Loads an ensemble and computes a score for a given dataset",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		// Load the program
-		prog, err := xgp.LoadProgramFromJSON(scoreProgramName)
+		// Load the ensemble
+		var (
+			ensemble   meta.Ensemble
+			bytes, err = ioutil.ReadFile(scoreEnsembleName)
+		)
+		if err != nil {
+			return err
+		}
+		err = json.Unmarshal(bytes, &ensemble)
 		if err != nil {
 			return err
 		}
 
 		// Determine the metric to use
-		var metric metrics.Metric
-		if scoreEvalMetricName == "" {
-			metric, err = metrics.GetMetric(scoreEvalMetricName, 1)
-			if err != nil {
-				return err
-			}
-		} else {
-			metric = prog.Task.Metric
+		metric, err := metrics.GetMetric(scoreMetricName, 1)
+		if err != nil {
+			return err
 		}
 
 		// Load the test set in memory
@@ -51,7 +55,7 @@ var scoreCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		fmt.Println(fmt.Sprintf("Scoring set took %v to load", duration))
+		fmt.Println(fmt.Sprintf("Dataset set took %v to load", duration))
 
 		// Check the target column exists
 		var columns = df.Names()
@@ -60,7 +64,7 @@ var scoreCmd = &cobra.Command{
 		}
 
 		// Make predictions
-		yPred, err := prog.Predict(dataFrameToFloat64(df), metric.NeedsProbabilities())
+		yPred, err := ensemble.Predict(dataFrameToFloat64(df), metric.NeedsProbabilities())
 		if err != nil {
 			return err
 		}

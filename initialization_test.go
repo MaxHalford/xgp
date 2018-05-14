@@ -10,10 +10,11 @@ import (
 
 func TestFullInitializer(t *testing.T) {
 	var (
-		of = OperatorFactory{
-			PConstant:   1,
-			NewConstant: func(rng *rand.Rand) op.Constant { return op.Constant{1} },
-			NewFunction: func(rng *rand.Rand) op.Operator { return op.Sum{} },
+		newOp = func(leaf bool, rng *rand.Rand) op.Operator {
+			if leaf {
+				return op.Constant{1}
+			}
+			return op.Sum{}
 		}
 		rng       = newRand()
 		testCases = []struct {
@@ -41,7 +42,7 @@ func TestFullInitializer(t *testing.T) {
 
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
-			var tree = FullInitializer{}.Apply(tc.minHeight, tc.maxHeight, of, rng)
+			var tree = FullInitializer{}.Apply(tc.minHeight, tc.maxHeight, newOp, rng)
 			if tree.Size() != tc.size {
 				t.Errorf("Expected %d, got %d", tc.size, tree.Size())
 			}
@@ -52,10 +53,11 @@ func TestFullInitializer(t *testing.T) {
 
 func TestGrowInitializer(t *testing.T) {
 	var (
-		of = OperatorFactory{
-			PConstant:   1,
-			NewConstant: func(rng *rand.Rand) op.Constant { return op.Constant{1} },
-			NewFunction: func(rng *rand.Rand) op.Operator { return op.Sum{} },
+		newOp = func(leaf bool, rng *rand.Rand) op.Operator {
+			if leaf {
+				return op.Constant{1}
+			}
+			return op.Sum{}
 		}
 		rng       = newRand()
 		testCases = []struct {
@@ -109,7 +111,7 @@ func TestGrowInitializer(t *testing.T) {
 				initializer = GrowInitializer{
 					PTerminal: tc.pLeaf,
 				}
-				tree = initializer.Apply(tc.minHeight, tc.maxHeight, of, rng)
+				tree = initializer.Apply(tc.minHeight, tc.maxHeight, newOp, rng)
 			)
 			if tree.Size() != tc.size {
 				t.Errorf("Expected %d operator(s), got %d", tc.size, tree.Size())

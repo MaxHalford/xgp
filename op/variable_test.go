@@ -6,29 +6,7 @@ import (
 	"testing"
 )
 
-func TestVariableApplyRow(t *testing.T) {
-	var testCases = []struct {
-		v Variable
-		x []float64
-		y float64
-	}{
-		{
-			v: Variable{0},
-			x: []float64{42},
-			y: 42,
-		},
-	}
-	for i, tc := range testCases {
-		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
-			var y = tc.v.ApplyRow(tc.x)
-			if y != tc.y {
-				t.Errorf("Expected %v, got %v", tc.y, y)
-			}
-		})
-	}
-}
-
-func TestVariableApplyCols(t *testing.T) {
+func TestVariableEval(t *testing.T) {
 	var testCases = []struct {
 		v Variable
 		X [][]float64
@@ -47,7 +25,7 @@ func TestVariableApplyCols(t *testing.T) {
 	}
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
-			var Y = tc.v.ApplyCols(tc.X)
+			var Y = tc.v.Eval(tc.X)
 			if !reflect.DeepEqual(Y, tc.Y) {
 				t.Errorf("Expected %v, got %v", tc.Y, Y)
 			}

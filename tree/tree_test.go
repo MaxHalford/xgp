@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestHeight(t *testing.T) {
+func TestTreeHeight(t *testing.T) {
 	// Initial tree has no branches and thus has a height of 0
 	var tree = Tree{}
 	if tree.Height() != 0 {
@@ -29,7 +29,7 @@ func TestHeight(t *testing.T) {
 	}
 }
 
-func TestSize(t *testing.T) {
+func TestTreeSize(t *testing.T) {
 	// Initial tree only has a root and thus has a single operator
 	var tree = &Tree{}
 	if tree.Size() != 1 {
@@ -80,7 +80,7 @@ func TestTreeSimplify(t *testing.T) {
 	}
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
-			tc.tree.simplify()
+			tc.tree.Simplify()
 			if !reflect.DeepEqual(tc.tree, tc.simplifiedTree) {
 				t.Errorf("Expected %v, got %v", tc.simplifiedTree, tc.tree)
 			}

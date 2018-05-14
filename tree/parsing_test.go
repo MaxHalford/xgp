@@ -82,7 +82,7 @@ func TestParseCode(t *testing.T) {
 			},
 		},
 		{
-			code: "mul(cos(X[0]), log(sin(X[1])))",
+			code: "mul(cos(X[0]), exp(sin(X[1])))",
 			tree: Tree{
 				op: op.Mul{},
 				branches: []*Tree{
@@ -95,7 +95,7 @@ func TestParseCode(t *testing.T) {
 						},
 					},
 					&Tree{
-						op: op.Log{},
+						op: op.Exp{},
 						branches: []*Tree{
 							&Tree{
 								op: op.Sin{},

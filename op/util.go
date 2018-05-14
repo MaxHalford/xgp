@@ -7,7 +7,6 @@ func ParseFuncName(funcName string) (Operator, error) {
 	var f, ok = map[string]Operator{
 		Cos{}.String(): Cos{},
 		Sin{}.String(): Sin{},
-		Log{}.String(): Log{},
 		Exp{}.String(): Exp{},
 		Max{}.String(): Max{},
 		Min{}.String(): Min{},
@@ -15,7 +14,6 @@ func ParseFuncName(funcName string) (Operator, error) {
 		Sub{}.String(): Sub{},
 		Div{}.String(): Div{},
 		Mul{}.String(): Mul{},
-		Pow{}.String(): Pow{},
 	}[funcName]
 	if !ok {
 		return nil, fmt.Errorf("Unknown function name '%s'", funcName)

@@ -25,24 +25,24 @@ type DirDisplay struct {
 }
 
 // Apply directory-style display.
-func (displayer DirDisplay) Apply(tree Tree) string {
+func (displayer DirDisplay) Apply(tr Tree) string {
 	var (
-		disp       func(tree *Tree, str string, depth int, carriage bool) string
+		disp       func(tr *Tree, str string, depth int, carriage bool) string
 		whitespace = strings.Repeat(" ", displayer.TabSize)
 	)
 
-	disp = func(tree *Tree, str string, depth int, carriage bool) string {
-		str += strings.Repeat(whitespace, depth) + tree.op.String()
+	disp = func(tr *Tree, str string, depth int, carriage bool) string {
+		str += strings.Repeat(whitespace, depth) + tr.op.String()
 		if carriage {
 			str += "\n"
 		}
-		for i := len(tree.branches) - 1; i >= 0; i-- {
-			str = disp(tree.branches[i], str, depth+1, i > 0)
+		for i := len(tr.branches) - 1; i >= 0; i-- {
+			str = disp(tr.branches[i], str, depth+1, len(tr.branches) > 0)
 		}
 		return str
 	}
 
-	return disp(&tree, "", 0, len(tree.branches) > 0)
+	return disp(&tr, "", 0, len(tr.branches) > 0)
 }
 
 // GraphvizDisplay outputs a Graphviz representation of a Tree. Each branch is
@@ -68,22 +68,22 @@ func (displayer DirDisplay) Apply(tree Tree) string {
 type GraphvizDisplay struct{}
 
 // Apply Graphviz display.
-func (displayer GraphvizDisplay) Apply(tree Tree) string {
+func (displayer GraphvizDisplay) Apply(tr Tree) string {
 	var (
 		counter int
-		disp    func(tree *Tree, str string) string
+		disp    func(tr *Tree, str string) string
 	)
-	disp = func(tree *Tree, str string) string {
+	disp = func(tr *Tree, str string) string {
 		var idx = counter
-		str += fmt.Sprintf("\t%d [label=\"%s\"];\n", idx, tree.op.String())
-		for _, branch := range tree.branches {
+		str += fmt.Sprintf("\t%d [label=\"%s\"];\n", idx, tr.op.String())
+		for _, branch := range tr.branches {
 			counter++
 			str += fmt.Sprintf("\t%d -> %d;\n", idx, counter)
 			str = disp(branch, str)
 		}
 		return str
 	}
-	var str = disp(&tree, "digraph G {\n")
+	var str = disp(&tr, "digraph G {\n")
 	str += "}"
 	return str
 }
@@ -95,20 +95,20 @@ func (displayer GraphvizDisplay) Apply(tree Tree) string {
 type CodeDisplay struct{}
 
 // Apply CodeDisplay.
-func (displayer CodeDisplay) Apply(tree Tree) string {
-	switch len(tree.branches) {
+func (displayer CodeDisplay) Apply(tr Tree) string {
+	switch len(tr.branches) {
 	case 0:
-		return tree.op.String()
+		return tr.op.String()
 	case 1:
-		return fmt.Sprintf("%s(%s)", tree.op.String(), displayer.Apply(*tree.branches[0]))
+		return fmt.Sprintf("%s(%s)", tr.op.String(), displayer.Apply(*tr.branches[0]))
 	case 2:
 		return fmt.Sprintf(
 			"%s(%s, %s)",
-			tree.op.String(),
-			displayer.Apply(*tree.branches[0]),
-			displayer.Apply(*tree.branches[1]),
+			tr.op.String(),
+			displayer.Apply(*tr.branches[0]),
+			displayer.Apply(*tr.branches[1]),
 		)
 	default:
-		return tree.op.String()
+		return tr.op.String()
 	}
 }

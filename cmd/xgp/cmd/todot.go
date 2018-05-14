@@ -1,25 +1,27 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
-	"strings"
 
-	"github.com/MaxHalford/xgp"
+	"github.com/MaxHalford/xgp/meta"
 	"github.com/MaxHalford/xgp/tree"
 	"github.com/spf13/cobra"
 )
 
 var (
-	toDOTProgramName string
-	toDOTSave        bool
-	toDOTShell       bool
-	toDOTOutputName  string
+	toDOTRound      int
+	toDOTSave       bool
+	toDOTShell      bool
+	toDOTOutputName string
 )
 
 func init() {
 	RootCmd.AddCommand(toDOTCmd)
 
+	toDOTCmd.Flags().IntVarP(&toDOTRound, "round", "", 0, "position of the program in the ensemble")
 	toDOTCmd.Flags().StringVarP(&toDOTOutputName, "output", "", "program.dot", "path to the DOT file output")
 	toDOTCmd.Flags().BoolVarP(&toDOTSave, "save", "", false, "save to a DOT file or not")
 	toDOTCmd.Flags().BoolVarP(&toDOTShell, "shell", "", true, "output in the terminal or not")
@@ -30,25 +32,23 @@ var toDOTCmd = &cobra.Command{
 	Short: "Produces a DOT language representation of a program",
 	Long:  "Produces a DOT language representation of a program",
 	Args:  cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) (err error) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 
-		// Load the program
-		var program xgp.Program
-		if strings.Contains(args[0], `"`) {
-			program, err = xgp.LoadProgramFromJSON(args[0])
-			if err != nil {
-				return err
-			}
-		} else {
-			tree, err := tree.ParseCode(args[0])
-			if err != nil {
-				return err
-			}
-			program = xgp.Program{Tree: tree}
+		// Load the ensemble
+		var (
+			ensemble   meta.Ensemble
+			bytes, err = ioutil.ReadFile(args[0])
+		)
+		if err != nil {
+			return err
+		}
+		err = json.Unmarshal(bytes, &ensemble)
+		if err != nil {
+			return err
 		}
 
 		// Make the Graphviz representation
-		var str = tree.GraphvizDisplay{}.Apply(program.Tree)
+		var str = tree.GraphvizDisplay{}.Apply(ensemble.Programs[toDOTRound].Tree)
 
 		// Output in the shell
 		if toDOTShell {

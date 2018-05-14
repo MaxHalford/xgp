@@ -9,7 +9,7 @@ See [here](https://github.com/MaxHalford/xgp/projects).
 The documentation is rendered with [MkDocs](http://www.mkdocs.org/). Run the following commands to run the documentation locally.
 
 ```sh
-pip install mkdocs mkdocs-material pygments
+pip install mkdocs mkdocs-material pygments python-markdown-math
 cd /path/to/xgp
 mkdocs serve
 ```

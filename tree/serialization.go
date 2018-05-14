@@ -1,24 +1,23 @@
 package tree
 
 import (
-	"encoding/json"
 	"strconv"
 
 	"github.com/MaxHalford/xgp/op"
 )
 
-// A serialtree can be serialized and holds information that can be used to
+// A serialTree can be serialized and holds information that can be used to
 // initialize a tree.
-type serialtree struct {
+type serialTree struct {
 	OpType   string       `json:"op_type"`
 	OpValue  string       `json:"op_value"`
-	Branches []serialtree `json:"branches"`
+	Branches []serialTree `json:"branches"`
 }
 
-// serializetree recursively transforms a *tree into a serialtree.
-func serializetree(tree Tree) (serialtree, error) {
-	var serial = serialtree{
-		Branches: make([]serialtree, len(tree.branches)),
+// serializeTree recursively transforms a Tree into a serialTree.
+func serializeTree(tree Tree) (serialTree, error) {
+	var serial = serialTree{
+		Branches: make([]serialTree, len(tree.branches)),
 	}
 	switch tree.op.(type) {
 	case op.Constant:
@@ -32,7 +31,7 @@ func serializetree(tree Tree) (serialtree, error) {
 		serial.OpValue = tree.op.String()
 	}
 	for i, branch := range tree.branches {
-		var serialBranch, err = serializetree(*branch)
+		var serialBranch, err = serializeTree(*branch)
 		if err != nil {
 			return serial, err
 		}
@@ -41,8 +40,8 @@ func serializetree(tree Tree) (serialtree, error) {
 	return serial, nil
 }
 
-// parseSerialtree recursively transforms a serialtree into a *tree.
-func parseSerialtree(serial serialtree) (Tree, error) {
+// parseSerialTree recursively transforms a serialTree into a *tree.
+func parseSerialTree(serial serialTree) (Tree, error) {
 	var tree = Tree{
 		branches: make([]*Tree, len(serial.Branches)),
 	}
@@ -67,36 +66,11 @@ func parseSerialtree(serial serialtree) (Tree, error) {
 		tree.op = function
 	}
 	for i, branches := range serial.Branches {
-		var treeChild, err = parseSerialtree(branches)
+		var treeChild, err = parseSerialTree(branches)
 		if err != nil {
 			return tree, err
 		}
 		tree.SetBranch(i, treeChild)
 	}
 	return tree, nil
-}
-
-// MarshalJSON serializes a *tree into JSON bytes. A serialtree is used as an
-// intermediary.
-func (tree Tree) MarshalJSON() ([]byte, error) {
-	var serial, err = serializetree(tree)
-	if err != nil {
-		return nil, err
-	}
-	return json.Marshal(&serial)
-}
-
-// UnmarshalJSON parses JSON bytes into a *tree. A serialtree is used as an
-// intermediary.
-func (tree *Tree) UnmarshalJSON(bytes []byte) error {
-	var serial serialtree
-	if err := json.Unmarshal(bytes, &serial); err != nil {
-		return err
-	}
-	var parsedtree, err = parseSerialtree(serial)
-	if err != nil {
-		return err
-	}
-	*tree = parsedtree
-	return nil
 }

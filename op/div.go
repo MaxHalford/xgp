@@ -4,16 +4,8 @@ package op
 // the numerator and the right operand is the denominator.
 type Div struct{}
 
-// ApplyRow Div.
-func (op Div) ApplyRow(x []float64) float64 {
-	if x[1] == 0 {
-		return 1
-	}
-	return x[0] / x[1]
-}
-
-// ApplyCols Div.
-func (op Div) ApplyCols(X [][]float64) []float64 {
+// Eval Div.
+func (op Div) Eval(X [][]float64) []float64 {
 	for i, x := range X[1] {
 		if x == 0 {
 			X[0][i] = 1

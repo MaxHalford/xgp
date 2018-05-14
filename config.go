@@ -18,8 +18,8 @@ type Config struct {
 	ConstMax float64
 	ConstMin float64
 
-	EvalMetricName string
-	LossMetricName string
+	EvalMetric metrics.Metric
+	LossMetric metrics.Metric
 
 	Funcs string
 
@@ -56,8 +56,8 @@ func (c Config) String() string {
 			[]string{"Constant minimum", strconv.FormatFloat(c.ConstMin, 'g', -1, 64)},
 			[]string{"Constant maximum", strconv.FormatFloat(c.ConstMax, 'g', -1, 64)},
 
-			[]string{"Evaluation metric", c.EvalMetricName},
-			[]string{"Loss metric", c.LossMetricName},
+			[]string{"Evaluation metric", c.EvalMetric.String()},
+			[]string{"Loss metric", c.LossMetric.String()},
 
 			[]string{"Functions", c.Funcs},
 
@@ -94,27 +94,14 @@ func (c Config) String() string {
 // NewEstimator returns an Estimator from a Config.
 func (c Config) NewEstimator() (*Estimator, error) {
 
-	// Determine the loss metric to use
-	loss, err := metrics.GetMetric(c.LossMetricName, 1)
-	if err != nil {
-		return nil, err
-	}
-
 	// Default the evaluation metric to the fitness metric if it's nil
-	var eval metrics.Metric
-	if c.EvalMetricName == "" {
-		eval = loss
-	} else {
-		metric, err := metrics.GetMetric(c.EvalMetricName, 1)
-		if err != nil {
-			return nil, err
-		}
-		eval = metric
+	if c.EvalMetric == nil {
+		c.EvalMetric = c.LossMetric
 	}
 
 	// The convention is to use a fitness metric which has to be minimized
-	if loss.BiggerIsBetter() {
-		loss = metrics.NegativeMetric{Metric: loss}
+	if c.LossMetric.BiggerIsBetter() {
+		c.LossMetric = metrics.NegativeMetric{Metric: c.LossMetric}
 	}
 
 	// Determine the functions to use
@@ -127,8 +114,8 @@ func (c Config) NewEstimator() (*Estimator, error) {
 	var estimator = &Estimator{
 		Config:     c,
 		Functions:  functions,
-		EvalMetric: eval,
-		LossMetric: loss,
+		EvalMetric: c.EvalMetric,
+		LossMetric: c.LossMetric,
 		Initializer: RampedHaldAndHalfInitializer{
 			PFull:           c.PFull,
 			FullInitializer: FullInitializer{},
@@ -224,8 +211,8 @@ func NewConfigWithDefaults() Config {
 		ConstMin: -5,
 		ConstMax: 5,
 
-		EvalMetricName: "mae",
-		LossMetricName: "mae",
+		EvalMetric: metrics.MeanSquaredError{},
+		LossMetric: metrics.MeanSquaredError{},
 
 		Funcs: "sum,sub,mul,div",
 
