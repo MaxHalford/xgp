@@ -15,7 +15,10 @@ cache:
 
 jobs:
   include:
-    - script: .travis/tests/core.sh
+    - stage: Core
+      script: .travis/tests/core.sh
+    - stage: CLI
+      script: .travis/tests/cli.sh
     - stage: Documentation
       script: .travis/make_documentation.sh
       deploy:
