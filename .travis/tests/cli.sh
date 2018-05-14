@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Install the Python dependencies needed to generate the datasets
+pip install pandas scikit-learn
+
+# Naviguate to the CLI root directory
 cd cmd/xgp
 
 # Boston
