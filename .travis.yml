@@ -13,6 +13,9 @@ cache:
     - ${HOME}/.cache/usr
     - ${HOME}/.cache/pip
 
+before_install:
+  - chmod +x .travis/tests/*.sh
+
 jobs:
   include:
     - stage: Core
