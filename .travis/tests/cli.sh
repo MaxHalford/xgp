@@ -1,7 +1,16 @@
 #!/bin/bash
 
 # Install the Python dependencies needed to generate the datasets
-pip install pandas scikit-learn
+if [ ${TRAVIS_OS_NAME} == "osx" ]; then
+    wget -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
+else
+    wget -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+fi
+bash miniconda.sh -b -p $HOME/miniconda
+export PATH="$HOME/miniconda/bin:$PATH"
+hash -r
+conda config --set always_yes yes --set changeps1 no
+conda update -q conda
 
 # Naviguate to the CLI root directory
 cd cmd/xgp
