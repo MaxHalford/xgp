@@ -58,7 +58,6 @@ Code-wise the operators are all located in the `op` sub-package, of which the go
 |------|-------|------------|---------------|---------------|
 | Cosine | 1 | cos | `Cos` | ✗ |
 | Sine | 1 | sin | `Sin` | ✗ |
-| Natural logarithm | 1 | log | `Log` | ✗ |
 | Exponential | 1 | exp | `Exp` | ✗ |
 | Maximum | 2 | max | `Max` | ✗ |
 | Minimum | 2 | min | `Min` | ✗ |
@@ -66,5 +65,3 @@ Code-wise the operators are all located in the `op` sub-package, of which the go
 | Subtraction | 2 | sub | `Sub` | ✗ |
 | Division | 2 | div | `Div` | ✔ |
 | Multiplication | 2 | mul | `Mul` | ✗ |
-| Power | 2 | pow | `Pow` | ✗ |
-
