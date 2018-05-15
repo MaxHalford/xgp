@@ -32,7 +32,7 @@ xgp is a machine learning library for performing [symbolic regression](https://w
 
 ## Interfaces
 
-The core library is written in Go but can be used in different ways.
+The core library is written in Go but it can be used in different ways:
 
 - [Command-line interface (CLI)](https://maxhalford.github.io/xgp/cli/)
 - [Go API](https://maxhalford.github.io/xgp/go/)
@@ -78,11 +78,8 @@ y_pred = model.predict(X_test)
 
 The core xgp library has the following dependencies.
 
-- [olekukonko/tablewriter](https://github.com/olekukonko/tablewriter) for displaying parameters in a pretty way
 - [gonum/gonum](https://github.com/gonum/gonum) for [SIMD operations](https://www.wikiwand.com/en/SIMD) and calculating metrics
-- [spf13/cobra](https://github.com/spf13/cobra) for building the CLI
-- [kniren/gota](https://github.com/kniren/gota) for manipulating dataframes from the CLI
-- [gosuri/uiprogress](https://github.com/gosuri/uiprogress) for displaying progress bars in the CLI
+- [MaxHalford/gago](https://github.com/MaxHalford/gago) for the genetic algorithm part
 
 ## License
 

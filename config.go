@@ -2,11 +2,12 @@ package xgp
 
 import (
 	"bytes"
+	"fmt"
 	"math/rand"
 	"strconv"
+	"strings"
 
 	"github.com/MaxHalford/gago"
-	"github.com/olekukonko/tablewriter"
 
 	"github.com/MaxHalford/xgp/metrics"
 	"github.com/MaxHalford/xgp/op"
@@ -51,7 +52,6 @@ type Config struct {
 func (c Config) String() string {
 	var (
 		buffer     = new(bytes.Buffer)
-		table      = tablewriter.NewWriter(buffer)
 		parameters = [][]string{
 			[]string{"Constant minimum", strconv.FormatFloat(c.ConstMin, 'g', -1, 64)},
 			[]string{"Constant maximum", strconv.FormatFloat(c.ConstMax, 'g', -1, 64)},
@@ -83,12 +83,10 @@ func (c Config) String() string {
 			[]string{"Parsimony coefficient", strconv.FormatFloat(c.ParsimonyCoeff, 'g', -1, 64)},
 		}
 	)
-	table.SetHeader([]string{"Parameter", "Value"})
 	for _, param := range parameters {
-		table.Append(param)
+		buffer.WriteString(fmt.Sprintf("%s: %s\n", param[0], param[1]))
 	}
-	table.Render()
-	return buffer.String()
+	return strings.Trim(buffer.String(), "\n")
 }
 
 // NewEstimator returns an Estimator from a Config.
