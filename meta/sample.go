@@ -3,6 +3,8 @@ package meta
 import (
 	"math/rand"
 	"sort"
+
+	"gonum.org/v1/gonum/floats"
 )
 
 // Sample with repetition k integers in range [0, n).
@@ -34,22 +36,12 @@ func randIntsNoRep(k, n int, rng *rand.Rand) []int {
 	return ints
 }
 
-// Compute the cumulative sum of a float64 slice.
-func cumsum(floats []float64) []float64 {
-	var cs = make([]float64, len(floats))
-	copy(cs, floats)
-	for i := 1; i < len(cs); i++ {
-		cs[i] += cs[i-1]
-	}
-	return cs
-}
-
 // Sample with repetition k integers in range [0, n) where n is the number of
 // provided weights.
 func randIntsWeighted(k int, weights []float64, rng *rand.Rand) []int {
 	var (
 		ints = make([]int, k)
-		wcs  = cumsum(weights)
+		wcs  = floats.CumSum(make([]float64, len(weights)), weights)
 	)
 	for i := range ints {
 		r := rng.Float64() * wcs[len(wcs)-1]
@@ -89,12 +81,15 @@ func subsetRowsFloat64Matrix(X [][]float64, idxs []int) [][]float64 {
 }
 
 func normalize(w []float64) []float64 {
-	var s float64
+	var (
+		res = make([]float64, len(w))
+		ws  float64
+	)
 	for _, wi := range w {
-		s += wi
+		ws += wi
 	}
-	for i := range w {
-		w[i] /= s
+	for i, w := range w {
+		res[i] = w / ws
 	}
-	return w
+	return res
 }

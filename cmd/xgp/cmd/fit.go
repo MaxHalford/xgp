@@ -46,6 +46,7 @@ var (
 	fitParsimonyCoeff    float64
 
 	fitMode                string
+	fitLearningRate        float64
 	fitNPrograms           uint
 	fitRowSampling         float64
 	fitColSampling         float64
@@ -98,6 +99,7 @@ func init() {
 	// Ensemble parameters
 	fitCmd.Flags().StringVarP(&fitMode, "mode", "", "adaboost", "training mode")
 	fitCmd.Flags().UintVarP(&fitNPrograms, "n_programs", "", 30, "number of programs to use in the ensemble")
+	fitCmd.Flags().Float64VarP(&fitLearningRate, "learning_rate", "", 0.05, "learning rate used for boosting")
 	fitCmd.Flags().Float64VarP(&fitRowSampling, "row_sampling", "", 0.6, "row sampling used for bagging")
 	fitCmd.Flags().Float64VarP(&fitColSampling, "col_sampling", "", 1, "column sampling used for bagging")
 	fitCmd.Flags().UintVarP(&fitEarlyStoppingRounds, "early_stopping", "", 5, "number of rounds after which training stops if the evaluation score worsens")
@@ -246,6 +248,7 @@ var fitCmd = &cobra.Command{
 			}.Train(estimator, XTrain, YTrain, XVal, YVal, fitVerbose)
 		case "adaboost":
 			ensemble, err = meta.AdaBoost{
+				LearningRate:        fitLearningRate,
 				NPrograms:           fitNPrograms,
 				RowSampling:         fitRowSampling,
 				EvalMetric:          evalMetric,
