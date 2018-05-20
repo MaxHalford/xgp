@@ -74,8 +74,8 @@ func (est *Estimator) Fit(
 
 	// Count the number of classes if the task is classification
 	if est.LossMetric.Classification() {
-		est.nClasses = countDistinct(YTrain)
 		// Check that the task to perform is not multi-class classification
+		est.nClasses = countDistinct(YTrain)
 		if est.nClasses > 2 {
 			return prog, errors.New("Multi-class classification is not supported")
 		}

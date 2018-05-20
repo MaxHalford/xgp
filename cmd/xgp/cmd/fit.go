@@ -16,35 +16,38 @@ import (
 )
 
 var (
-	fitConstMin float64
-	fitConstMax float64
-
-	fitEvalMetricName string
+	// Learning parameters
 	fitLossMetricName string
+	fitEvalMetricName string
 
-	fitFuncs string
-
-	fitMinHeight int
-	fitMaxHeight int
-
-	fitNPopulations       int
-	fitNIndividuals       int
-	fitNGenerations       int
-	fitNTuningGenerations int
-	fitNRounds            int
-
+	// Function parameters
+	fitFuncs     string
+	fitConstMin  float64
+	fitConstMax  float64
 	fitPConstant float64
 	fitPFull     float64
 	fitPTerminal float64
+	fitMinHeight int
+	fitMaxHeight int
 
-	fitPHoistMutation    float64
-	fitPPointMutation    float64
-	fitPSubTreeMutation  float64
-	fitPointMutationRate float64
+	// Genetic algorithm parameters
+	fitNPopulations       int
+	fitNIndividuals       int
+	fitNGenerations       int
+	fitNPolishGenerations int
+	fitPHoistMutation     float64
+	fitPPointMutation     float64
+	fitPSubTreeMutation   float64
+	fitPointMutationRate  float64
+	fitPSubTreeCrossover  float64
 
-	fitPSubTreeCrossover float64
-	fitParsimonyCoeff    float64
+	// Regularization parameters
+	fitParsimonyCoeff float64
 
+	// Other
+	fitSeed int64
+
+	// Ensemble parameters
 	fitMode                string
 	fitLearningRate        float64
 	fitNPrograms           uint
@@ -52,8 +55,7 @@ var (
 	fitColSampling         float64
 	fitEarlyStoppingRounds uint
 
-	fitSeed int64
-
+	// CLI parameters
 	fitIgnoredCols string
 	fitOutputName  string
 	fitTargetCol   string
@@ -64,39 +66,32 @@ var (
 func init() {
 	RootCmd.AddCommand(fitCmd)
 
-	fitCmd.Flags().Float64VarP(&fitConstMin, "const_min", "", -5, "lower bound for generating random constants")
-	fitCmd.Flags().Float64VarP(&fitConstMax, "const_max", "", 5, "upper bound for generating random constants")
+	fitCmd.Flags().StringVarP(&fitLossMetricName, "loss", "", "mae", "metric used for scoring program; determines the task to perform")
+	fitCmd.Flags().StringVarP(&fitEvalMetricName, "eval", "", "", "metric used for monitoring progress; defaults to loss_metric if not provided")
 
-	fitCmd.Flags().StringVarP(&fitEvalMetricName, "eval", "", "", "metric used for monitoring progress, defaults to fit_metric if not provided")
-	fitCmd.Flags().StringVarP(&fitLossMetricName, "loss", "", "mae", "metric used for scoring program, determines the task to perform")
+	fitCmd.Flags().StringVarP(&fitFuncs, "funcs", "", "sum,sub,mul,div", "comma-separated set of authorised functions")
+	fitCmd.Flags().Float64VarP(&fitConstMin, "const_min", "", -5, "lower bound used for generating random constants")
+	fitCmd.Flags().Float64VarP(&fitConstMax, "const_max", "", 5, "upper bound used for generating random constants")
+	fitCmd.Flags().Float64VarP(&fitPConstant, "p_constant", "", 0.5, "probability of generating a constant instead of a variable")
+	fitCmd.Flags().Float64VarP(&fitPFull, "p_full", "", 0.5, "probability of using full initialization during ramped half-and-half initialization")
+	fitCmd.Flags().Float64VarP(&fitPTerminal, "p_terminal", "", 0.3, "probability of generating a terminal node during ramped half-and-half initialization")
+	fitCmd.Flags().IntVarP(&fitMinHeight, "min_height", "", 3, "minimum program height used in ramped half-and-half initialization")
+	fitCmd.Flags().IntVarP(&fitMaxHeight, "max_height", "", 5, "maximum program height used in ramped half-and-half initialization")
 
-	fitCmd.Flags().StringVarP(&fitFuncs, "funcs", "", "sum,sub,mul,div", "comma-separated authorised operators")
-
-	fitCmd.Flags().IntVarP(&fitMinHeight, "min_height", "", 3, "min program height used in ramped half-and-half initialization")
-	fitCmd.Flags().IntVarP(&fitMaxHeight, "max_height", "", 5, "max program height used in ramped half-and-half initialization")
-
-	fitCmd.Flags().IntVarP(&fitNPopulations, "pops", "", 1, "number of populations to use in the GA")
-	fitCmd.Flags().IntVarP(&fitNIndividuals, "indis", "", 100, "number of individuals to use for each population in the GA")
-	fitCmd.Flags().IntVarP(&fitNGenerations, "gens", "", 30, "number of generations used to evolve the GA")
-	fitCmd.Flags().IntVarP(&fitNTuningGenerations, "tune_gens", "", 0, "number of generations used to evolve the tuning GA")
-	fitCmd.Flags().IntVarP(&fitNRounds, "rounds", "", 1, "number of programs used in the ensemble")
-
-	fitCmd.Flags().Float64VarP(&fitPConstant, "p_constant", "", 0.5, "probability of picking a constant and not a constant when generating terminal nodes")
-	fitCmd.Flags().Float64VarP(&fitPFull, "p_full", "", 0.5, "probability of use full initialization during ramped half-and-half initialization")
-	fitCmd.Flags().Float64VarP(&fitPTerminal, "p_terminal", "", 0.3, "probability of generating a terminal branch in ramped half-and-half initialization")
-
+	fitCmd.Flags().IntVarP(&fitNPopulations, "pops", "", 1, "number of populations used in the GA")
+	fitCmd.Flags().IntVarP(&fitNIndividuals, "indis", "", 100, "number of individuals used for each population in the GA")
+	fitCmd.Flags().IntVarP(&fitNGenerations, "gens", "", 30, "number of generations used in the GA")
+	fitCmd.Flags().IntVarP(&fitNPolishGenerations, "polish_gens", "", 0, "number of generations used to polish the best program")
 	fitCmd.Flags().Float64VarP(&fitPHoistMutation, "p_hoist_mut", "", 0.1, "probability of applying hoist mutation")
-	fitCmd.Flags().Float64VarP(&fitPSubTreeMutation, "p_sub_mut", "", 0.1, "probability of applying sub-tree mutation")
+	fitCmd.Flags().Float64VarP(&fitPSubTreeMutation, "p_sub_mut", "", 0.1, "probability of applying subtree mutation")
 	fitCmd.Flags().Float64VarP(&fitPPointMutation, "p_point_mut", "", 0.1, "probability of applying point mutation")
 	fitCmd.Flags().Float64VarP(&fitPointMutationRate, "point_mut_rate", "", 0.3, "probability of modifying an operator during point mutation")
-
-	fitCmd.Flags().Float64VarP(&fitPSubTreeCrossover, "p_sub_cross", "", 0.5, "probability of applying sub-tree crossover")
+	fitCmd.Flags().Float64VarP(&fitPSubTreeCrossover, "p_sub_cross", "", 0.5, "probability of applying subtree crossover")
 
 	fitCmd.Flags().Float64VarP(&fitParsimonyCoeff, "parsimony", "", 0.00001, "parsimony coefficient by which a program's height is multiplied to decrease it's fitness")
 
 	fitCmd.Flags().Int64VarP(&fitSeed, "seed", "", 0, "seed for random number generation")
 
-	// Ensemble parameters
 	fitCmd.Flags().StringVarP(&fitMode, "mode", "", "adaboost", "training mode")
 	fitCmd.Flags().UintVarP(&fitNPrograms, "n_programs", "", 30, "number of programs to use in the ensemble")
 	fitCmd.Flags().Float64VarP(&fitLearningRate, "learning_rate", "", 0.05, "learning rate used for boosting")
@@ -104,7 +99,6 @@ func init() {
 	fitCmd.Flags().Float64VarP(&fitColSampling, "col_sampling", "", 1, "column sampling used for bagging")
 	fitCmd.Flags().UintVarP(&fitEarlyStoppingRounds, "early_stopping", "", 5, "number of rounds after which training stops if the evaluation score worsens")
 
-	// CLI specific parameters
 	fitCmd.Flags().StringVarP(&fitIgnoredCols, "ignore", "", "", "comma-separated columns to ignore")
 	fitCmd.Flags().StringVarP(&fitOutputName, "output", "", "ensemble.json", "path where to save the JSON representation of the best program ")
 	fitCmd.Flags().StringVarP(&fitTargetCol, "target", "", "y", "name of the target column in the training and validation datasets")
@@ -158,7 +152,7 @@ var fitCmd = &cobra.Command{
 			NPopulations:       fitNPopulations,
 			NIndividuals:       fitNIndividuals,
 			NGenerations:       fitNGenerations,
-			NTuningGenerations: fitNTuningGenerations,
+			NPolishGenerations: fitNPolishGenerations,
 
 			PConstant: fitPConstant,
 			PFull:     fitPFull,

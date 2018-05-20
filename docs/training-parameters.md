@@ -16,7 +16,7 @@ The following table gives an overview of all the parameters that can be used for
 | Number of populations | `pops` | `NPopulations` | `n_populations` | 1 |
 | Number of individuals per population | `indis` | `NIndividuals` | `n_individuals` | 50 |
 | Number of generations | `gens` | `NGenerations` | `n_generations` | 30 |
-| Number of tuning generations | `tune_gens` | `NTuningGenerations` | `n_tuning_generations` | 0 |
+| Number of tuning generations | `polish_gens` | `NPolishGenerations` | `n_tuning_generations` | 0 |
 | Constant probability  | `p_const` | `PConstant` | `p_const` | 0.5 |
 | Full initialization probability  | `p_full` | `PFull` | `p_full` | 0.5 |
 | Terminal probability  | `p_terminal` | `PTerminal` | `p_terminal` | 0.3 |

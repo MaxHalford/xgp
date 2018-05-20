@@ -47,7 +47,7 @@ func (prog *Program) Mutate(rng *rand.Rand) {
 		prog.Estimator.HoistMutation.Apply(&prog.Tree, rng)
 		return
 	}
-	// Apply sub-tree mutation
+	// Apply subtree mutation
 	if dice < pHoist+pSubTree {
 		prog.Estimator.SubTreeMutation.Apply(&prog.Tree, rng)
 		return

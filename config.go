@@ -16,35 +16,31 @@ import (
 
 // A Config contains all the information needed to instantiate an Estimator.
 type Config struct {
-	ConstMax float64
-	ConstMin float64
-
-	EvalMetric metrics.Metric
+	// Learning parameters
 	LossMetric metrics.Metric
-
-	Funcs string
-
-	MinHeight int
-	MaxHeight int
-
-	NPopulations       int
-	NIndividuals       int
-	NGenerations       int
-	NTuningGenerations int
-
+	EvalMetric metrics.Metric
+	// Function parameters
+	Funcs     string
+	ConstMax  float64
+	ConstMin  float64
 	PConstant float64
 	PFull     float64
 	PTerminal float64
-
-	PHoistMutation    float64
-	PSubTreeMutation  float64
-	PPointMutation    float64
-	PointMutationRate float64
-
-	PSubTreeCrossover float64
-
+	MinHeight int
+	MaxHeight int
+	// Genetic algorithm parameters
+	NPopulations       int
+	NIndividuals       int
+	NGenerations       int
+	NPolishGenerations int
+	PHoistMutation     float64
+	PSubTreeMutation   float64
+	PPointMutation     float64
+	PointMutationRate  float64
+	PSubTreeCrossover  float64
+	// Regularization parameters
 	ParsimonyCoeff float64
-
+	// Other
 	RNG *rand.Rand
 }
 
@@ -53,31 +49,26 @@ func (c Config) String() string {
 	var (
 		buffer     = new(bytes.Buffer)
 		parameters = [][]string{
-			[]string{"Constant minimum", strconv.FormatFloat(c.ConstMin, 'g', -1, 64)},
-			[]string{"Constant maximum", strconv.FormatFloat(c.ConstMax, 'g', -1, 64)},
-
 			[]string{"Evaluation metric", c.EvalMetric.String()},
 			[]string{"Loss metric", c.LossMetric.String()},
 
 			[]string{"Functions", c.Funcs},
-
+			[]string{"Constant minimum", strconv.FormatFloat(c.ConstMin, 'g', -1, 64)},
+			[]string{"Constant maximum", strconv.FormatFloat(c.ConstMax, 'g', -1, 64)},
+			[]string{"Constant probability", strconv.FormatFloat(c.PConstant, 'g', -1, 64)},
+			[]string{"Full initialization probability", strconv.FormatFloat(c.PFull, 'g', -1, 64)},
+			[]string{"Terminal probability", strconv.FormatFloat(c.PTerminal, 'g', -1, 64)},
 			[]string{"Minimum height", strconv.Itoa(c.MinHeight)},
 			[]string{"Maximum height", strconv.Itoa(c.MaxHeight)},
 
 			[]string{"Number of populations", strconv.Itoa(c.NPopulations)},
 			[]string{"Number of individuals per population", strconv.Itoa(c.NIndividuals)},
 			[]string{"Number of generations", strconv.Itoa(c.NGenerations)},
-			[]string{"Number of tuning generations", strconv.Itoa(c.NGenerations)},
-
-			[]string{"Constant probability", strconv.FormatFloat(c.PConstant, 'g', -1, 64)},
-			[]string{"Full initialization probability", strconv.FormatFloat(c.PFull, 'g', -1, 64)},
-			[]string{"Terminal probability", strconv.FormatFloat(c.PTerminal, 'g', -1, 64)},
-
+			[]string{"Number of tuning generations", strconv.Itoa(c.NPolishGenerations)},
 			[]string{"Hoist mutation probability", strconv.FormatFloat(c.PHoistMutation, 'g', -1, 64)},
 			[]string{"Sub-tree mutation probability", strconv.FormatFloat(c.PSubTreeMutation, 'g', -1, 64)},
 			[]string{"Point mutation probability", strconv.FormatFloat(c.PPointMutation, 'g', -1, 64)},
 			[]string{"Point mutation rate", strconv.FormatFloat(c.PointMutationRate, 'g', -1, 64)},
-
 			[]string{"Sub-tree crossover probability", strconv.FormatFloat(c.PSubTreeCrossover, 'g', -1, 64)},
 
 			[]string{"Parsimony coefficient", strconv.FormatFloat(c.ParsimonyCoeff, 'g', -1, 64)},
@@ -206,32 +197,27 @@ func (c Config) NewEstimator() (*Estimator, error) {
 // NewConfigWithDefaults returns a Config with default values.
 func NewConfigWithDefaults() Config {
 	return Config{
-		ConstMin: -5,
-		ConstMax: 5,
-
-		EvalMetric: metrics.MeanSquaredError{},
 		LossMetric: metrics.MeanSquaredError{},
+		EvalMetric: metrics.MeanSquaredError{},
 
-		Funcs: "sum,sub,mul,div",
-
+		Funcs:     "sum,sub,mul,div",
+		ConstMin:  -5,
+		ConstMax:  5,
 		MinHeight: 3,
 		MaxHeight: 5,
-
-		NPopulations:       1,
-		NIndividuals:       50,
-		NGenerations:       30,
-		NTuningGenerations: 0,
-
 		PConstant: 0.5,
 		PFull:     0.5,
 		PTerminal: 0.3,
 
-		PHoistMutation:    0.1,
-		PPointMutation:    0.1,
-		PSubTreeMutation:  0.1,
-		PointMutationRate: 0.3,
-
-		PSubTreeCrossover: 0.5,
+		NPopulations:       1,
+		NIndividuals:       50,
+		NGenerations:       30,
+		NPolishGenerations: 0,
+		PHoistMutation:     0.1,
+		PPointMutation:     0.1,
+		PSubTreeMutation:   0.1,
+		PointMutationRate:  0.3,
+		PSubTreeCrossover:  0.5,
 
 		ParsimonyCoeff: 0,
 	}

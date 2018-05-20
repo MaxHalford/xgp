@@ -79,6 +79,7 @@ y_pred = model.predict(X_test)
 The core xgp library has the following dependencies.
 
 - [gonum/gonum](https://github.com/gonum/gonum) for [SIMD operations](https://www.wikiwand.com/en/SIMD) and calculating metrics
+- [gosuri/uiprogress](https://github.com/gosuri/uiprogress) for displaying progress bars
 - [MaxHalford/gago](https://github.com/MaxHalford/gago) for the genetic algorithm part
 
 ## License
