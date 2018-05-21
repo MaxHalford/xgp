@@ -26,7 +26,11 @@ import xgp
 
 
 X, y = datasets.load_breast_cancer(return_X_y=True)
-X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y)
+X_train, X_test, y_train, y_test = model_selection.train_test_split(
+    X,
+    y,
+    random_state=42
+)
 
 model = xgp.XGPClassifier(
     loss_metric='logloss',
@@ -48,8 +52,8 @@ print('Best program:', model.program_str_)
 This gives the following output:
 
 ```
-Train log-loss: 0.17406
-Test log-loss: 0.22663
+Train log-loss: 0.217573
+Test log-loss: 0.191963
 Best program: mul(sum(0.6367560682942068, sub(sub(sum(X[6], -0.7835541178114207), sub(X[16], X[7])), sub(X[16], X[7]))), -26.966659691008655)
 ```
 
