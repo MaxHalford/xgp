@@ -52,11 +52,15 @@ func (bag Bagging) Train(
 			cols = randIntsNoRep(q, p, bag.RNG)
 		)
 		// Train on the sample
+		var RoundXVal [][]float64
+		if XVal != nil {
+			RoundXVal = subsetColsFloat64Matrix(XVal, cols)
+		}
 		var program, err = estimator.Fit(
 			subsetRowsFloat64Matrix(subsetColsFloat64Matrix(XTrain, cols), rows),
 			subsetFloat64Slice(YTrain, rows),
 			nil,
-			subsetColsFloat64Matrix(XVal, cols),
+			RoundXVal,
 			YVal,
 			nil,
 			verbose,
