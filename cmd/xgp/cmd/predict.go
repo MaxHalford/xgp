@@ -56,7 +56,7 @@ var predCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		fmt.Println(fmt.Sprintf("Dataset set took %v to load", duration))
+		fmt.Println(fmt.Sprintf("Dataset took %v to load", duration))
 
 		// Juggle with the column names
 		var (

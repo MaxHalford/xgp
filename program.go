@@ -1,9 +1,11 @@
 package xgp
 
 import (
+	"encoding/json"
 	"errors"
 	"math"
 
+	"github.com/MaxHalford/xgp/metrics"
 	"github.com/MaxHalford/xgp/tree"
 	"github.com/gonum/floats"
 )
@@ -69,4 +71,33 @@ func (prog Program) PredictPartial(x []float64, predictProba bool) (float64, err
 	}
 	// Regression
 	return yPred, nil
+}
+
+// MarshalJSON serializes a Program.
+func (prog *Program) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&struct {
+		Tree       tree.Tree `json:"tree"`
+		LossMetric string    `json:"loss_metric"`
+	}{
+		Tree:       prog.Tree,
+		LossMetric: prog.Estimator.LossMetric.String(),
+	})
+}
+
+// UnmarshalJSON parses a Program.
+func (prog *Program) UnmarshalJSON(data []byte) error {
+	tmp := &struct {
+		Tree       tree.Tree `json:"tree"`
+		LossMetric string    `json:"loss_metric"`
+	}{}
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+	lm, err := metrics.GetMetric(tmp.LossMetric, 1)
+	if err != nil {
+		return err
+	}
+	prog.Tree = tmp.Tree
+	prog.Estimator = &Estimator{LossMetric: lm}
+	return nil
 }

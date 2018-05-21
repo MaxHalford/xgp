@@ -40,15 +40,15 @@ model = xgp.XGPClassifier(
 model.fit(X_train, y_train, eval_set=(X_test, y_test), verbose=True)
 
 metric = metrics.log_loss
-print('Train log-loss: {:.5f}'.format(metric(y_train, model.predict(X_train))))
-print('Test log-loss: {:.5f}'.format(metric(y_test, model.predict(X_test))))
+print('Train log-loss: {:.5f}'.format(metric(y_train, model.predict_proba(X_train))))
+print('Test log-loss: {:.5f}'.format(metric(y_test, model.predict_proba(X_test))))
 print('Best program:', model.program_str_)
 ```
 
 This gives the following output:
 
 ```
-Train log-loss: 0.21358
+Train log-loss: 0.17406
 Test log-loss: 0.22663
 Best program: mul(sum(0.6367560682942068, sub(sub(sum(X[6], -0.7835541178114207), sub(X[16], X[7])), sub(X[16], X[7]))), -26.966659691008655)
 ```
