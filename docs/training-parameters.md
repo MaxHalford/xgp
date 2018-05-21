@@ -1,31 +1,52 @@
 # Training parameters
 
-## Quick overview
+## Overview
 
-The following table gives an overview of all the parameters that can be used for training XGP. The defaults are the same regardless of the API. The values indicated for Go are the ones that can be passed to a `Config` struct.
+The following tables gives an overview of all the parameters that can be used for training XGP. The defaults are the same regardless of where you're using XGP from (please [open an issue](https://github.com/MaxHalford/xgp/issues/new) if you notice any descrepancies). The values indicated for Go are the ones that can be passed to a `Config` struct. For Python some parameters have to be passed in the `fit` method.
 
-| Name | CLI | Go | Python | Default |
-|------|-----|----|--------|---------|
+### Learning parameters
+
+| Name | CLI | Go | Python | Default value |
+|------|-----|----|--------|---------------|
+| Loss metric; is used to if the task is classification or regression | `loss` | `LossMetricName` | `loss_metric` | mae (for Python `XGPClassifier` defaults to logloss) |
+| Evaluation metric | `eval` | `EvalMetricName` | `eval_metric` (in `fit`) | Same as loss metric |
+| Parsimony coefficient | `parsimony` | `ParsimonyCoefficient` | `parsimony_coeff` | 0.00001 |
+
+Because XGP doesn't require the loss metric to be differentiable you can use any loss metric available. If you don't specify an evaluation metric then it will default to using the loss metric.
+
+### Function parameters
+
+| Name | CLI | Go | Python | Default value |
+|------|-----|----|--------|---------------|
+| Authorized functions | `funcs` | `Funcs` | `funcs` | sum,sub,mul,div |
 | Constant minimum | `const_min` | `ConstMin` | `const_min` | -5 |
 | Constant maximum | `const_max` | `ConstMax` | `const_max` | 5 |
-| Evaluation metric | `eval` | `EvalMetricName` | `eval_metric` (in `fit`) | mae |
-| Loss metric | `loss` | `LossMetricName` | `loss_metric` | Same as loss metric |
-| Authorized functions | `funcs` | `Funcs` | `funcs` | sum,sub,mul,div |
-| Minimum height | `min_height` | `MinHeight` | `min_height` | 3 |
-| Maximum height | `max_height` | `MaxHeight` | `max_height` | 5 |
-| Number of populations | `pops` | `NPopulations` | `n_populations` | 1 |
-| Number of individuals per population | `indis` | `NIndividuals` | `n_individuals` | 50 |
-| Number of generations | `gens` | `NGenerations` | `n_generations` | 30 |
-| Number of tuning generations | `polish_gens` | `NPolishGenerations` | `n_tuning_generations` | 0 |
 | Constant probability  | `p_const` | `PConstant` | `p_const` | 0.5 |
 | Full initialization probability  | `p_full` | `PFull` | `p_full` | 0.5 |
 | Terminal probability  | `p_terminal` | `PTerminal` | `p_terminal` | 0.3 |
+| Minimum height | `min_height` | `MinHeight` | `min_height` | 3 |
+| Maximum height | `max_height` | `MaxHeight` | `max_height` | 5 |
+
+These parameters are used to generate the initial set of programs. They will also be used to generate new programs for subtree mutation. XGP uses ramped half-and-half initialization; the full initialization probability determines the probability of using full initialization and consequently the probability of using grow initialization.
+
+### Genetic algorithm parameters
+
+| Name | CLI | Go | Python | Default value |
+|------|-----|----|--------|---------------|
+| Number of populations | `pops` | `NPopulations` | `n_populations` | 1 |
+| Number of individuals per population | `indis` | `NIndividuals` | `n_individuals` | 50 |
+| Number of generations | `gens` | `NGenerations` | `n_generations` | 30 |
+| Number of polish generations | `polish_gens` | `NPolishGenerations` | `n_tuning_generations` | 0 |
 | Hoist mutation probability | `p_hoist_mut` | `PHoistMutation` | `p_hoist_mutation` | 0.1 |
-| Sub-tree mutation probability | `p_sub_mut` | `PSubTreeMutation` | `p_sub_tree_mutation` | 0.1 |
+| Subtree mutation probability | `p_sub_mut` | `PSubtreeMutation` | `p_sub_tree_mutation` | 0.1 |
 | Point mutation probability | `p_point_mut` | `PPointMutation` | `p_point_mutation` | 0.1 |
 | Point mutation rate | `point_mut_rate` | `PointMutationRate` | `point_mutation_rate` | 0.3 |
-| Sub-tree crossover probability | `p_sub_cross` | `PSubTreeCrossover` | `p_sub_tree_crossover` | 0.5 |
-| Parsimony coefficient | `parsimony` | `ParsimonyCoefficient` | `parsimony_coeff` | 0 |
+| Subtree crossover probability | `p_sub_cross` | `PSubtreeCrossover` | `p_sub_tree_crossover` | 0.5 |
+
+### Other parameters
+
+| Name | CLI | Go | Python | Default value |
+|------|-----|----|--------|---------------|
 | Random number seed | `seed` | `Seed` | `seed` | Random |
 
 ## Loss metrics
@@ -54,14 +75,16 @@ The following table lists all the available operators. Regardless of from where 
 
 Code-wise the operators are all located in the `op` sub-package, of which the goal is to provide fast implementations for each operator. For the while the only accelerations that exist are the ones for the sum and the division which use assembly implementations made available by [gonum/floats](https://godoc.org/gonum.org/v1/gonum/floats).
 
-| Name | Arity | Short name | Go struct | Assembly code |
-|------|-------|------------|---------------|---------------|
-| Cosine | 1 | cos | `Cos` | ✗ |
-| Sine | 1 | sin | `Sin` | ✗ |
-| Exponential | 1 | exp | `Exp` | ✗ |
-| Maximum | 2 | max | `Max` | ✗ |
-| Minimum | 2 | min | `Min` | ✗ |
-| Sum | 2 | sum | `Sum` | ✔ |
-| Subtraction | 2 | sub | `Sub` | ✗ |
-| Division | 2 | div | `Div` | ✔ |
-| Multiplication | 2 | mul | `Mul` | ✗ |
+| Name | Arity | Short name | Go struct |
+|------|-------|------------|---------------|
+| Cosine | 1 | cos | `Cos` |
+| Sine | 1 | sin | `Sin` |
+| Exponential | 1 | exp | `Exp` |
+| Maximum | 2 | max | `Max` |
+| Minimum | 2 | min | `Min` |
+| Sum | 2 | sum | `Sum` |
+| Subtraction | 2 | sub | `Sub` |
+| Division | 2 | div | `Div` |
+| Multiplication | 2 | mul | `Mul` |
+
+Safe-division is used, meaning that if a denominator is 0 then the result will default to 1.

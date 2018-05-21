@@ -17,8 +17,9 @@ import (
 // A Config contains all the information needed to instantiate an Estimator.
 type Config struct {
 	// Learning parameters
-	LossMetric metrics.Metric
-	EvalMetric metrics.Metric
+	LossMetric     metrics.Metric
+	EvalMetric     metrics.Metric
+	ParsimonyCoeff float64
 	// Function parameters
 	Funcs     string
 	ConstMax  float64
@@ -34,12 +35,10 @@ type Config struct {
 	NGenerations       int
 	NPolishGenerations int
 	PHoistMutation     float64
-	PSubTreeMutation   float64
+	PSubtreeMutation   float64
 	PPointMutation     float64
 	PointMutationRate  float64
-	PSubTreeCrossover  float64
-	// Regularization parameters
-	ParsimonyCoeff float64
+	PSubtreeCrossover  float64
 	// Other
 	RNG *rand.Rand
 }
@@ -49,8 +48,9 @@ func (c Config) String() string {
 	var (
 		buffer     = new(bytes.Buffer)
 		parameters = [][]string{
-			[]string{"Evaluation metric", c.EvalMetric.String()},
 			[]string{"Loss metric", c.LossMetric.String()},
+			[]string{"Evaluation metric", c.EvalMetric.String()},
+			[]string{"Parsimony coefficient", strconv.FormatFloat(c.ParsimonyCoeff, 'g', -1, 64)},
 
 			[]string{"Functions", c.Funcs},
 			[]string{"Constant minimum", strconv.FormatFloat(c.ConstMin, 'g', -1, 64)},
@@ -66,12 +66,10 @@ func (c Config) String() string {
 			[]string{"Number of generations", strconv.Itoa(c.NGenerations)},
 			[]string{"Number of tuning generations", strconv.Itoa(c.NPolishGenerations)},
 			[]string{"Hoist mutation probability", strconv.FormatFloat(c.PHoistMutation, 'g', -1, 64)},
-			[]string{"Sub-tree mutation probability", strconv.FormatFloat(c.PSubTreeMutation, 'g', -1, 64)},
+			[]string{"Sub-tree mutation probability", strconv.FormatFloat(c.PSubtreeMutation, 'g', -1, 64)},
 			[]string{"Point mutation probability", strconv.FormatFloat(c.PPointMutation, 'g', -1, 64)},
 			[]string{"Point mutation rate", strconv.FormatFloat(c.PointMutationRate, 'g', -1, 64)},
-			[]string{"Sub-tree crossover probability", strconv.FormatFloat(c.PSubTreeCrossover, 'g', -1, 64)},
-
-			[]string{"Parsimony coefficient", strconv.FormatFloat(c.ParsimonyCoeff, 'g', -1, 64)},
+			[]string{"Sub-tree crossover probability", strconv.FormatFloat(c.PSubtreeCrossover, 'g', -1, 64)},
 		}
 	)
 	for _, param := range parameters {
@@ -123,8 +121,8 @@ func (c Config) NewEstimator() (*Estimator, error) {
 			selector: gago.SelTournament{
 				NContestants: 3,
 			},
-			pMutate:    c.PHoistMutation + c.PPointMutation + c.PSubTreeMutation,
-			pCrossover: c.PSubTreeCrossover,
+			pMutate:    c.PHoistMutation + c.PPointMutation + c.PSubtreeMutation,
+			pCrossover: c.PSubtreeCrossover,
 		},
 		RNG:          c.RNG,
 		ParallelEval: true,
@@ -143,7 +141,7 @@ func (c Config) NewEstimator() (*Estimator, error) {
 
 	// Set crossover methods
 
-	estimator.SubTreeCrossover = SubTreeCrossover{
+	estimator.SubtreeCrossover = SubtreeCrossover{
 		Picker: WeightedPicker{
 			Weighting: Weighting{
 				PConstant: 0.1, // MAGIC
@@ -176,8 +174,8 @@ func (c Config) NewEstimator() (*Estimator, error) {
 		},
 	}
 
-	estimator.SubTreeMutation = SubTreeMutation{
-		Crossover: SubTreeCrossover{
+	estimator.SubtreeMutation = SubtreeMutation{
+		Crossover: SubtreeCrossover{
 			Picker: WeightedPicker{
 				Weighting: Weighting{
 					PConstant: 0.1, // MAGIC
@@ -215,9 +213,9 @@ func NewConfigWithDefaults() Config {
 		NPolishGenerations: 0,
 		PHoistMutation:     0.1,
 		PPointMutation:     0.1,
-		PSubTreeMutation:   0.1,
+		PSubtreeMutation:   0.1,
 		PointMutationRate:  0.3,
-		PSubTreeCrossover:  0.5,
+		PSubtreeCrossover:  0.5,
 
 		ParsimonyCoeff: 0,
 	}

@@ -1,6 +1,6 @@
 package xgp
 
-// func TestSubTreeCrossover(t *testing.T) {
+// func TestSubtreeCrossover(t *testing.T) {
 // 	var (
 // 		rng    = newRand()
 // 		prog1  = randTree(rng)
@@ -13,7 +13,7 @@ package xgp
 // 	)
 // 	fmt.Println(prog1)
 // 	fmt.Println(prog2)
-// 	SubTreeCrossover{Picker: picker}.Apply(prog1, prog2, rng)
+// 	SubtreeCrossover{Picker: picker}.Apply(prog1, prog2, rng)
 // 	fmt.Println(prog1)
 // 	fmt.Println(prog2)
 // }

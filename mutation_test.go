@@ -28,8 +28,8 @@ func TestModification(t *testing.T) {
 				},
 			},
 			{
-				mutator: SubTreeMutation{
-					Crossover: SubTreeCrossover{
+				mutator: SubtreeMutation{
+					Crossover: SubtreeCrossover{
 						Picker: WeightedPicker{
 							Weighting: Weighting{
 								PConstant: 0.1,

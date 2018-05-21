@@ -2,7 +2,7 @@
 
 ## Installation
 
-Once you have [installed Go](https://golang.org/dl/), you can install xgp like any other Go package.
+Once you have [installed Go](https://golang.org/dl/), you can install XGO like any other Go package.
 
 ```sh
 go get github.com/MaxHalford/xgp
@@ -19,6 +19,7 @@ The core struct for learning in XGP is the `Estimator`. An `Estimator` encapsula
 ```go
 var config = NewConfigWithDefaults()
 
+config.LossMetric = metrics.Accuracy{}
 config.Individuals = 42
 config.Funcs = "cos,sin,exp"
 
@@ -41,14 +42,17 @@ func (est *Estimator) Fit(
     XVal [][]float64,
     YVal []float64,
     WVal []float64,
-    notifyEvery uint,
+    verbose bool
 ) error
 ```
 
-Just like the in CLI, the only required arguments to the `Estimator`'s `Fit` are a matrix of features `XTrain` and a list of targets `YTrain`. `WTrain` can be used to weight the samples in `XTrain` during program evaluation, this is particularly useful for higher-level learning algorithms such as [boosting](https://www.wikiwand.com/en/Boosting_(machine_learning)). One important thing to not is that `XTrain` and `XVal` should be **ordered column-wise**; that is `X[0]` should access the first column in the dataset, not the first row.
+Just like for the CLI, the only required arguments to the `Estimator`'s `Fit` method are a matrix of features `XTrain` and a list of targets `YTrain`. `WTrain` can be used to weight the samples in `XTrain` during program evaluation, which is particularly useful for higher-level learning algorithms such as [boosting](https://www.wikiwand.com/en/Boosting_(machine_learning)). One important thing to notice is that **`XTrain` and `XVal` should be ordered column-wise**; that is `X[0]` should access the first column in the dataset, not the first row.
 
 !!! warning
-    For the while XGP does not handle missing values.
+    For the while XGP does not handle categorical data. You should preemptively encode the categorical features in your dataset before feeding it to XGP. The recommended way is to use [label encoding](http://scikit-learn.org/stable/modules/preprocessing_targets.html#label-encoding) for ordinal data and [one-hot encoding](http://scikit-learn.org/stable/modules/preprocessing.html#encoding-categorical-features) for non-ordinal data.
+
+!!! warning
+    For the while xgp does not handle missing values.
 
 Like the `val_set` argument in the CLI, `XVal`, `YVal`, and `WVal` can be used to track the performance of the best program on out-of-bag data. `notifyEvery` can be used to indicate at what frequency (in terms of genetic algorithm generations) progress should be displayed.
 

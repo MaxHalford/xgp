@@ -18,6 +18,10 @@
   <a href="https://travis-ci.org/MaxHalford/xgp">
     <img src="https://img.shields.io/travis/MaxHalford/gago/master.svg?style=flat-square" alt="build_status" />
   </a>
+  <!-- Coverage status -->
+  <a href="https://coveralls.io/github/MaxHalford/xgp?branch=master">
+    <img src="https://coveralls.io/repos/github/MaxHalford/xgp/badge.svg?branch=master&style=flat-square" alt="coverage_status" />
+  </a>
   <!-- License -->
   <a href="https://opensource.org/licenses/MIT">
     <img src="http://img.shields.io/:license-mit-ff69b4.svg?style=flat-square" alt="license"/>

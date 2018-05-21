@@ -11,16 +11,15 @@ import (
 func (prog *Program) Evaluate() (float64, error) {
 	// Simplify the Program's Tree to avoid unnecessary computations
 	prog.Tree.Simplify()
+	// For convenience
+	est := prog.Estimator
 	// Run the training set through the Program
-	var yPred, err = prog.Predict(
-		prog.Estimator.XTrain,
-		prog.Task.LossMetric.NeedsProbabilities(),
-	)
+	var yPred, err = prog.Predict(est.XTrain, est.LossMetric.NeedsProbabilities())
 	if err != nil {
 		return math.Inf(1), err
 	}
 	// Use the Metric defined in the Estimator
-	fitness, err := prog.Task.LossMetric.Apply(prog.Estimator.YTrain, yPred, prog.Estimator.WTrain)
+	fitness, err := est.LossMetric.Apply(est.YTrain, yPred, est.WTrain)
 	if err != nil {
 		return math.Inf(1), err
 	}
@@ -28,8 +27,8 @@ func (prog *Program) Evaluate() (float64, error) {
 		return math.Inf(1), nil
 	}
 	// Apply the parsimony coefficient
-	if prog.Estimator.ParsimonyCoeff != 0 {
-		fitness += prog.Estimator.ParsimonyCoeff * float64(prog.Tree.Size())
+	if est.ParsimonyCoeff != 0 {
+		fitness += est.ParsimonyCoeff * float64(prog.Tree.Size())
 	}
 	return fitness, nil
 }
@@ -38,9 +37,9 @@ func (prog *Program) Evaluate() (float64, error) {
 func (prog *Program) Mutate(rng *rand.Rand) {
 	var (
 		pHoist   = prog.Estimator.PHoistMutation
-		pSubTree = prog.Estimator.PSubTreeMutation
+		pSubtree = prog.Estimator.PSubtreeMutation
 		pPoint   = prog.Estimator.PPointMutation
-		dice     = rng.Float64() * (pHoist + pSubTree + pPoint)
+		dice     = rng.Float64() * (pHoist + pSubtree + pPoint)
 	)
 	// Apply hoist mutation
 	if dice < pHoist {
@@ -48,8 +47,8 @@ func (prog *Program) Mutate(rng *rand.Rand) {
 		return
 	}
 	// Apply subtree mutation
-	if dice < pHoist+pSubTree {
-		prog.Estimator.SubTreeMutation.Apply(&prog.Tree, rng)
+	if dice < pHoist+pSubtree {
+		prog.Estimator.SubtreeMutation.Apply(&prog.Tree, rng)
 		return
 	}
 	// Apply point mutation
@@ -58,7 +57,7 @@ func (prog *Program) Mutate(rng *rand.Rand) {
 
 // Crossover is required to implement gago.Genome.
 func (prog *Program) Crossover(prog2 gago.Genome, rng *rand.Rand) {
-	prog.Estimator.SubTreeCrossover.Apply(&prog.Tree, &prog2.(*Program).Tree, rng)
+	prog.Estimator.SubtreeCrossover.Apply(&prog.Tree, &prog2.(*Program).Tree, rng)
 }
 
 // Clone is required to implement gago.Genome.

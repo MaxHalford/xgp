@@ -27,9 +27,9 @@ type Estimator struct {
 	GA               *gago.GA
 	TuningGA         *gago.GA
 	PointMutation    PointMutation
-	SubTreeMutation  SubTreeMutation
+	SubtreeMutation  SubtreeMutation
 	HoistMutation    HoistMutation
-	SubTreeCrossover SubTreeCrossover
+	SubtreeCrossover SubtreeCrossover
 
 	fm       map[int][]op.Operator
 	XTrain   [][]float64
@@ -140,7 +140,7 @@ func (est *Estimator) Fit(
 			for j, indi := range pop.Individuals {
 				var prog = indi.Genome.(*Program)
 				if prog.Tree.Height() < 2 { // MAGIC
-					est.SubTreeMutation.Apply(&prog.Tree, pop.RNG)
+					est.SubtreeMutation.Apply(&prog.Tree, pop.RNG)
 					est.GA.Populations[i].Individuals[j].Evaluate()
 				}
 			}
@@ -219,15 +219,8 @@ func (est Estimator) newTree(rng *rand.Rand) tree.Tree {
 // newProgram can be used by gago to produce a new Genome.
 func (est *Estimator) newProgram(rng *rand.Rand) gago.Genome {
 	var prog = Program{
-		Tree: est.newTree(rng),
-		Task: Task{
-			LossMetric: est.LossMetric,
-			NClasses:   est.nClasses,
-		},
+		Tree:      est.newTree(rng),
 		Estimator: est,
-	}
-	if prog.Task.multiClassification() {
-		prog.DRS = &DynamicRangeSelection{}
 	}
 	return &prog
 }

@@ -5,7 +5,6 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/MaxHalford/xgp/metrics"
 	"github.com/MaxHalford/xgp/op"
 	"github.com/MaxHalford/xgp/tree"
 )
@@ -52,13 +51,8 @@ func TestPredict(t *testing.T) {
 				[]float64{1, 2},
 				[]float64{1, 3},
 			},
-			program: Program{
-				Tree: tree.MustParseCode("sum(X[0], X[1])"),
-				Task: Task{
-					LossMetric: metrics.MeanAbsoluteError{},
-				},
-			},
-			y: []float64{2, 3, 4},
+			program: Program{Tree: tree.MustParseCode("sum(X[0], X[1])")},
+			y:       []float64{2, 3, 4},
 		},
 	}
 

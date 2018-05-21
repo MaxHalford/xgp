@@ -50,15 +50,15 @@ func (mut HoistMutation) Apply(tr *tree.Tree, rng *rand.Rand) {
 	*sub = *subsub
 }
 
-// SubTreeMutation selects a sub-Tree at random and replaces with a new Tree.
+// SubtreeMutation selects a sub-Tree at random and replaces it with a new Tree.
 // The new Tree has at most the same height as the selected sub-Tree.
-type SubTreeMutation struct {
+type SubtreeMutation struct {
 	NewTree   func(rng *rand.Rand) tree.Tree
 	Crossover Crossover
 }
 
-// Apply SubTreeMutation.
-func (mut SubTreeMutation) Apply(tr *tree.Tree, rng *rand.Rand) {
+// Apply SubtreeMutation.
+func (mut SubtreeMutation) Apply(tr *tree.Tree, rng *rand.Rand) {
 	var mutant = mut.NewTree(rng)
 	mut.Crossover.Apply(tr, &mutant, rng)
 }

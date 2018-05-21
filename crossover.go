@@ -11,13 +11,13 @@ type Crossover interface {
 	Apply(tree1, tree2 *tree.Tree, rng *rand.Rand)
 }
 
-// SubTreeCrossover applies subtree crossover to two Tree.
-type SubTreeCrossover struct {
+// SubtreeCrossover applies subtree crossover to two Tree.
+type SubtreeCrossover struct {
 	Picker Picker
 }
 
-// Apply SubTreeCrossover.
-func (cross SubTreeCrossover) Apply(tree1, tree2 *tree.Tree, rng *rand.Rand) {
+// Apply SubtreeCrossover.
+func (cross SubtreeCrossover) Apply(tree1, tree2 *tree.Tree, rng *rand.Rand) {
 	var (
 		subTree1 = cross.Picker.Apply(tree1, 0, tree1.Height()-1, rng)
 		subTree2 = cross.Picker.Apply(tree2, 0, tree2.Height(), rng)

@@ -19,6 +19,7 @@ var (
 	// Learning parameters
 	fitLossMetricName string
 	fitEvalMetricName string
+	fitParsimonyCoeff float64
 
 	// Function parameters
 	fitFuncs     string
@@ -36,13 +37,10 @@ var (
 	fitNGenerations       int
 	fitNPolishGenerations int
 	fitPHoistMutation     float64
+	fitPSubtreeMutation   float64
 	fitPPointMutation     float64
-	fitPSubTreeMutation   float64
 	fitPointMutationRate  float64
-	fitPSubTreeCrossover  float64
-
-	// Regularization parameters
-	fitParsimonyCoeff float64
+	fitPSubtreeCrossover  float64
 
 	// Other
 	fitSeed int64
@@ -68,6 +66,7 @@ func init() {
 
 	fitCmd.Flags().StringVarP(&fitLossMetricName, "loss", "", "mae", "metric used for scoring program; determines the task to perform")
 	fitCmd.Flags().StringVarP(&fitEvalMetricName, "eval", "", "", "metric used for monitoring progress; defaults to loss_metric if not provided")
+	fitCmd.Flags().Float64VarP(&fitParsimonyCoeff, "parsimony", "", 0.00001, "parsimony coefficient by which a program's height is multiplied to decrease it's fitness")
 
 	fitCmd.Flags().StringVarP(&fitFuncs, "funcs", "", "sum,sub,mul,div", "comma-separated set of authorised functions")
 	fitCmd.Flags().Float64VarP(&fitConstMin, "const_min", "", -5, "lower bound used for generating random constants")
@@ -83,12 +82,10 @@ func init() {
 	fitCmd.Flags().IntVarP(&fitNGenerations, "gens", "", 30, "number of generations used in the GA")
 	fitCmd.Flags().IntVarP(&fitNPolishGenerations, "polish_gens", "", 0, "number of generations used to polish the best program")
 	fitCmd.Flags().Float64VarP(&fitPHoistMutation, "p_hoist_mut", "", 0.1, "probability of applying hoist mutation")
-	fitCmd.Flags().Float64VarP(&fitPSubTreeMutation, "p_sub_mut", "", 0.1, "probability of applying subtree mutation")
+	fitCmd.Flags().Float64VarP(&fitPSubtreeMutation, "p_sub_mut", "", 0.1, "probability of applying subtree mutation")
 	fitCmd.Flags().Float64VarP(&fitPPointMutation, "p_point_mut", "", 0.1, "probability of applying point mutation")
 	fitCmd.Flags().Float64VarP(&fitPointMutationRate, "point_mut_rate", "", 0.3, "probability of modifying an operator during point mutation")
-	fitCmd.Flags().Float64VarP(&fitPSubTreeCrossover, "p_sub_cross", "", 0.5, "probability of applying subtree crossover")
-
-	fitCmd.Flags().Float64VarP(&fitParsimonyCoeff, "parsimony", "", 0.00001, "parsimony coefficient by which a program's height is multiplied to decrease it's fitness")
+	fitCmd.Flags().Float64VarP(&fitPSubtreeCrossover, "p_sub_cross", "", 0.5, "probability of applying subtree crossover")
 
 	fitCmd.Flags().Int64VarP(&fitSeed, "seed", "", 0, "seed for random number generation")
 
@@ -160,10 +157,10 @@ var fitCmd = &cobra.Command{
 
 			PHoistMutation:    fitPHoistMutation,
 			PPointMutation:    fitPPointMutation,
-			PSubTreeMutation:  fitPSubTreeMutation,
+			PSubtreeMutation:  fitPSubtreeMutation,
 			PointMutationRate: fitPointMutationRate,
 
-			PSubTreeCrossover: fitPSubTreeCrossover,
+			PSubtreeCrossover: fitPSubtreeCrossover,
 
 			ParsimonyCoeff: fitParsimonyCoeff,
 
