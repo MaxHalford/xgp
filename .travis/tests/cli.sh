@@ -14,8 +14,9 @@ if [[ ! -f miniconda.sh ]]
             wget -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
         fi
     fi
-chmod +x miniconda.sh && ./miniconda.sh -b --yes
+chmod +x miniconda.sh && ./miniconda.sh -b
 cd ..
+export PATH=/home/travis/miniconda3/bin:$PATH
 pip install scipy pandas scikit-learn
 
 # Naviguate to the CLI root directory
