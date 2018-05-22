@@ -1,6 +1,9 @@
 #!/bin/bash
 
-cd
+dir
+ls
+
+# Install Miniconda
 mkdir -p download
 cd download
 echo "Cached in $HOME/download :"
@@ -15,12 +18,13 @@ if [[ ! -f miniconda.sh ]]
         fi
     fi
 chmod +x miniconda.sh && ./miniconda.sh -b
-export PATH=$HOME/travis/miniconda3/bin:$PATH
+export PATH=/home/travis/miniconda3/bin:$PATH
 pip install scipy pandas scikit-learn
-cd ../..
+cd ..
+
+ls
 
 # Naviguate to the CLI root directory
-ls
 cd xgp/cmd/xgp
 
 # Boston bagging
