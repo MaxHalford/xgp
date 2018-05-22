@@ -15,12 +15,13 @@ if [[ ! -f miniconda.sh ]]
         fi
     fi
 chmod +x miniconda.sh && ./miniconda.sh -b
-cd ..
 export PATH=/home/travis/miniconda3/bin:$PATH
 pip install scipy pandas scikit-learn
+cd ..
 
 # Naviguate to the CLI root directory
-cd cmd/xgp
+ls
+cd xgp/cmd/xgp
 
 # Boston bagging
 python examples/boston/create_datasets.py
