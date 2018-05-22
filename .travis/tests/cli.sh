@@ -1,8 +1,5 @@
 #!/bin/bash
 
-dir
-ls
-
 # Install Miniconda
 mkdir -p download
 cd download
@@ -22,10 +19,8 @@ export PATH=/home/travis/miniconda3/bin:$PATH
 pip install scipy pandas scikit-learn
 cd ..
 
-ls
-
 # Naviguate to the CLI root directory
-cd xgp/cmd/xgp
+cd cmd/xgp
 
 # Boston bagging
 python examples/boston/create_datasets.py
