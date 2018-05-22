@@ -1,19 +1,30 @@
 #!/bin/bash
 
-# Install the Python dependencies needed to generate the datasets
+# Deactivate the travis-provided Python virtual environment
+deactivate
+
+pushd .
+cd
+mkdir -p download
+cd download
+echo "Cached in $HOME/download :"
+ls -l
+echo
 if [[ ! -f miniconda.sh ]]
-    if [ ${TRAVIS_OS_NAME} == "osx" ]; then
-        wget -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
-    else
-        wget -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+    then
+        if [ ${TRAVIS_OS_NAME} == "osx" ]; then
+            wget -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
+        else
+            wget -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+        fi
     fi
-fi
-bash miniconda.sh -b -p $HOME/miniconda
-export PATH="$HOME/miniconda/bin:$PATH"
-hash -r
-conda config --set always_yes yes --set changeps1 no
-conda update -q conda
-pip install scipy pandas scikit-learn
+chmod +x miniconda.sh && ./miniconda.sh -b
+cd ..
+export PATH=/home/travis/miniconda/bin:$PATH
+conda update --yes conda
+conda create -n testenv --yes python=3.5 scipy pandas scikit-learn
+source activate testenv
+popd
 
 # Naviguate to the CLI root directory
 cd cmd/xgp
