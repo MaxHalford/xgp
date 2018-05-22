@@ -54,7 +54,7 @@ This gives the following output:
 ```
 Train log-loss: 0.217573
 Test log-loss: 0.191963
-Best program: mul(sum(0.6367560682942068, sub(sub(sum(X[6], -0.7835541178114207), sub(X[16], X[7])), sub(X[16], X[7]))), -26.966659691008655)
+Best program: sum(mul(X[0], mul(-4.774751043817239, X[7])), 3.8762056339039415)
 ```
 
 The full list of parameters is available in the [training parameters section](training-parameters.md).
