@@ -1,6 +1,8 @@
 language: go
 
 go:
+  - 1.9
+  - 1.10
   - tip
 
 sudo: required
@@ -9,9 +11,10 @@ os:
   - linux
 
 cache:
+  apt: true
   directories:
-    - ${HOME}/.cache/usr
     - ${HOME}/.cache/pip
+    - ${HOME}/download
 
 before_install:
   - chmod +x .travis/tests/*.sh
