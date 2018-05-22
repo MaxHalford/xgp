@@ -18,13 +18,13 @@ jobs:
   include:
     - stage: Core
       script: .travis/tests/core.sh
-      go: "1.9"
+      go: "1.9.6"
     - stage: Core
       script: .travis/tests/core.sh
       go: "1.10"
     - stage: CLI
       script: .travis/tests/cli.sh
-      go: "1.9"
+      go: "1.9.6"
     - stage: CLI
       script: .travis/tests/cli.sh
       go: "1.10"
