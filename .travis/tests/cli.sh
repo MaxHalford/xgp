@@ -15,9 +15,9 @@ if [[ ! -f miniconda.sh ]]
         fi
     fi
 chmod +x miniconda.sh && ./miniconda.sh -b
-export PATH=/home/travis/miniconda3/bin:$PATH
+export PATH=$HOME/travis/miniconda3/bin:$PATH
 pip install scipy pandas scikit-learn
-cd ..
+cd ../..
 
 # Naviguate to the CLI root directory
 ls
