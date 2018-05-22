@@ -32,7 +32,7 @@ jobs:
       script: .travis/make_documentation.sh
       deploy:
         provider: pages
-        github_token: $GITHUB_TOKEN
+        github_token: ${GITHUB_TOKEN}
         skip_cleanup: true
         local_dir: site
         on:

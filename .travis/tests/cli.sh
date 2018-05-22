@@ -1,9 +1,5 @@
 #!/bin/bash
 
-# Deactivate the travis-provided Python virtual environment
-deactivate
-
-pushd .
 cd
 mkdir -p download
 cd download
@@ -18,13 +14,9 @@ if [[ ! -f miniconda.sh ]]
             wget -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
         fi
     fi
-chmod +x miniconda.sh && ./miniconda.sh -b
+chmod +x miniconda.sh && ./miniconda.sh -b --yes
 cd ..
-export PATH=/home/travis/miniconda/bin:$PATH
-conda update --yes conda
-conda create -n testenv --yes python=3.5 scipy pandas scikit-learn
-source activate testenv
-popd
+pip install scipy pandas scikit-learn
 
 # Naviguate to the CLI root directory
 cd cmd/xgp
