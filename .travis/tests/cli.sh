@@ -1,6 +1,18 @@
 #!/bin/bash
 
 # Install the Python dependencies needed to generate the datasets
+if [[ ! -f miniconda.sh ]]
+    if [ ${TRAVIS_OS_NAME} == "osx" ]; then
+        wget -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
+    else
+        wget -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+    fi
+fi
+bash miniconda.sh -b -p $HOME/miniconda
+export PATH="$HOME/miniconda/bin:$PATH"
+hash -r
+conda config --set always_yes yes --set changeps1 no
+conda update -q conda
 pip install scipy pandas scikit-learn
 
 # Naviguate to the CLI root directory
