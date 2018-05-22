@@ -18,16 +18,16 @@ jobs:
   include:
     - stage: Core
       script: .travis/tests/core.sh
-      go: "1.9.6"
+      go: "1.10"
     - stage: Core
       script: .travis/tests/core.sh
-      go: "1.10"
-    - stage: CLI
-      script: .travis/tests/cli.sh
-      go: "1.9.6"
+      go: "tip"
     - stage: CLI
       script: .travis/tests/cli.sh
       go: "1.10"
+    - stage: CLI
+      script: .travis/tests/cli.sh
+      go: "tip"
     - stage: Documentation
       script: .travis/make_documentation.sh
       deploy:
