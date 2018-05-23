@@ -75,10 +75,10 @@ func (displayer GraphvizDisplay) Apply(tr Tree) string {
 	)
 	disp = func(tr *Tree, str string) string {
 		var idx = counter
-		str += fmt.Sprintf("\t%d [label=\"%s\"];\n", idx, tr.Op.String())
+		str += fmt.Sprintf("  %d [label=\"%s\"];\n", idx, tr.Op.String())
 		for _, branch := range tr.Branches {
 			counter++
-			str += fmt.Sprintf("\t%d -> %d;\n", idx, counter)
+			str += fmt.Sprintf("  %d -> %d;\n", idx, counter)
 			str = disp(branch, str)
 		}
 		return str

@@ -11,7 +11,8 @@ func ExampleConfig() {
 		fmt.Println(err)
 	}
 	fmt.Println(est)
-	// Output: Loss metric: mse
+	// Output:
+	// Loss metric: mse
 	// Evaluation metric: mse
 	// Parsimony coefficient: 0
 	// Functions: sum,sub,mul,div

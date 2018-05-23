@@ -54,6 +54,46 @@ func TestTreeSize(t *testing.T) {
 	}
 }
 
+func TestNConstants(t *testing.T) {
+	var testCases = []struct {
+		tr Tree
+		n  int
+	}{
+		{
+			tr: MustParseCode("sum(1, 2)"),
+			n:  2,
+		},
+		{
+			tr: MustParseCode("sum(1, X[2])"),
+			n:  1,
+		},
+		{
+			tr: MustParseCode("sum(X[1], X[2])"),
+			n:  0,
+		},
+		{
+			tr: MustParseCode("42"),
+			n:  1,
+		},
+		{
+			tr: MustParseCode("X[1]"),
+			n:  0,
+		},
+		{
+			tr: MustParseCode("sum"),
+			n:  0,
+		},
+	}
+	for i, tc := range testCases {
+		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
+			var n = tc.tr.NConstants()
+			if n != tc.n {
+				t.Errorf("Expected %d, got %d", tc.n, n)
+			}
+		})
+	}
+}
+
 func TestTreeSimplify(t *testing.T) {
 	var testCases = []struct {
 		tr             Tree
@@ -78,6 +118,14 @@ func TestTreeSimplify(t *testing.T) {
 		{
 			tr:             MustParseCode("sum(sum(1, 2), sum(3, 4))"),
 			simplifiedTree: MustParseCode("10"),
+		},
+		{
+			tr:             MustParseCode("sum(sum(1, sum(X[0], X[1])), sum(3, 4))"),
+			simplifiedTree: MustParseCode("sum(sum(1, sum(X[0], X[1])), 7)"),
+		},
+		{
+			tr:             MustParseCode("sum(X[0], X[1])"),
+			simplifiedTree: MustParseCode("sum(X[0], X[1])"),
 		},
 	}
 	for i, tc := range testCases {
@@ -107,4 +155,35 @@ func TestTreeMarshalJSON(t *testing.T) {
 	if tr2.String() != tr.String() {
 		t.Errorf("Expected %v, got %v", tr.String(), tr2.String())
 	}
+}
+
+func ExampleEvalRowDebug() {
+	var tree = MustParseCode("sum(sum(X[0], X[1]), sum(3, 4))")
+	tree.EvalRowDebug([]float64{2, 3}, DirDisplay{TabSize: 2})
+	// Output:
+	// Step 0
+	// sum
+	//   sum
+	//     4
+	//     3
+	//   sum
+	//     X[1]
+	//     X[0]
+	//
+	// Step 1
+	// sum
+	//   sum
+	//     4
+	//     3
+	//   sum
+	//     3
+	//     2
+	//
+	// Step 2
+	// sum
+	//   7
+	//   5
+	//
+	// Step 3
+	// 12
 }
