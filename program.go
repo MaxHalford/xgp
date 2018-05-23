@@ -29,17 +29,42 @@ func (prog Program) clone() Program {
 	}
 }
 
+// Classification determines if the Program has to perform classification or
+// not.
+func (prog Program) classification() bool {
+	if prog.Estimator != nil {
+		if prog.Estimator.LossMetric != nil {
+			return prog.Estimator.LossMetric.Classification()
+		}
+	}
+	return false
+}
+
+// Sigmoid applies the sigmoid transform.
+func sigmoid(y float64) float64 {
+	return 1 / (1 + math.Exp(-y))
+}
+
+// Binary converts a float64 to 0 or 1.
+func binary(y float64) float64 {
+	if y > 0.5 {
+		return 1
+	}
+	return 0
+}
+
 // Predict predicts the output of a slice of features.
-func (prog Program) Predict(X [][]float64, predictProba bool) ([]float64, error) {
+func (prog Program) Predict(X [][]float64, proba bool) ([]float64, error) {
 	// Make predictions
 	yPred := prog.Tree.Eval(X)
 	// Check the predictions don't contain any NaNs
 	if floats.HasNaN(yPred) {
 		return nil, errors.New("yPred contains NaNs")
 	}
-	// Binary classification
-	if prog.Estimator != nil && prog.Estimator.LossMetric.Classification() {
-		if predictProba {
+	// Classification
+	if prog.classification() {
+		// Binary classification with probabilities
+		if proba {
 			for i, y := range yPred {
 				yPred[i] = sigmoid(y)
 			}
@@ -55,18 +80,20 @@ func (prog Program) Predict(X [][]float64, predictProba bool) ([]float64, error)
 }
 
 // PredictPartial predicts the output of a slice of features.
-func (prog Program) PredictPartial(x []float64, predictProba bool) (float64, error) {
+func (prog Program) PredictPartial(x []float64, proba bool) (float64, error) {
 	// Make predictions
 	yPred := prog.Tree.EvalRow(x)
 	// Check the predictions don't contain any NaNs
 	if math.IsNaN(yPred) {
 		return -1, errors.New("yPred is NaN")
 	}
-	// Binary classification
-	if prog.Estimator.LossMetric.Classification() {
-		if predictProba {
+	// Classification
+	if prog.classification() {
+		// Binary classification with probabilities
+		if proba {
 			return sigmoid(yPred), nil
 		}
+		// Binary classification
 		return binary(yPred), nil
 	}
 	// Regression
@@ -85,19 +112,19 @@ func (prog *Program) MarshalJSON() ([]byte, error) {
 }
 
 // UnmarshalJSON parses a Program.
-func (prog *Program) UnmarshalJSON(data []byte) error {
-	tmp := &struct {
+func (prog *Program) UnmarshalJSON(bytes []byte) error {
+	var serial = &struct {
 		Tree       tree.Tree `json:"tree"`
 		LossMetric string    `json:"loss_metric"`
 	}{}
-	if err := json.Unmarshal(data, &tmp); err != nil {
+	if err := json.Unmarshal(bytes, &serial); err != nil {
 		return err
 	}
-	lm, err := metrics.GetMetric(tmp.LossMetric, 1)
+	loss, err := metrics.ParseMetric(serial.LossMetric, 1)
 	if err != nil {
 		return err
 	}
-	prog.Tree = tmp.Tree
-	prog.Estimator = &Estimator{LossMetric: lm}
+	prog.Tree = serial.Tree
+	prog.Estimator = &Estimator{LossMetric: loss}
 	return nil
 }

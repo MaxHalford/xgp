@@ -4,86 +4,107 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+
+	"github.com/MaxHalford/xgp/op"
 )
 
 func TestTreeHeight(t *testing.T) {
-	// Initial tree has no branches and thus has a height of 0
-	var tree = Tree{}
-	if tree.Height() != 0 {
-		t.Errorf("Wrong height, expected %d got %d", 0, tree.Height())
+	// Initial tr has no branches and thus has a height of 0
+	var tr = Tree{}
+	if tr.Height() != 0 {
+		t.Errorf("Wrong height, expected %d got %d", 0, tr.Height())
 	}
 	// Add a branch
-	tree.branches = []*Tree{&Tree{}}
-	if tree.Height() != 1 {
-		t.Errorf("Wrong height, expected %d got %d", 1, tree.Height())
+	tr.Branches = []*Tree{&Tree{}}
+	if tr.Height() != 1 {
+		t.Errorf("Wrong height, expected %d got %d", 1, tr.Height())
 	}
 	// Add another branch
-	tree.branches = append(tree.branches, &Tree{})
-	if tree.Height() != 1 {
-		t.Errorf("Wrong height, expected %d got %d", 1, tree.Height())
+	tr.Branches = append(tr.Branches, &Tree{})
+	if tr.Height() != 1 {
+		t.Errorf("Wrong height, expected %d got %d", 1, tr.Height())
 	}
 	// Add a sub-branch to the first branch
-	tree.branches[0].branches = []*Tree{&Tree{}}
-	if tree.Height() != 2 {
-		t.Errorf("Wrong height, expected %d got %d", 2, tree.Height())
+	tr.Branches[0].Branches = []*Tree{&Tree{}}
+	if tr.Height() != 2 {
+		t.Errorf("Wrong height, expected %d got %d", 2, tr.Height())
 	}
 }
 
 func TestTreeSize(t *testing.T) {
-	// Initial tree only has a root and thus has a single operator
-	var tree = &Tree{}
-	if tree.Size() != 1 {
-		t.Errorf("Expected %d got %d", 1, tree.Size())
+	// Initial tr only has a root and thus has a single operator
+	var tr = &Tree{}
+	if tr.Size() != 1 {
+		t.Errorf("Expected %d got %d", 1, tr.Size())
 	}
 	// Add a branch
-	tree.branches = []*Tree{&Tree{}}
-	if tree.Size() != 2 {
-		t.Errorf("Expected %d got %d", 2, tree.Size())
+	tr.Branches = []*Tree{&Tree{}}
+	if tr.Size() != 2 {
+		t.Errorf("Expected %d got %d", 2, tr.Size())
 	}
 	// Add a branch child
-	tree.branches = append(tree.branches, &Tree{})
-	if tree.Size() != 3 {
-		t.Errorf("Expected %d got %d", 3, tree.Size())
+	tr.Branches = append(tr.Branches, &Tree{})
+	if tr.Size() != 3 {
+		t.Errorf("Expected %d got %d", 3, tr.Size())
 	}
 	// Add a sub-branch to the first branch
-	tree.branches[0].branches = []*Tree{&Tree{}}
-	if tree.Size() != 4 {
-		t.Errorf("Expected %d got %d", 4, tree.Size())
+	tr.Branches[0].Branches = []*Tree{&Tree{}}
+	if tr.Size() != 4 {
+		t.Errorf("Expected %d got %d", 4, tr.Size())
 	}
 }
 
 func TestTreeSimplify(t *testing.T) {
 	var testCases = []struct {
-		tree           Tree
+		tr             Tree
 		simplifiedTree Tree
 	}{
 		{
-			tree:           MustParseCode("sum(1, 2)"),
+			tr:             MustParseCode("sum(1, 2)"),
 			simplifiedTree: MustParseCode("3"),
 		},
 		{
-			tree:           MustParseCode("sum(X[0], 2)"),
+			tr:             MustParseCode("sum(X[0], 2)"),
 			simplifiedTree: MustParseCode("sum(X[0], 2)"),
 		},
 		{
-			tree:           MustParseCode("sub(X[0], X[0])"),
+			tr:             MustParseCode("sub(X[0], X[0])"),
 			simplifiedTree: MustParseCode("0"),
 		},
 		{
-			tree:           MustParseCode("div(X[0], X[0])"),
+			tr:             MustParseCode("div(X[0], X[0])"),
 			simplifiedTree: MustParseCode("1"),
 		},
 		{
-			tree:           MustParseCode("sum(sum(1, 2), sum(3, 4))"),
+			tr:             MustParseCode("sum(sum(1, 2), sum(3, 4))"),
 			simplifiedTree: MustParseCode("10"),
 		},
 	}
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
-			tc.tree.Simplify()
-			if !reflect.DeepEqual(tc.tree, tc.simplifiedTree) {
-				t.Errorf("Expected %v, got %v", tc.simplifiedTree, tc.tree)
+			tc.tr.Simplify()
+			if !reflect.DeepEqual(tc.tr, tc.simplifiedTree) {
+				t.Errorf("Expected %v, got %v", tc.simplifiedTree, tc.tr)
 			}
 		})
+	}
+}
+
+func TestTreeMarshalJSON(t *testing.T) {
+	var tr = Tree{
+		Op: op.Sum{},
+		Branches: []*Tree{
+			&Tree{Op: op.Variable{0}},
+			&Tree{Op: op.Constant{42}},
+		},
+	}
+	var bytes, err = tr.MarshalJSON()
+	if err != nil {
+		t.Errorf("Expected nil, got %v", err)
+	}
+	var tr2 = &Tree{}
+	err = tr2.UnmarshalJSON(bytes)
+	if tr2.String() != tr.String() {
+		t.Errorf("Expected %v, got %v", tr.String(), tr2.String())
 	}
 }

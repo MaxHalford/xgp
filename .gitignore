@@ -12,3 +12,4 @@ xgp.egg-info/
 *.test
 .cache
 *.svg
+profile_cpu.out

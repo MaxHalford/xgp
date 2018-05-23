@@ -119,7 +119,7 @@ var fitCmd = &cobra.Command{
 		}
 
 		// Determine the loss metric
-		lossMetric, err := metrics.GetMetric(fitLossMetricName, 1)
+		lossMetric, err := metrics.ParseMetric(fitLossMetricName, 1)
 		if err != nil {
 			return err
 		}
@@ -128,7 +128,7 @@ var fitCmd = &cobra.Command{
 		if fitEvalMetricName == "" {
 			fitEvalMetricName = fitLossMetricName
 		}
-		evalMetric, err := metrics.GetMetric(fitEvalMetricName, 1)
+		evalMetric, err := metrics.ParseMetric(fitEvalMetricName, 1)
 		if err != nil {
 			return err
 		}

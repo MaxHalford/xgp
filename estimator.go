@@ -25,7 +25,7 @@ type Estimator struct {
 	Functions        []op.Operator
 	Initializer      Initializer
 	GA               *gago.GA
-	TuningGA         *gago.GA
+	PolishGA         *gago.GA
 	PointMutation    PointMutation
 	SubtreeMutation  SubtreeMutation
 	HoistMutation    HoistMutation
@@ -225,12 +225,12 @@ func (est *Estimator) newProgram(rng *rand.Rand) gago.Genome {
 	return &prog
 }
 
-// newProgramTuner can be used by gago to produce a new Genome.
-func (est *Estimator) newProgramTuner(rng *rand.Rand) gago.Genome {
+// newProgramPolish can be used by gago to produce a new Genome.
+func (est *Estimator) newProgramPolish(rng *rand.Rand) gago.Genome {
 	var (
-		bestProg  = est.GA.HallOfFame[0].Genome.(*Program)
-		progTuner = newProgramTuner(*bestProg)
+		bestProg   = est.GA.HallOfFame[0].Genome.(*Program)
+		progPolish = newProgramPolish(*bestProg)
 	)
-	progTuner.jitterConstants(rng)
-	return &progTuner
+	progPolish.jitterConstants(rng)
+	return &progPolish
 }

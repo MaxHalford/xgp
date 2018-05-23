@@ -22,11 +22,11 @@ func randFloat64(min, max float64, rng *rand.Rand) float64 {
 }
 
 // countDistinct returns the number of unique elements in a slice of float64s.
-func countDistinct(X []float64) int {
+func countDistinct(x []float64) int {
 	var seen = make(map[float64]bool)
-	for _, x := range X {
-		if _, ok := seen[x]; !ok {
-			seen[x] = true
+	for _, xi := range x {
+		if _, ok := seen[xi]; !ok {
+			seen[xi] = true
 		}
 	}
 	return len(seen)

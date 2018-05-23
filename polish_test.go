@@ -11,15 +11,15 @@ func TestSetProgConstants(t *testing.T) {
 		prog = Program{
 			Tree: tree.MustParseCode("sum(0, 1)"),
 		}
-		progTuner = newProgramTuner(prog)
+		progPolish = newProgramPolish(prog)
 	)
 	// Set new Constants
-	for i, c := range progTuner.ConstValues {
-		progTuner.ConstValues[i] = c + 1
+	for i, c := range progPolish.ConstValues {
+		progPolish.ConstValues[i] = c + 1
 	}
-	progTuner.setProgConstants()
+	progPolish.setProgConstants()
 	var expected = tree.MustParseCode("sum(1, 2)")
-	if progTuner.Program.Tree.String() != expected.String() {
-		t.Errorf("Expected %v, got %v", expected, progTuner.Program.Tree)
+	if progPolish.Program.Tree.String() != expected.String() {
+		t.Errorf("Expected %v, got %v", expected, progPolish.Program.Tree)
 	}
 }

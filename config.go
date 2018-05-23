@@ -66,10 +66,10 @@ func (c Config) String() string {
 			[]string{"Number of generations", strconv.Itoa(c.NGenerations)},
 			[]string{"Number of tuning generations", strconv.Itoa(c.NPolishGenerations)},
 			[]string{"Hoist mutation probability", strconv.FormatFloat(c.PHoistMutation, 'g', -1, 64)},
-			[]string{"Sub-tree mutation probability", strconv.FormatFloat(c.PSubtreeMutation, 'g', -1, 64)},
+			[]string{"Subtree mutation probability", strconv.FormatFloat(c.PSubtreeMutation, 'g', -1, 64)},
 			[]string{"Point mutation probability", strconv.FormatFloat(c.PPointMutation, 'g', -1, 64)},
 			[]string{"Point mutation rate", strconv.FormatFloat(c.PointMutationRate, 'g', -1, 64)},
-			[]string{"Sub-tree crossover probability", strconv.FormatFloat(c.PSubtreeCrossover, 'g', -1, 64)},
+			[]string{"Subtree crossover probability", strconv.FormatFloat(c.PSubtreeCrossover, 'g', -1, 64)},
 		}
 	)
 	for _, param := range parameters {
@@ -92,7 +92,7 @@ func (c Config) NewEstimator() (*Estimator, error) {
 	}
 
 	// Determine the functions to use
-	functions, err := op.ParseStringFuncs(c.Funcs)
+	functions, err := op.ParseFuncs(c.Funcs, ",")
 	if err != nil {
 		return nil, err
 	}
@@ -208,7 +208,7 @@ func NewConfigWithDefaults() Config {
 		PTerminal: 0.3,
 
 		NPopulations:       1,
-		NIndividuals:       50,
+		NIndividuals:       100,
 		NGenerations:       30,
 		NPolishGenerations: 0,
 		PHoistMutation:     0.1,

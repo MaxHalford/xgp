@@ -4,17 +4,37 @@ import (
 	"math/rand"
 	"sort"
 
+	"github.com/MaxHalford/xgp/op"
 	"github.com/MaxHalford/xgp/tree"
 	"gonum.org/v1/gonum/floats"
 )
 
-// A Picker picks a sub-Tree from a Tree. The sub-Tree can be forced to have
+// A Weighting is a convenience structure for assigning weights to Operators
+// for selection purposes.
+type Weighting struct {
+	PConstant float64
+	PVariable float64
+	PFunction float64
+}
+
+func (w Weighting) apply(operator op.Operator) float64 {
+	switch operator.(type) {
+	case op.Constant:
+		return w.PConstant
+	case op.Variable:
+		return w.PVariable
+	default:
+		return w.PFunction
+	}
+}
+
+// A Picker picks a subtree from a Tree. The subtree can be forced to have
 // a height in range [minHeight, maxHeight].
 type Picker interface {
 	Apply(tree *tree.Tree, minHeight, maxHeight int, rng *rand.Rand) *tree.Tree
 }
 
-// WeightedPicker picks a sub-Tree at random by weighting each sub-Tree
+// WeightedPicker picks a subtree at random by weighting each subtree
 // according to it's Operator's type.
 type WeightedPicker struct {
 	Weighting Weighting
@@ -35,7 +55,7 @@ func (wp WeightedPicker) Apply(tr *tree.Tree, minHeight, maxHeight int, rng *ran
 			if h < minHeight || h > maxHeight {
 				w = 0
 			} else {
-				w = wp.Weighting.apply(tr.Operator())
+				w = wp.Weighting.apply(tr.Op)
 			}
 			weights = append(weights, w)
 			trees = append(trees, tr)

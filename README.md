@@ -30,9 +30,7 @@
 
 <br/>
 
-:warning: xgp is still in active development phase.
-
-xgp is a machine learning library for performing [symbolic regression](https://www.wikiwand.com/en/Symbolic_regression). It can be used both for regression and classification tasks. Please refer to [the documentation](https://maxhalford.github.io/xgp) for an in-depth introduction to symbolic regression.
+XGP is a machine learning library for performing [symbolic regression](https://www.wikiwand.com/en/Symbolic_regression). It can be used both for regression and classification tasks. Please refer to [the documentation](https://maxhalford.github.io/xgp) for an in-depth introduction to symbolic regression.
 
 ## Interfaces
 
@@ -42,7 +40,7 @@ The core library is written in Go but it can be used in different ways:
 - [Go API](https://maxhalford.github.io/xgp/go/)
 - [Python API](https://maxhalford.github.io/xgp/python/)
 
-## Quick start
+## Usage examples
 
 ### Command-line interface (CLI)
 

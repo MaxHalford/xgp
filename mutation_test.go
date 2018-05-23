@@ -78,6 +78,19 @@ func TestHoistMutation(t *testing.T) {
 			out     tree.Tree
 		}{
 			{
+				in: tree.MustParseCode("42"),
+				mutator: HoistMutation{
+					Picker: WeightedPicker{
+						Weighting: Weighting{
+							PConstant: 0.05,
+							PVariable: 0.05,
+							PFunction: 0.9,
+						},
+					},
+				},
+				out: tree.MustParseCode("42"),
+			},
+			{
 				in: tree.MustParseCode("cos(42)"),
 				mutator: HoistMutation{
 					Picker: WeightedPicker{

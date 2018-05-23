@@ -1,9 +1,12 @@
 package op
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
-// ParseFuncName returns a functional Operator from it's String representation.
-func ParseFuncName(funcName string) (Operator, error) {
+// ParseFunc returns a functional Operator from it's String representation.
+func ParseFunc(name string) (Operator, error) {
 	var f, ok = map[string]Operator{
 		Cos{}.String(): Cos{},
 		Sin{}.String(): Sin{},
@@ -14,9 +17,22 @@ func ParseFuncName(funcName string) (Operator, error) {
 		Sub{}.String(): Sub{},
 		Div{}.String(): Div{},
 		Mul{}.String(): Mul{},
-	}[funcName]
+	}[name]
 	if !ok {
-		return nil, fmt.Errorf("Unknown function name '%s'", funcName)
+		return nil, fmt.Errorf("Unknown function name '%s'", name)
 	}
 	return f, nil
+}
+
+// ParseFuncs parses a string into a slice of Operators.
+func ParseFuncs(names, sep string) ([]Operator, error) {
+	var funcs = make([]Operator, strings.Count(names, sep)+1)
+	for i, name := range strings.Split(names, sep) {
+		var f, err = ParseFunc(name)
+		if err != nil {
+			return nil, err
+		}
+		funcs[i] = f
+	}
+	return funcs, nil
 }

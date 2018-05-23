@@ -10,6 +10,6 @@ type ConstantSetter func(value float64)
 
 func newConstantSetter(tr *tree.Tree) ConstantSetter {
 	return func(value float64) {
-		tr.SetOperator(op.Constant{Value: value})
+		tr.Op = op.Constant{Value: value}
 	}
 }

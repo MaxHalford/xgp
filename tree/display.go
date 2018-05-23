@@ -32,17 +32,17 @@ func (displayer DirDisplay) Apply(tr Tree) string {
 	)
 
 	disp = func(tr *Tree, str string, depth int, carriage bool) string {
-		str += strings.Repeat(whitespace, depth) + tr.op.String()
+		str += strings.Repeat(whitespace, depth) + tr.Op.String()
 		if carriage {
 			str += "\n"
 		}
-		for i := len(tr.branches) - 1; i >= 0; i-- {
-			str = disp(tr.branches[i], str, depth+1, len(tr.branches) > 0)
+		for i := len(tr.Branches) - 1; i >= 0; i-- {
+			str = disp(tr.Branches[i], str, depth+1, len(tr.Branches) > 0)
 		}
 		return str
 	}
 
-	return disp(&tr, "", 0, len(tr.branches) > 0)
+	return disp(&tr, "", 0, len(tr.Branches) > 0)
 }
 
 // GraphvizDisplay outputs a Graphviz representation of a Tree. Each branch is
@@ -75,8 +75,8 @@ func (displayer GraphvizDisplay) Apply(tr Tree) string {
 	)
 	disp = func(tr *Tree, str string) string {
 		var idx = counter
-		str += fmt.Sprintf("\t%d [label=\"%s\"];\n", idx, tr.op.String())
-		for _, branch := range tr.branches {
+		str += fmt.Sprintf("\t%d [label=\"%s\"];\n", idx, tr.Op.String())
+		for _, branch := range tr.Branches {
 			counter++
 			str += fmt.Sprintf("\t%d -> %d;\n", idx, counter)
 			str = disp(branch, str)
@@ -96,19 +96,19 @@ type CodeDisplay struct{}
 
 // Apply CodeDisplay.
 func (displayer CodeDisplay) Apply(tr Tree) string {
-	switch len(tr.branches) {
+	switch len(tr.Branches) {
 	case 0:
-		return tr.op.String()
+		return tr.Op.String()
 	case 1:
-		return fmt.Sprintf("%s(%s)", tr.op.String(), displayer.Apply(*tr.branches[0]))
+		return fmt.Sprintf("%s(%s)", tr.Op.String(), displayer.Apply(*tr.Branches[0]))
 	case 2:
 		return fmt.Sprintf(
 			"%s(%s, %s)",
-			tr.op.String(),
-			displayer.Apply(*tr.branches[0]),
-			displayer.Apply(*tr.branches[1]),
+			tr.Op.String(),
+			displayer.Apply(*tr.Branches[0]),
+			displayer.Apply(*tr.Branches[1]),
 		)
 	default:
-		return tr.op.String()
+		return tr.Op.String()
 	}
 }

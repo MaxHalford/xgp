@@ -71,8 +71,8 @@ The [tree package](https://github.com/MaxHalford/xgp/tree/master/tree) contains 
 
 ```go
 type Tree struct {
-    op       op.Operator
-    branches []*Tree
+    Op       op.Operator
+    Branches []*Tree
 }
 ```
 

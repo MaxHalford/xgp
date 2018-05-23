@@ -2,12 +2,12 @@ package metrics
 
 import "strings"
 
-// GetMetric returns a Metric from it's String representation.
-func GetMetric(metricName string, class int) (Metric, error) {
-	// If the metricName begins with "neg_" then a NegativeMetric is returns
-	var negMetric = strings.HasPrefix(metricName, "neg_")
+// ParseMetric returns a Metric from it's String representation.
+func ParseMetric(name string, class int) (Metric, error) {
+	// If the name begins with "neg_" then a NegativeMetric is returns
+	var negMetric = strings.HasPrefix(name, "neg_")
 	if negMetric {
-		metricName = strings.TrimLeft(metricName, "neg_")
+		name = strings.TrimLeft(name, "neg_")
 	}
 	var (
 		klass      = float64(class)
@@ -32,10 +32,10 @@ func GetMetric(metricName string, class int) (Metric, error) {
 			R2{}.String():                         R2{},
 			ROCAUC{}.String():                     ROCAUC{},
 			AbsolutePearsonCorrelation{}.String(): AbsolutePearsonCorrelation{},
-		}[metricName]
+		}[name]
 	)
 	if !ok {
-		return nil, &errUnknownMetric{metricName}
+		return nil, &errUnknownMetric{name}
 	}
 	if negMetric {
 		metric = NegativeMetric{Metric: metric}

@@ -31,8 +31,9 @@ func (init FullInitializer) Apply(
 		op = newOp(maxHeight == 0, rng)
 		tr = tree.NewTree(op)
 	)
-	for i := 0; i < tr.NBranches(); i++ {
-		tr.SetBranch(i, init.Apply(0, maxHeight-1, newOp, rng))
+	for i := 0; i < len(tr.Branches); i++ {
+		br := init.Apply(0, maxHeight-1, newOp, rng)
+		tr.Branches[i] = &br
 	}
 	return tr
 }
@@ -54,8 +55,10 @@ func (init GrowInitializer) Apply(
 		op   = newOp(leaf, rng)
 		tr   = tree.NewTree(op)
 	)
-	for i := 0; i < tr.NBranches(); i++ {
-		tr.SetBranch(i, init.Apply(minHeight-1, maxHeight-1, newOp, rng))
+
+	for i := 0; i < len(tr.Branches); i++ {
+		br := init.Apply(minHeight-1, maxHeight-1, newOp, rng)
+		tr.Branches[i] = &br
 	}
 	return tr
 }
