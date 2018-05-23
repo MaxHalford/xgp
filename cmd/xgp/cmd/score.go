@@ -45,7 +45,7 @@ var scoreCmd = &cobra.Command{
 		}
 
 		// Determine the metric to use
-		metric, err := metrics.GetMetric(scoreMetricName, 1)
+		metric, err := metrics.ParseMetric(scoreMetricName, 1)
 		if err != nil {
 			return err
 		}
