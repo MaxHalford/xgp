@@ -96,19 +96,22 @@ type CodeDisplay struct{}
 
 // Apply CodeDisplay.
 func (displayer CodeDisplay) Apply(tr Tree) string {
-	switch len(tr.Branches) {
-	case 0:
-		return tr.Op.String()
-	case 1:
-		return fmt.Sprintf("%s(%s)", tr.Op.String(), displayer.Apply(*tr.Branches[0]))
-	case 2:
-		return fmt.Sprintf(
-			"%s(%s, %s)",
-			tr.Op.String(),
-			displayer.Apply(*tr.Branches[0]),
-			displayer.Apply(*tr.Branches[1]),
-		)
-	default:
-		return tr.Op.String()
+	// Start with the Tree's Operator
+	var str = tr.Op.String()
+
+	// Nothing else has to be done if there are no operands
+	if len(tr.Branches) == 0 {
+		return str
 	}
+
+	// Open function
+	str += "("
+
+	// Add operands recursively
+	for _, br := range tr.Branches {
+		str += fmt.Sprintf("%s, ", displayer.Apply(*br))
+	}
+
+	// Remove last and close function
+	return strings.TrimRight(str, ", ") + ")"
 }

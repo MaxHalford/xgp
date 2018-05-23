@@ -23,6 +23,11 @@ func ExampleEstimator() {
 		Y = []float64{5, 7, 9}
 	)
 	est.Fit(X, Y, nil, nil, nil, nil, false)
-	fmt.Println(est.BestProgram())
-	// Output: sum(X[1], X[0])
+	var prog = est.BestProgram()
+	fmt.Println(prog)
+	var pred, _ = prog.PredictPartial([]float64{4, 7}, false)
+	fmt.Println(pred)
+	// Output:
+	// sum(X[1], X[0])
+	// 11
 }

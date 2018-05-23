@@ -161,15 +161,6 @@ func (est *Estimator) Fit(
 	return *best, nil
 }
 
-// Predict the output of a slice of features.
-func (est Estimator) Predict(X [][]float64, predictProba bool) ([]float64, error) {
-	var yPred, err = est.BestProgram().Predict(X, predictProba)
-	if err != nil {
-		return nil, err
-	}
-	return yPred, nil
-}
-
 func (est Estimator) newConstant(rng *rand.Rand) op.Constant {
 	return op.Constant{
 		Value: est.Config.ConstMin + rng.Float64()*(est.Config.ConstMax-est.ConstMin),

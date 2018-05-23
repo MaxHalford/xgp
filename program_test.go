@@ -54,40 +54,31 @@ func TestProgramString(t *testing.T) {
 
 func TestProgramPredict(t *testing.T) {
 	var testCases = []struct {
-		X       [][]float64
-		program Program
-		proba   bool
-		y       []float64
+		X           [][]float64
+		program     Program
+		proba       bool
+		y           []float64
+		raisesError bool
 	}{
 		{
 			X: [][]float64{
 				[]float64{0.1, -0.3, 0.4, 1},
 				[]float64{-0.3, 0.4, 0.2, 2},
 			},
-			program: Program{Tree: tree.MustParseCode("sum(X[0], X[1])")},
-			proba:   false,
-			y:       []float64{-0.2, 0.1, 0.6, 3},
+			program:     Program{Tree: tree.MustParseCode("sum(X[0], X[1])")},
+			proba:       false,
+			y:           []float64{-0.2, 0.1, 0.6, 3},
+			raisesError: false,
 		},
 		{
 			X: [][]float64{
 				[]float64{0.1, -0.3, 0.4, 1},
 				[]float64{-0.3, 0.4, 0.2, 2},
 			},
-			program: Program{Tree: tree.MustParseCode("sum(X[0], X[1])")},
-			proba:   true,
-			y:       []float64{-0.2, 0.1, 0.6, 3},
-		},
-		{
-			X: [][]float64{
-				[]float64{0.1, -0.3, 0.4, 1},
-				[]float64{-0.3, 0.4, 0.2, 2},
-			},
-			program: Program{
-				Tree:      tree.MustParseCode("sum(X[0], X[1])"),
-				Estimator: &Estimator{},
-			},
-			proba: false,
-			y:     []float64{-0.2, 0.1, 0.6, 3},
+			program:     Program{Tree: tree.MustParseCode("sum(X[0], X[1])")},
+			proba:       true,
+			y:           []float64{-0.2, 0.1, 0.6, 3},
+			raisesError: false,
 		},
 		{
 			X: [][]float64{
@@ -98,8 +89,22 @@ func TestProgramPredict(t *testing.T) {
 				Tree:      tree.MustParseCode("sum(X[0], X[1])"),
 				Estimator: &Estimator{},
 			},
-			proba: true,
-			y:     []float64{-0.2, 0.1, 0.6, 3},
+			proba:       false,
+			y:           []float64{-0.2, 0.1, 0.6, 3},
+			raisesError: false,
+		},
+		{
+			X: [][]float64{
+				[]float64{0.1, -0.3, 0.4, 1},
+				[]float64{-0.3, 0.4, 0.2, 2},
+			},
+			program: Program{
+				Tree:      tree.MustParseCode("sum(X[0], X[1])"),
+				Estimator: &Estimator{},
+			},
+			proba:       true,
+			y:           []float64{-0.2, 0.1, 0.6, 3},
+			raisesError: false,
 		},
 		{
 			X: [][]float64{
@@ -110,8 +115,9 @@ func TestProgramPredict(t *testing.T) {
 				Tree:      tree.MustParseCode("sum(X[0], X[1])"),
 				Estimator: &Estimator{LossMetric: metrics.MeanSquaredError{}},
 			},
-			proba: false,
-			y:     []float64{-0.2, 0.1, 0.6, 3},
+			proba:       false,
+			y:           []float64{-0.2, 0.1, 0.6, 3},
+			raisesError: false,
 		},
 		{
 			X: [][]float64{
@@ -122,8 +128,9 @@ func TestProgramPredict(t *testing.T) {
 				Tree:      tree.MustParseCode("sum(X[0], X[1])"),
 				Estimator: &Estimator{LossMetric: metrics.MeanSquaredError{}},
 			},
-			proba: true,
-			y:     []float64{-0.2, 0.1, 0.6, 3},
+			proba:       true,
+			y:           []float64{-0.2, 0.1, 0.6, 3},
+			raisesError: false,
 		},
 		{
 			X: [][]float64{
@@ -134,8 +141,9 @@ func TestProgramPredict(t *testing.T) {
 				Tree:      tree.MustParseCode("sum(X[0], X[1])"),
 				Estimator: &Estimator{LossMetric: metrics.Accuracy{}},
 			},
-			proba: false,
-			y:     []float64{0, 0, 1, 1},
+			proba:       false,
+			y:           []float64{0, 0, 1, 1},
+			raisesError: false,
 		},
 		{
 			X: [][]float64{
@@ -146,14 +154,31 @@ func TestProgramPredict(t *testing.T) {
 				Tree:      tree.MustParseCode("sum(X[0], X[1])"),
 				Estimator: &Estimator{LossMetric: metrics.Accuracy{}},
 			},
-			proba: true,
-			y:     []float64{0.45017, 0.52498, 0.64566, 0.95257},
+			proba:       true,
+			y:           []float64{0.45017, 0.52498, 0.64566, 0.95257},
+			raisesError: false,
+		},
+		{
+			X: [][]float64{
+				[]float64{math.NaN(), -0.3, 0.4, 1},
+				[]float64{-0.3, 0.4, 0.2, 2},
+			},
+			program: Program{
+				Tree:      tree.MustParseCode("sum(X[0], X[1])"),
+				Estimator: &Estimator{LossMetric: metrics.Accuracy{}},
+			},
+			proba:       false,
+			y:           nil,
+			raisesError: true,
 		},
 	}
 
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
-			var y, _ = tc.program.Predict(tc.X, tc.proba)
+			var y, err = tc.program.Predict(tc.X, tc.proba)
+			if (err != nil) != tc.raisesError {
+				t.Errorf("Expected nil error, got %s", err)
+			}
 			for j := range y {
 				if math.Abs(y[j]-tc.y[j]) > 10e-5 {
 					t.Errorf("Expected %.5f, got %.5f", tc.y[j], y[j])
@@ -165,31 +190,25 @@ func TestProgramPredict(t *testing.T) {
 
 func TestProgramPredictPartial(t *testing.T) {
 	var testCases = []struct {
-		x       []float64
-		program Program
-		proba   bool
-		y       float64
+		x           []float64
+		program     Program
+		proba       bool
+		y           float64
+		raisesError bool
 	}{
 		{
-			x:       []float64{0.1, -0.3},
-			program: Program{Tree: tree.MustParseCode("sum(X[0], X[1])")},
-			proba:   false,
-			y:       -0.2,
+			x:           []float64{0.1, -0.3},
+			program:     Program{Tree: tree.MustParseCode("sum(X[0], X[1])")},
+			proba:       false,
+			y:           -0.2,
+			raisesError: false,
 		},
 		{
-			x:       []float64{0.1, -0.3},
-			program: Program{Tree: tree.MustParseCode("sum(X[0], X[1])")},
-			proba:   true,
-			y:       -0.2,
-		},
-		{
-			x: []float64{0.1, -0.3},
-			program: Program{
-				Tree:      tree.MustParseCode("sum(X[0], X[1])"),
-				Estimator: &Estimator{},
-			},
-			proba: false,
-			y:     -0.2,
+			x:           []float64{0.1, -0.3},
+			program:     Program{Tree: tree.MustParseCode("sum(X[0], X[1])")},
+			proba:       true,
+			y:           -0.2,
+			raisesError: false,
 		},
 		{
 			x: []float64{0.1, -0.3},
@@ -197,8 +216,19 @@ func TestProgramPredictPartial(t *testing.T) {
 				Tree:      tree.MustParseCode("sum(X[0], X[1])"),
 				Estimator: &Estimator{},
 			},
-			proba: true,
-			y:     -0.2,
+			proba:       false,
+			y:           -0.2,
+			raisesError: false,
+		},
+		{
+			x: []float64{0.1, -0.3},
+			program: Program{
+				Tree:      tree.MustParseCode("sum(X[0], X[1])"),
+				Estimator: &Estimator{},
+			},
+			proba:       true,
+			y:           -0.2,
+			raisesError: false,
 		},
 		{
 			x: []float64{0.1, -0.3},
@@ -206,8 +236,9 @@ func TestProgramPredictPartial(t *testing.T) {
 				Tree:      tree.MustParseCode("sum(X[0], X[1])"),
 				Estimator: &Estimator{LossMetric: metrics.MeanSquaredError{}},
 			},
-			proba: false,
-			y:     -0.2,
+			proba:       false,
+			y:           -0.2,
+			raisesError: false,
 		},
 		{
 			x: []float64{0.1, -0.3},
@@ -215,8 +246,9 @@ func TestProgramPredictPartial(t *testing.T) {
 				Tree:      tree.MustParseCode("sum(X[0], X[1])"),
 				Estimator: &Estimator{LossMetric: metrics.MeanSquaredError{}},
 			},
-			proba: true,
-			y:     -0.2,
+			proba:       true,
+			y:           -0.2,
+			raisesError: false,
 		},
 		{
 			x: []float64{0.1, -0.3},
@@ -224,8 +256,9 @@ func TestProgramPredictPartial(t *testing.T) {
 				Tree:      tree.MustParseCode("sum(X[0], X[1])"),
 				Estimator: &Estimator{LossMetric: metrics.Accuracy{}},
 			},
-			proba: false,
-			y:     0,
+			proba:       false,
+			y:           0,
+			raisesError: false,
 		},
 		{
 			x: []float64{0.1, -0.3},
@@ -233,13 +266,27 @@ func TestProgramPredictPartial(t *testing.T) {
 				Tree:      tree.MustParseCode("sum(X[0], X[1])"),
 				Estimator: &Estimator{LossMetric: metrics.Accuracy{}},
 			},
-			proba: true,
-			y:     0.45017,
+			proba:       true,
+			y:           0.45017,
+			raisesError: false,
+		},
+		{
+			x: []float64{math.NaN(), -0.3},
+			program: Program{
+				Tree:      tree.MustParseCode("sum(X[0], X[1])"),
+				Estimator: &Estimator{LossMetric: metrics.Accuracy{}},
+			},
+			proba:       true,
+			y:           0,
+			raisesError: true,
 		},
 	}
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
-			var y, _ = tc.program.PredictPartial(tc.x, tc.proba)
+			var y, err = tc.program.PredictPartial(tc.x, tc.proba)
+			if (err != nil) != tc.raisesError {
+				t.Errorf("Expected nil error, got %s", err)
+			}
 			if math.Abs(y-tc.y) > 10e-5 {
 				t.Errorf("Expected %.5f, got %.5f", tc.y, y)
 			}

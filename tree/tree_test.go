@@ -127,6 +127,10 @@ func TestTreeSimplify(t *testing.T) {
 			tr:             MustParseCode("sum(X[0], X[1])"),
 			simplifiedTree: MustParseCode("sum(X[0], X[1])"),
 		},
+		{
+			tr:             MustParseCode("sum(sum(1, mul(X[0], X[0])), sum(3, 4))"),
+			simplifiedTree: MustParseCode("sum(sum(1, mul(X[0], X[0])), 7)"),
+		},
 	}
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {

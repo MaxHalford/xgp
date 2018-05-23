@@ -85,7 +85,7 @@ func (prog Program) PredictPartial(x []float64, proba bool) (float64, error) {
 	yPred := prog.Tree.EvalRow(x)
 	// Check the predictions don't contain any NaNs
 	if math.IsNaN(yPred) {
-		return -1, errors.New("yPred is NaN")
+		return 0, errors.New("yPred is NaN")
 	}
 	// Classification
 	if prog.classification() {
