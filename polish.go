@@ -8,6 +8,17 @@ import (
 	"github.com/MaxHalford/xgp/tree"
 )
 
+// A ConstantSetter can replace a tree's Operator with a Constant.
+type ConstantSetter func(value float64)
+
+// NewConstantSetter returns a ConstantSetter that can be used as a callback
+// to set a Program's Operator to a given Constant.
+func newConstantSetter(tr *tree.Tree) ConstantSetter {
+	return func(value float64) {
+		tr.Op = op.Constant{Value: value}
+	}
+}
+
 // A ProgramPolish optimizes a Program by tuning it's Constants.
 type ProgramPolish struct {
 	Program      Program

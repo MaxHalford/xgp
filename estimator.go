@@ -152,12 +152,13 @@ func (est *Estimator) Fit(
 		}
 	}
 
+	// Close the progress bar
 	if verbose {
 		progress.Stop()
 	}
 
+	// Return the best program
 	var best = est.BestProgram()
-
 	return *best, nil
 }
 

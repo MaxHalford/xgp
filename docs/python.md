@@ -2,13 +2,39 @@
 
 ## Installation
 
-Since version 1.5, Go code can be imported from Python as a dynamic-link library (DLL). This is what is done in the [XGP Python package](https://github.com/MaxHalford/xgp-python). As of now we aren't building Python wheels so you have to have Go and a GCC compiler installed on your machine. If this is the case you can install the package from PyPI:
+Since version 1.5, Go code can be imported from Python as a dynamic-link library (DLL). This is what is done in the [XGP Python package](https://github.com/MaxHalford/xgp-python)
+
+### Using a wheel
+
+If you're using one of the following setups then you are in luck because a wheel is available. In other words you don't need to have Go and GCC installed.
+
+|            | manylinux x86_64 |
+|------------|:----------------:|
+| Python 3.5 | ✅ |
+| Python 3.6 | ✅ |
+
+You need to have the `wheel` package installed.
+
+```sh
+>>> pip install wheel
+```
+
+Then you can install the wheel from PyPI.
 
 ```sh
 >>> pip install xgp
 ```
 
-This uses the [setuptools-golang project](https://github.com/asottile/setuptools-golang) to pull the needed Go dependencies and compile the DLL. In the near future the default behaviour be to use a pre-compiled DLL so you don't have to have Go and GCC installed.
+
+### Compile it yourself
+
+To compile the DLL you will need to have Go and GCC installed. Once this is done simply run:
+
+```sh
+>>> pip install --no-binary :all: xgp
+```
+
+This uses [setuptools-golang](https://github.com/asottile/setuptools-golang) to pull the needed Go dependencies and compile the DLL.
 
 ## Usage
 

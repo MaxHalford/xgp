@@ -55,7 +55,7 @@ Of course there is a huge element of randomness to symbolic regression. Whats mo
 
 The [core of XGP](https://github.com/MaxHalford/xgp) is implemented in Go. Go is a good fit for genetic programming because it's concurrency features play nicely with [embarrassingly parallel](https://www.wikiwand.com/en/Embarrassingly_parallel) such as genetic algorithms. Moreover because the running time of symbolic regression grows exponentially with the number of programs, having a compiled implementation saves a lot of time.
 
-XGP's core code is organized in subpackages. The [op package](https://github.com/MaxHalford/xgp/tree/master/op) contains all the available operators. Each operator satisfies the following interface:
+XGP's core code is organized in subpackages. The [`op` package](https://github.com/MaxHalford/xgp/tree/master/op) contains all the available operators. Each operator satisfies the following interface:
 
 ```go
 type Operator interface {
@@ -67,7 +67,7 @@ type Operator interface {
 
 That is, given a matrix of features the operator outputs a single list of values. The matrix is oriented column-wise (some would say Fortran style) to optimize the huge amount of columnar operations symbolic regression has to perform.
 
-The [tree package](https://github.com/MaxHalford/xgp/tree/master/tree) contains a tree implementation that combines operators together. A `Tree` has the following signature:
+The [`tree` package](https://github.com/MaxHalford/xgp/tree/master/tree) contains a tree implementation that combines operators together. A `Tree` has the following signature:
 
 ```go
 type Tree struct {
@@ -87,7 +87,7 @@ type Program struct {
 
 The `Estimator` gives the `Program` context about what it is it has to learn. The `Estimator` contains a `LossMetric` field with determines how to score each `Program` and if the task is classification or regression. The `Estimator` is also the global structure that organizes the programs and handles the learning process. If you want to use XGP with Go then you'll be working with the `Estimator` struct.  importantly
 
-The [metrics package](https://github.com/MaxHalford/xgp/tree/master/metrics) is a completely independent package that contains implementations of machine learning metrics (such as accuracy and logarithmic loss). In theory it could be traded for another package if something standardized comes up.
+The [`metrics` package](https://github.com/MaxHalford/xgp/tree/master/metrics) is a completely independent package that contains implementations of machine learning metrics (such as accuracy and logarithmic loss). In theory it could be traded for another package if something standardized comes up.
 
 XGP does a few fancy tricks to make it competitive:
 

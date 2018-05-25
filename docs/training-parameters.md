@@ -36,7 +36,7 @@ These parameters are used to generate the initial set of programs. They will als
 | Number of populations | `pops` | `NPopulations` | `n_populations` | 1 |
 | Number of individuals per population | `indis` | `NIndividuals` | `n_individuals` | 50 |
 | Number of generations | `gens` | `NGenerations` | `n_generations` | 30 |
-| Number of polish generations | `polish_gens` | `NPolishGenerations` | `n_tuning_generations` | 0 |
+| Number of polish generations | `polish_gens` | `NPolishGenerations` | `n_polish_generations` | 0 |
 | Hoist mutation probability | `p_hoist_mut` | `PHoistMutation` | `p_hoist_mutation` | 0.1 |
 | Subtree mutation probability | `p_sub_mut` | `PSubtreeMutation` | `p_sub_tree_mutation` | 0.1 |
 | Point mutation probability | `p_point_mut` | `PPointMutation` | `p_point_mutation` | 0.1 |
@@ -73,7 +73,7 @@ Each loss metric has a short name that you can use whether you are using the CLI
 
 The following table lists all the available operators. Regardless of from where it is being used from, functions should be passed to XGP by concatenating the short names of the functions with a comma. For example to use the natural logarithm and the multiplication use `log,mul`.
 
-Code-wise the operators are all located in the `op` sub-package, of which the goal is to provide fast implementations for each operator. For the while the only accelerations that exist are the ones for the sum and the division which use assembly implementations made available by [gonum/floats](https://godoc.org/gonum.org/v1/gonum/floats).
+Code-wise the operators are all located in the `op` subpackage, of which the goal is to provide fast implementations for each operator. For the while the only accelerations that exist are the ones for the sum and the division which use assembly implementations made available by [`gonum/floats`](https://godoc.org/gonum.org/v1/gonum/floats).
 
 | Name | Arity | Short name | Go struct |
 |------|-------|------------|---------------|

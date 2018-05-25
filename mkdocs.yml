@@ -18,8 +18,8 @@ theme:
   logo:
     icon: 'home'
   palette:
-    primary: 'blue-grey'
-    accent: 'red'
+    primary: 'teal'
+    accent: 'teal'
   social:
     - type: 'github'
       link: 'https://github.com/MaxHalford/xgp'
