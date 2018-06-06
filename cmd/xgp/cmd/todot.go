@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/MaxHalford/xgp/meta"
-	"github.com/MaxHalford/xgp/tree"
+	"github.com/MaxHalford/xgp/op"
 	"github.com/spf13/cobra"
 )
 
@@ -48,7 +48,7 @@ var toDOTCmd = &cobra.Command{
 		}
 
 		// Make the Graphviz representation
-		var str = tree.GraphvizDisplay{}.Apply(ensemble.Programs[toDOTRound].Tree)
+		var str = op.GraphvizDisplay{}.Apply(ensemble.Programs[toDOTRound].Op)
 
 		// Output in the shell
 		if toDOTShell {

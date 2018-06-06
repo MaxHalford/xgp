@@ -5,12 +5,11 @@ import (
 	"math/rand"
 
 	"github.com/MaxHalford/gago"
+	"github.com/MaxHalford/xgp/op"
 )
 
 // Evaluate is required to implement gago.Genome.
-func (prog *Program) Evaluate() (float64, error) {
-	// Simplify the Program's Tree to avoid unnecessary computations
-	prog.Tree.Simplify()
+func (prog Program) Evaluate() (float64, error) {
 	// For convenience
 	est := prog.Estimator
 	// Run the training set through the Program
@@ -28,7 +27,7 @@ func (prog *Program) Evaluate() (float64, error) {
 	}
 	// Apply the parsimony coefficient
 	if est.ParsimonyCoeff != 0 {
-		fitness += est.ParsimonyCoeff * float64(prog.Tree.Size())
+		fitness += est.ParsimonyCoeff * float64(op.CountOps(prog.Op))
 	}
 	return fitness, nil
 }
@@ -43,35 +42,41 @@ func (prog *Program) Mutate(rng *rand.Rand) {
 	)
 	// Apply hoist mutation
 	if dice < pHoist {
-		prog.Estimator.HoistMutation.Apply(&prog.Tree, rng)
+		prog.Op = prog.Estimator.HoistMutation.Apply(prog.Op, rng)
 		return
 	}
 	// Apply subtree mutation
 	if dice < pHoist+pSubtree {
-		prog.Estimator.SubtreeMutation.Apply(&prog.Tree, rng)
+		prog.Op = prog.Estimator.SubtreeMutation.Apply(prog.Op, rng)
 		return
 	}
 	// Apply point mutation
-	prog.Estimator.PointMutation.Apply(&prog.Tree, rng)
+	prog.Op = prog.Estimator.PointMutation.Apply(prog.Op, rng).Simplify()
 }
 
 // Crossover is required to implement gago.Genome.
 func (prog *Program) Crossover(prog2 gago.Genome, rng *rand.Rand) {
-	prog.Estimator.SubtreeCrossover.Apply(&prog.Tree, &prog2.(*Program).Tree, rng)
+	newOp1, newOp2 := prog.Estimator.SubtreeCrossover.Apply(prog.Op, prog2.(*Program).Op, rng)
+	prog.Op = newOp1.Simplify()
+	prog2.(*Program).Op = newOp2.Simplify()
 }
 
 // Clone is required to implement gago.Genome.
 func (prog Program) Clone() gago.Genome {
-	var clone = prog.clone()
-	return &clone
+	return &Program{
+		Op:        prog.Op,
+		Estimator: prog.Estimator,
+	}
 }
 
+// Custom genetic algorithm model.
 type gaModel struct {
 	selector   gago.Selector
 	pMutate    float64
 	pCrossover float64
 }
 
+// Apply is necessary to implement gago.Model.
 func (mod gaModel) Apply(pop *gago.Population) error {
 	var offsprings = make(gago.Individuals, len(pop.Individuals))
 	for i := range offsprings {
@@ -81,7 +86,7 @@ func (mod gaModel) Apply(pop *gago.Population) error {
 			return err
 		}
 		var offspring = selected[0]
-		// Roll a dice to decide what to do
+		// Roll a dice and decide what to do
 		var dice = pop.RNG.Float64()
 		if dice < mod.pMutate {
 			// Mutation
@@ -102,6 +107,7 @@ func (mod gaModel) Apply(pop *gago.Population) error {
 	return nil
 }
 
+// Validate is necessary to implement gago.Model.
 func (mod gaModel) Validate() error {
 	return nil
 }

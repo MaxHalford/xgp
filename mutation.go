@@ -4,61 +4,53 @@ import (
 	"math/rand"
 
 	"github.com/MaxHalford/xgp/op"
-	"github.com/MaxHalford/xgp/tree"
 )
 
-// A Mutator modifies a Tree in-place.
+// A Mutator takes an Operator and returns a modified version of it.
 type Mutator interface {
-	Apply(tree *tree.Tree, rng *rand.Rand)
+	Apply(operator op.Operator, rng *rand.Rand) op.Operator
 }
 
-// PointMutation picks one sub-Tree at random and replaces it's Operator.
+// PointMutation randomly replaces Operators.
 type PointMutation struct {
-	Weighting      Weighting
-	MutateOperator func(op op.Operator, rng *rand.Rand) op.Operator
+	Rate   float64
+	Mutate func(op op.Operator, rng *rand.Rand) op.Operator
 }
 
 // Apply PointMutation.
-func (mut PointMutation) Apply(tr *tree.Tree, rng *rand.Rand) {
-	var f = func(tr *tree.Tree, depth int) (stop bool) {
-		if rng.Float64() < mut.Weighting.apply(tr.Op) {
-			tr.Op = mut.MutateOperator(tr.Op, rng)
-		}
-		return false
+func (pm PointMutation) Apply(operator op.Operator, rng *rand.Rand) op.Operator {
+	for i := uint(0); i < operator.Arity(); i++ {
+		operator = operator.SetOperand(i, pm.Apply(operator.Operand(i), rng))
 	}
-	tr.Walk(f)
+	if rng.Float64() < pm.Rate {
+		operator = pm.Mutate(operator, rng)
+	}
+	return operator
 }
 
-// HoistMutation selects a first sub-Tree from a Tree. It then selects a second
-// sub-Tree from the first sub-Tree and replaces the first one with it. Hoist
-// mutation is good for controlling bloat.
+// HoistMutation replaces an Operator by of it's operands.
 type HoistMutation struct {
-	Picker Picker
+	Weight1, Weight2 func(operator op.Operator, depth uint, rng *rand.Rand) float64
 }
 
 // Apply HoistMutation.
-func (mut HoistMutation) Apply(tr *tree.Tree, rng *rand.Rand) {
-	// Hoist mutation only works if the height of Tree exceeds 1
-	var height = tr.Height()
-	if height < 1 {
-		return
-	}
+func (hm HoistMutation) Apply(operator op.Operator, rng *rand.Rand) op.Operator {
 	var (
-		sub    = mut.Picker.Apply(tr, 1, tr.Height(), rng)
-		subsub = mut.Picker.Apply(sub, 0, sub.Height()-1, rng)
+		subOp, pos  = op.Sample(operator, hm.Weight1, rng)
+		subSubOp, _ = op.Sample(subOp, hm.Weight2, rng)
 	)
-	*sub = *subsub
+	return op.Replace(operator, pos, subSubOp)
 }
 
-// SubtreeMutation selects a sub-Tree at random and replaces it with a new Tree.
-// The new Tree has at most the same height as the selected sub-Tree.
+// SubtreeMutation selects a suboperator at random and replaces it with a new
+// Operator.
 type SubtreeMutation struct {
-	NewTree   func(rng *rand.Rand) tree.Tree
-	Crossover Crossover
+	Weight      func(operator op.Operator, depth uint, rng *rand.Rand) float64
+	NewOperator func(rng *rand.Rand) op.Operator
 }
 
 // Apply SubtreeMutation.
-func (mut SubtreeMutation) Apply(tr *tree.Tree, rng *rand.Rand) {
-	var mutant = mut.NewTree(rng)
-	mut.Crossover.Apply(tr, &mutant, rng)
+func (sm SubtreeMutation) Apply(operator op.Operator, rng *rand.Rand) op.Operator {
+	var _, pos = op.Sample(operator, sm.Weight, rng)
+	return op.Replace(operator, pos, sm.NewOperator(rng))
 }

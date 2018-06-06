@@ -15,7 +15,7 @@ func ExampleConfig() {
 	// Loss metric: mse
 	// Evaluation metric: mse
 	// Parsimony coefficient: 0
-	// Functions: sum,sub,mul,div
+	// Functions: add,sub,mul,div
 	// Constant minimum: -5
 	// Constant maximum: 5
 	// Constant probability: 0.5

@@ -1,27 +1,117 @@
 package op
 
-// Div returns the protected division of two operands. The left operand is
-// the numerator and the right operand is the denominator.
-type Div struct{}
+import "fmt"
 
-// Eval Div.
-func (op Div) Eval(X [][]float64) []float64 {
-	for i, x := range X[1] {
-		if x == 0 {
-			X[0][i] = 1
-		} else {
-			X[0][i] /= x
-		}
-	}
-	return X[0]
+// The Div operator.
+type Div struct {
+	Left, Right Operator
 }
 
-// Arity of Div.
-func (op Div) Arity() int {
+// Eval divides aligned values.
+func (div Div) Eval(X [][]float64) []float64 {
+	x := div.Left.Eval(X)
+	y := div.Right.Eval(X)
+	for i, yi := range y {
+		if yi == 0 {
+			x[i] = 1
+		} else {
+			x[i] /= yi
+		}
+	}
+	return x
+}
+
+// Arity of Div is 2.
+func (div Div) Arity() uint {
 	return 2
 }
 
-// String representation of Div.
-func (op Div) String() string {
+// Operand returns one of Div's operands, or nil.
+func (div Div) Operand(i uint) Operator {
+	switch i {
+	case 0:
+		return div.Left
+	case 1:
+		return div.Right
+	default:
+		return nil
+	}
+}
+
+// SetOperand replaces one of Div's operands if i is equal to 0 or 1.
+func (div Div) SetOperand(i uint, op Operator) Operator {
+	switch i {
+	case 0:
+		return Div{op, div.Right}
+	case 1:
+		return Div{div.Left, op}
+	default:
+		return div
+	}
+}
+
+// Simplify Div.
+func (div Div) Simplify() Operator {
+	switch right := div.Right.(type) {
+	case Const:
+		switch right.Value {
+		// x / 0 = 1
+		case 0:
+			return Const{1}
+		// x / 1 = x
+		case 1:
+			return div.Left
+		// x / -1 = -x
+		case -1:
+			return Neg{div.Left}
+		default:
+			break
+		}
+		switch left := div.Left.(type) {
+		// a / b = c
+		case Const:
+			return Const{left.Value / right.Value}
+		default:
+			break
+		}
+	case Var:
+		if left, ok := div.Left.(Var); ok {
+			// x / x = 1
+			if left.Index == right.Index {
+				return Const{1}
+			}
+		}
+	default:
+		break
+	}
+	switch left := div.Left.(type) {
+	case Const:
+		// 0 / x = 0
+		if left.Value == 0 {
+			return Const{0}
+		}
+	default:
+		break
+	}
+	return div
+}
+
+// Diff computes the following derivative: (u / v)' = (u'v - uv') / v²
+func (div Div) Diff(i uint) Operator {
+	return Div{
+		Sub{
+			Mul{div.Left.Diff(i), div.Right},
+			Mul{div.Left, div.Right.Diff(i)}},
+		div.Right,
+	}
+}
+
+// Name of Div is "div".
+func (div Div) Name() string {
 	return "div"
+}
+
+// String formatting.
+func (div Div) String() string {
+	return fmt.Sprintf("%s/%s", parenthesize(div.Left), parenthesize(div.Right))
 }

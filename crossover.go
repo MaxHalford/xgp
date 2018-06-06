@@ -3,24 +3,25 @@ package xgp
 import (
 	"math/rand"
 
-	"github.com/MaxHalford/xgp/tree"
+	"github.com/MaxHalford/xgp/op"
 )
 
-// A Crossover mixes two Programs in-place.
+// A Crossover takes two Operators and combines them in order to produce two
+// new Operators.
 type Crossover interface {
-	Apply(tree1, tree2 *tree.Tree, rng *rand.Rand)
+	Apply(op1, op2 op.Operator, rng *rand.Rand) (op.Operator, op.Operator)
 }
 
-// SubtreeCrossover applies subtree crossover to two Tree.
+// SubtreeCrossover applies subtree crossover to two Operators.
 type SubtreeCrossover struct {
-	Picker Picker
+	Weight func(operator op.Operator, depth uint, rng *rand.Rand) float64
 }
 
 // Apply SubtreeCrossover.
-func (cross SubtreeCrossover) Apply(tree1, tree2 *tree.Tree, rng *rand.Rand) {
+func (sc SubtreeCrossover) Apply(op1, op2 op.Operator, rng *rand.Rand) (op.Operator, op.Operator) {
 	var (
-		subTree1 = cross.Picker.Apply(tree1, 0, tree1.Height()-1, rng)
-		subTree2 = cross.Picker.Apply(tree2, 0, tree2.Height(), rng)
+		sub1, i = op.Sample(op1, sc.Weight, rng)
+		sub2, j = op.Sample(op2, sc.Weight, rng)
 	)
-	*subTree1, *subTree2 = *subTree2, *subTree1
+	return op.Replace(op1, i, sub2), op.Replace(op2, j, sub1)
 }

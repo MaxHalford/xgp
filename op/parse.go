@@ -5,18 +5,21 @@ import (
 	"strings"
 )
 
-// ParseFunc returns a functional Operator from it's String representation.
+// ParseFunc parses a name and returns the corresponding Operator.
 func ParseFunc(name string) (Operator, error) {
 	var f, ok = map[string]Operator{
-		Cos{}.String(): Cos{},
-		Sin{}.String(): Sin{},
-		Exp{}.String(): Exp{},
-		Max{}.String(): Max{},
-		Min{}.String(): Min{},
-		Sum{}.String(): Sum{},
-		Sub{}.String(): Sub{},
-		Div{}.String(): Div{},
-		Mul{}.String(): Mul{},
+		Abs{}.Name():    Abs{},
+		Add{}.Name():    Add{},
+		Cos{}.Name():    Cos{},
+		Div{}.Name():    Div{},
+		Inv{}.Name():    Inv{},
+		Max{}.Name():    Max{},
+		Min{}.Name():    Min{},
+		Mul{}.Name():    Mul{},
+		Neg{}.Name():    Neg{},
+		Sin{}.Name():    Sin{},
+		Square{}.Name(): Square{},
+		Sub{}.Name():    Sub{},
 	}[name]
 	if !ok {
 		return nil, fmt.Errorf("Unknown function name '%s'", name)

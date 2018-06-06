@@ -76,15 +76,18 @@ The following table lists all the available operators. Regardless of from where 
 Code-wise the operators are all located in the `op` subpackage, of which the goal is to provide fast implementations for each operator. For the while the only accelerations that exist are the ones for the sum and the division which use assembly implementations made available by [`gonum/floats`](https://godoc.org/gonum.org/v1/gonum/floats).
 
 | Name | Arity | Short name | Go struct |
-|------|-------|------------|---------------|
+|------|-------|------------|-----------|
+| Absolute value | 1 | abs | `Abs` |
+| Addition | 2 | add | `Add` |
 | Cosine | 1 | cos | `Cos` |
-| Sine | 1 | sin | `Sin` |
-| Exponential | 1 | exp | `Exp` |
+| Division | 2 | div | `Div` |
+| Inverse | 1 | inv | `Inv` |
 | Maximum | 2 | max | `Max` |
 | Minimum | 2 | min | `Min` |
-| Sum | 2 | sum | `Sum` |
-| Subtraction | 2 | sub | `Sub` |
-| Division | 2 | div | `Div` |
 | Multiplication | 2 | mul | `Mul` |
+| Negative value | 1 | neg | `Neg` |
+| Sine | 1 | sin | `Sin` |
+| Square | 2 | square | `Square` |
+| Subtraction | 2 | sub | `Sub` |
 
 Safe-division is used, meaning that if a denominator is 0 then the result will default to 1.
