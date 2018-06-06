@@ -53,30 +53,26 @@ Of course there is a huge element of randomness to symbolic regression. Whats mo
 
 ## XGP implementation details
 
-The [core of XGP](https://github.com/MaxHalford/xgp) is implemented in Go. Go is a good fit for genetic programming because it's concurrency features play nicely with [embarrassingly parallel](https://www.wikiwand.com/en/Embarrassingly_parallel) such as genetic algorithms. Moreover because the running time of symbolic regression grows exponentially with the number of programs, having a compiled implementation saves a lot of time.
+The [core of XGP](https://github.com/MaxHalford/xgp) is implemented in Go. Go is a good fit for genetic programming because it's concurrency features play nicely with [embarrassingly parallel](https://www.wikiwand.com/en/Embarrassingly_parallel) situations such as genetic algorithms. Moreover because the running time of symbolic regression grows exponentially with the number of programs, having a compiled implementation saves a lot of time.
 
-XGP's core code is organized in subpackages. The [`op` package](https://github.com/MaxHalford/xgp/tree/master/op) contains all the available operators. Each operator satisfies the following interface:
+XGP's core code is organized in subpackages. The [`op` package](https://github.com/MaxHalford/xgp/tree/master/op) contains all the available operators and the tree structure necessary for building programs. Each operator satisfies the following interface:
 
 ```go
 type Operator interface {
     Eval(X [][]float64) []float64
-    Arity() int
+    Arity() uint
+    Operand(i uint) Operator
+    SetOperand(i uint, op Operator) Operator
+    Simplify() Operator
+    Diff(i uint) Operator
+    Name() string
     String() string
 }
 ```
 
-That is, given a matrix of features the operator outputs a single list of values. The matrix is oriented column-wise (some would say Fortran style) to optimize the huge amount of columnar operations symbolic regression has to perform.
+An `Operator` can "evaluate" a matrix and produce a output. The matrix is a set of features oriented column-wise (some would say Fortran style) to optimize the huge amount of columnar operations symbolic regression has to perform. An `Operator` also has an arity and a name. An `Operator` has as many child `Operator`s as it's arity. An `Operator` can also be simplified and differentiated. At first the `Operator` interface seems to require a hefty amount of methods, but in practice it only takes around 100 lines of code to implement.
 
-The [`tree` package](https://github.com/MaxHalford/xgp/tree/master/tree) contains a tree implementation that combines operators together. A `Tree` has the following signature:
-
-```go
-type Tree struct {
-    Op       op.Operator
-    Branches []*Tree
-}
-```
-
-At a higher-level, a `Program` is what used to do the actual learning; it has the following signature:
+At a higher-level, a `Program` is what is used to do the actual learning; it has the following signature:
 
 ```go
 type Program struct {
