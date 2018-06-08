@@ -11,12 +11,11 @@ import (
 
 	"github.com/MaxHalford/xgp/metrics"
 	"github.com/MaxHalford/xgp/op"
-	"github.com/MaxHalford/xgp/tree"
 )
 
 // An Estimator links all the different components together and can be used to
 // train Programs on a dataset. You shouldn't instantiate this struct directly;
-// instead you should use the Config struct.
+// instead you should use the Config struct and call it's NewEstimator method.
 type Estimator struct {
 	Config
 
@@ -31,7 +30,7 @@ type Estimator struct {
 	HoistMutation    HoistMutation
 	SubtreeCrossover SubtreeCrossover
 
-	fm       map[int][]op.Operator
+	fm       map[uint][]op.Operator
 	XTrain   [][]float64
 	YTrain   []float64
 	WTrain   []float64
@@ -46,15 +45,17 @@ func (est Estimator) String() string {
 	return est.Config.String()
 }
 
-// BestProgram returns an Estimator's bestProgram in a safe way.
+// BestProgram returns the Estimator's best obtained Program.
 func (est Estimator) BestProgram() *Program {
 	return est.GA.HallOfFame[0].Genome.(*Program)
 }
 
-// Fit an Estimator to a dataset.Dataset.
+// Fit an Estimator to a dataset.
 func (est *Estimator) Fit(
+	// Required arguments
 	XTrain [][]float64,
 	YTrain []float64,
+	// Optional arguments (can safely be nil)
 	WTrain []float64,
 	XVal [][]float64,
 	YVal []float64,
@@ -96,7 +97,7 @@ func (est *Estimator) Fit(
 		var start = time.Now()
 		progress = uiprogress.New()
 		progress.Start()
-		bar = progress.AddBar(est.NGenerations)
+		bar = progress.AddBar(int(est.NGenerations))
 		bar.PrependCompleted()
 		bar.AppendFunc(func(b *uiprogress.Bar) string {
 			// Add time spent
@@ -130,21 +131,21 @@ func (est *Estimator) Fit(
 		})
 	}
 
-	for i := 0; i < est.NGenerations; i++ {
+	for i := uint(0); i < est.NGenerations; i++ {
 		if verbose {
 			bar.Incr()
 		}
 
 		// Make sure each tree has at least a height of 2
-		for i, pop := range est.GA.Populations {
-			for j, indi := range pop.Individuals {
+		/*for j, pop := range est.GA.Populations {
+			for k, indi := range pop.Individuals {
 				var prog = indi.Genome.(*Program)
 				if prog.Tree.Height() < 2 { // MAGIC
 					est.SubtreeMutation.Apply(&prog.Tree, pop.RNG)
-					est.GA.Populations[i].Individuals[j].Evaluate()
+					est.GA.Populations[j].Individuals[k].Evaluate()
 				}
 			}
-		}
+		}*/
 
 		err = est.GA.Evolve()
 		if err != nil {
@@ -162,45 +163,34 @@ func (est *Estimator) Fit(
 	return *best, nil
 }
 
-func (est Estimator) newConstant(rng *rand.Rand) op.Constant {
-	return op.Constant{
+func (est Estimator) newConst(rng *rand.Rand) op.Const {
+	return op.Const{
 		Value: est.Config.ConstMin + rng.Float64()*(est.Config.ConstMax-est.ConstMin),
 	}
 }
 
-func (est Estimator) newVariable(rng *rand.Rand) op.Variable {
-	return op.Variable{Index: rng.Intn(len(est.XTrain))}
+func (est Estimator) newVar(rng *rand.Rand) op.Var {
+	return op.Var{Index: uint(rng.Intn(len(est.XTrain)))}
 }
 
 func (est Estimator) newFunction(rng *rand.Rand) op.Operator {
 	return est.Functions[rng.Intn(len(est.Functions))]
 }
 
-func (est Estimator) newFunctionOfArity(arity int, rng *rand.Rand) op.Operator {
+func (est Estimator) newFunctionOfArity(arity uint, rng *rand.Rand) op.Operator {
 	return est.fm[arity][rng.Intn(len(est.fm[arity]))]
 }
 
-func (est Estimator) mutateOperator(operator op.Operator, rng *rand.Rand) op.Operator {
-	switch operator.(type) {
-	case op.Constant:
-		return op.Constant{Value: operator.(op.Constant).Value * rng.NormFloat64()}
-	case op.Variable:
-		return est.newVariable(rng)
-	default:
-		return est.newFunctionOfArity(operator.Arity(), rng)
-	}
-}
-
-func (est Estimator) newTree(rng *rand.Rand) tree.Tree {
+func (est Estimator) newOperator(rng *rand.Rand) op.Operator {
 	return est.Initializer.Apply(
 		est.MinHeight,
 		est.MaxHeight,
 		func(leaf bool, rng *rand.Rand) op.Operator {
 			if leaf {
-				if rng.Float64() < est.PConstant {
-					return est.newConstant(rng)
+				if rng.Float64() < est.PConst {
+					return est.newConst(rng)
 				}
-				return est.newVariable(rng)
+				return est.newVar(rng)
 			}
 			return est.newFunction(rng)
 		},
@@ -208,21 +198,25 @@ func (est Estimator) newTree(rng *rand.Rand) tree.Tree {
 	)
 }
 
-// newProgram can be used by gago to produce a new Genome.
-func (est *Estimator) newProgram(rng *rand.Rand) gago.Genome {
-	var prog = Program{
-		Tree:      est.newTree(rng),
-		Estimator: est,
+func (est Estimator) newProgram(rng *rand.Rand) Program {
+	return Program{
+		Op:        est.newOperator(rng),
+		Estimator: &est,
 	}
-	return &prog
 }
 
-// newProgramPolish can be used by gago to produce a new Genome.
-func (est *Estimator) newProgramPolish(rng *rand.Rand) gago.Genome {
-	var (
-		bestProg   = est.GA.HallOfFame[0].Genome.(*Program)
-		progPolish = newProgramPolish(*bestProg)
-	)
-	progPolish.jitterConstants(rng)
-	return &progPolish
+func (est Estimator) mutateOperator(operator op.Operator, rng *rand.Rand) op.Operator {
+	switch operator.(type) {
+	case op.Const:
+		return op.Const{Value: operator.(op.Const).Value * rng.NormFloat64()}
+	case op.Var:
+		return est.newVar(rng)
+	default:
+		newOp := est.newFunctionOfArity(operator.Arity(), rng)
+		// Don't forget to set the new Operator's operands
+		for i := uint(0); i < operator.Arity(); i++ {
+			newOp = newOp.SetOperand(i, operator.Operand(i))
+		}
+		return newOp
+	}
 }

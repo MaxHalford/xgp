@@ -11,7 +11,6 @@ import (
 
 	"github.com/MaxHalford/xgp/metrics"
 	"github.com/MaxHalford/xgp/op"
-	"github.com/MaxHalford/xgp/tree"
 )
 
 // A Config contains all the information needed to instantiate an Estimator.
@@ -22,18 +21,18 @@ type Config struct {
 	ParsimonyCoeff float64
 	// Function parameters
 	Funcs     string
-	ConstMax  float64
 	ConstMin  float64
-	PConstant float64
+	ConstMax  float64
+	PConst    float64
 	PFull     float64
-	PTerminal float64
-	MinHeight int
-	MaxHeight int
+	PLeaf     float64
+	MinHeight uint
+	MaxHeight uint
 	// Genetic algorithm parameters
-	NPopulations       int
-	NIndividuals       int
-	NGenerations       int
-	NPolishGenerations int
+	NPopulations       uint
+	NIndividuals       uint
+	NGenerations       uint
+	NPolishGenerations uint
 	PHoistMutation     float64
 	PSubtreeMutation   float64
 	PPointMutation     float64
@@ -43,7 +42,8 @@ type Config struct {
 	RNG *rand.Rand
 }
 
-// String representation of a Config.
+// String representation of a Config. It returns a string containing the
+// parameters line by line.
 func (c Config) String() string {
 	var (
 		buffer     = new(bytes.Buffer)
@@ -55,16 +55,16 @@ func (c Config) String() string {
 			[]string{"Functions", c.Funcs},
 			[]string{"Constant minimum", strconv.FormatFloat(c.ConstMin, 'g', -1, 64)},
 			[]string{"Constant maximum", strconv.FormatFloat(c.ConstMax, 'g', -1, 64)},
-			[]string{"Constant probability", strconv.FormatFloat(c.PConstant, 'g', -1, 64)},
+			[]string{"Constant probability", strconv.FormatFloat(c.PConst, 'g', -1, 64)},
 			[]string{"Full initialization probability", strconv.FormatFloat(c.PFull, 'g', -1, 64)},
-			[]string{"Terminal probability", strconv.FormatFloat(c.PTerminal, 'g', -1, 64)},
-			[]string{"Minimum height", strconv.Itoa(c.MinHeight)},
-			[]string{"Maximum height", strconv.Itoa(c.MaxHeight)},
+			[]string{"Terminal probability", strconv.FormatFloat(c.PLeaf, 'g', -1, 64)},
+			[]string{"Minimum height", strconv.Itoa(int(c.MinHeight))},
+			[]string{"Maximum height", strconv.Itoa(int(c.MaxHeight))},
 
-			[]string{"Number of populations", strconv.Itoa(c.NPopulations)},
-			[]string{"Number of individuals per population", strconv.Itoa(c.NIndividuals)},
-			[]string{"Number of generations", strconv.Itoa(c.NGenerations)},
-			[]string{"Number of tuning generations", strconv.Itoa(c.NPolishGenerations)},
+			[]string{"Number of populations", strconv.Itoa(int(c.NPopulations))},
+			[]string{"Number of individuals per population", strconv.Itoa(int(c.NIndividuals))},
+			[]string{"Number of generations", strconv.Itoa(int(c.NGenerations))},
+			[]string{"Number of tuning generations", strconv.Itoa(int(c.NPolishGenerations))},
 			[]string{"Hoist mutation probability", strconv.FormatFloat(c.PHoistMutation, 'g', -1, 64)},
 			[]string{"Subtree mutation probability", strconv.FormatFloat(c.PSubtreeMutation, 'g', -1, 64)},
 			[]string{"Point mutation probability", strconv.FormatFloat(c.PPointMutation, 'g', -1, 64)},
@@ -103,20 +103,23 @@ func (c Config) NewEstimator() (*Estimator, error) {
 		Functions:  functions,
 		EvalMetric: c.EvalMetric,
 		LossMetric: c.LossMetric,
-		Initializer: RampedHaldAndHalfInitializer{
-			PFull:           c.PFull,
-			FullInitializer: FullInitializer{},
-			GrowInitializer: GrowInitializer{
-				PTerminal: c.PTerminal,
+		Initializer: RampedHaldAndHalfInit{
+			PFull:    c.PFull,
+			FullInit: FullInit{},
+			GrowInit: GrowInit{
+				PLeaf: c.PLeaf,
 			},
 		},
 	}
 
 	// Set the initial GA
 	estimator.GA = &gago.GA{
-		NewGenome: estimator.newProgram,
-		NPops:     c.NPopulations,
-		PopSize:   c.NIndividuals,
+		NewGenome: func(rng *rand.Rand) gago.Genome {
+			var prog = estimator.newProgram(rng)
+			return &prog
+		},
+		NPops:   int(c.NPopulations),
+		PopSize: int(c.NIndividuals),
 		Model: gaModel{
 			selector: gago.SelTournament{
 				NContestants: 3,
@@ -129,7 +132,7 @@ func (c Config) NewEstimator() (*Estimator, error) {
 	}
 
 	// Build fm which maps arities to functions
-	estimator.fm = make(map[int][]op.Operator)
+	estimator.fm = make(map[uint][]op.Operator)
 	for _, f := range estimator.Functions {
 		var arity = f.Arity()
 		if _, ok := estimator.fm[arity]; ok {
@@ -139,53 +142,47 @@ func (c Config) NewEstimator() (*Estimator, error) {
 		}
 	}
 
-	// Set crossover methods
-
+	// Set subtree crossover
 	estimator.SubtreeCrossover = SubtreeCrossover{
-		Picker: WeightedPicker{
-			Weighting: Weighting{
-				PConstant: 0.1, // MAGIC
-				PVariable: 0.1, // MAGIC
-				PFunction: 0.8, // MAGIC
-			},
+		Weight: func(operator op.Operator, depth uint, rng *rand.Rand) float64 {
+			if operator.Arity() == 0 {
+				return 0.1 // MAGIC
+			}
+			return 0.9 // MAGIC
 		},
 	}
 
-	// Set mutation methods
-
+	// Set point mutation
 	estimator.PointMutation = PointMutation{
-		Weighting: Weighting{
-			PConstant: c.PointMutationRate,
-			PVariable: c.PointMutationRate,
-			PFunction: c.PointMutationRate,
-		},
-		MutateOperator: func(operator op.Operator, rng *rand.Rand) op.Operator {
+		Rate: c.PointMutationRate,
+		Mutate: func(operator op.Operator, rng *rand.Rand) op.Operator {
 			return estimator.mutateOperator(operator, rng)
 		},
 	}
 
+	// Set hoist mutation
 	estimator.HoistMutation = HoistMutation{
-		Picker: WeightedPicker{
-			Weighting: Weighting{
-				PConstant: 0.1, // MAGIC
-				PVariable: 0.1, // MAGIC
-				PFunction: 0.8, // MAGIC
-			},
+		Weight1: func(operator op.Operator, depth uint, rng *rand.Rand) float64 {
+			if operator.Arity() == 0 {
+				return 0.1 // MAGIC
+			}
+			return 0.9 // MAGIC
+		},
+		Weight2: func(operator op.Operator, depth uint, rng *rand.Rand) float64 {
+			return 1 // MAGIC
 		},
 	}
 
+	// Set subtree mutation
 	estimator.SubtreeMutation = SubtreeMutation{
-		Crossover: SubtreeCrossover{
-			Picker: WeightedPicker{
-				Weighting: Weighting{
-					PConstant: 0.1, // MAGIC
-					PVariable: 0.1, // MAGIC
-					PFunction: 0.8, // MAGIC
-				},
-			},
+		Weight: func(operator op.Operator, depth uint, rng *rand.Rand) float64 {
+			if operator.Arity() == 0 {
+				return 0.1 // MAGIC
+			}
+			return 0.9 // MAGIC
 		},
-		NewTree: func(rng *rand.Rand) tree.Tree {
-			return estimator.newTree(rng)
+		NewOperator: func(rng *rand.Rand) op.Operator {
+			return estimator.newOperator(rng)
 		},
 	}
 
@@ -198,14 +195,14 @@ func NewConfigWithDefaults() Config {
 		LossMetric: metrics.MeanSquaredError{},
 		EvalMetric: metrics.MeanSquaredError{},
 
-		Funcs:     "sum,sub,mul,div",
+		Funcs:     "add,sub,mul,div",
 		ConstMin:  -5,
 		ConstMax:  5,
 		MinHeight: 3,
 		MaxHeight: 5,
-		PConstant: 0.5,
+		PConst:    0.5,
 		PFull:     0.5,
-		PTerminal: 0.3,
+		PLeaf:     0.3,
 
 		NPopulations:       1,
 		NIndividuals:       100,

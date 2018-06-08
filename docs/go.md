@@ -37,7 +37,7 @@ func (est *Estimator) Fit(
     // Required arguments
     XTrain [][]float64,
     YTrain []float64,
-    // Optional arguments
+    // Optional arguments (can safely be nil)
     WTrain []float64,
     XVal [][]float64,
     YVal []float64,

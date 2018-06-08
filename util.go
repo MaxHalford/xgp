@@ -2,6 +2,7 @@ package xgp
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"time"
 )
@@ -19,6 +20,19 @@ func randInt(min, max int, rng *rand.Rand) int {
 // randFloat64 returns a random float64 in [min, max].
 func randFloat64(min, max float64, rng *rand.Rand) float64 {
 	return min + rng.Float64()*(max-min)
+}
+
+// sigmoid applies the sigmoid transform.
+func sigmoid(y float64) float64 {
+	return 1 / (1 + math.Exp(-y))
+}
+
+// binary converts a float64 to 0 or 1.
+func binary(y float64) float64 {
+	if y > 0.5 {
+		return 1
+	}
+	return 0
 }
 
 // countDistinct returns the number of unique elements in a slice of float64s.

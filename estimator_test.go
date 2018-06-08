@@ -3,9 +3,10 @@ package xgp
 import (
 	"fmt"
 	"math/rand"
+	"testing"
 )
 
-func ExampleEstimator() {
+func TestEstimator(t *testing.T) {
 	var conf = NewConfigWithDefaults()
 	conf.RNG = rand.New(rand.NewSource(42))
 	conf.NIndividuals = 20
@@ -28,6 +29,6 @@ func ExampleEstimator() {
 	var pred, _ = prog.PredictPartial([]float64{4, 7}, false)
 	fmt.Println(pred)
 	// Output:
-	// sum(X[1], X[0])
+	// x1+x0
 	// 11
 }

@@ -47,7 +47,7 @@ go run main.go fit examples/breast_cancer/train.csv \
     --parsimony 0.001 \
     --gens 30 \
     --indis 100 \
-    --funcs sum,sub,mul,div,cos,sin,min,max
+    --funcs add,sub,mul,div,cos,sin,min,max
 go run main.go predict examples/breast_cancer/val.csv \
     --output examples/breast_cancer/submission.csv \
     --target has_cancer \

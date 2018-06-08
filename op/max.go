@@ -1,27 +1,72 @@
 package op
 
-// Max returns the maximum of two operands.
-type Max struct{}
+import "fmt"
 
-// Eval Max.
-func (op Max) Eval(X [][]float64) []float64 {
-	var Y = make([]float64, len(X[0]))
-	for i := range X[0] {
-		if X[0][i] > X[1][i] {
-			Y[i] = X[0][i]
-		} else {
-			Y[i] = X[1][i]
-		}
-	}
-	return Y
+// The Max operator.
+type Max struct {
+	Left, Right Operator
 }
 
-// Arity of Max.
-func (op Max) Arity() int {
+// Eval takes the maximum along aligned values.
+func (max Max) Eval(X [][]float64) []float64 {
+	x := max.Left.Eval(X)
+	y := max.Right.Eval(X)
+	for i, yi := range y {
+		if yi > x[i] {
+			x[i] = yi
+		}
+	}
+	return x
+}
+
+// Arity of Max is 2.
+func (max Max) Arity() uint {
 	return 2
 }
 
-// String representation of Max.
-func (op Max) String() string {
+// Operand returns one of Max's operands, or nil.
+func (max Max) Operand(i uint) Operator {
+	switch i {
+	case 0:
+		return max.Left
+	case 1:
+		return max.Right
+	default:
+		return nil
+	}
+}
+
+// SetOperand replaces one of Max's operands if i is equal to 0 or 1.
+func (max Max) SetOperand(i uint, op Operator) Operator {
+	switch i {
+	case 0:
+		return Max{op, max.Right}
+	case 1:
+		return Max{max.Left, op}
+	default:
+		return max
+	}
+}
+
+// Simplify Max.
+func (max Max) Simplify() Operator {
+	return max
+}
+
+// Diff computes the following derivative: max(u, v)' = ((u + v + |u - v|) / 2)'
+func (max Max) Diff(i uint) Operator {
+	return Div{
+		Add{Add{max.Left, max.Right}, Abs{Sub{max.Left, max.Right}}},
+		Const{2},
+	}.Diff(i)
+}
+
+// Name of Max is "max".
+func (max Max) Name() string {
 	return "max"
+}
+
+// String formatting.
+func (max Max) String() string {
+	return fmt.Sprintf("max(%s, %s)", max.Left, max.Right)
 }

@@ -1,25 +1,61 @@
 package op
 
-import "math"
+import (
+	"fmt"
+	"math"
+)
 
-// Sin computes the sine of an operand.
-type Sin struct{}
-
-// Eval Sin.
-func (op Sin) Eval(X [][]float64) []float64 {
-	var Y = make([]float64, len(X[0]))
-	for i, x := range X[0] {
-		Y[i] = math.Sin(x)
-	}
-	return Y
+// The Sin operator.
+type Sin struct {
+	Op Operator
 }
 
-// Arity of Sin.
-func (op Sin) Arity() int {
+// Eval computes the sine of each value.
+func (sin Sin) Eval(X [][]float64) []float64 {
+	x := sin.Op.Eval(X)
+	for i, xi := range x {
+		x[i] = math.Sin(xi)
+	}
+	return x
+}
+
+// Arity of Sin is 1.
+func (sin Sin) Arity() uint {
 	return 1
 }
 
-// String representation of Sin.
-func (op Sin) String() string {
+// Operand returns Sin's operand or nil.
+func (sin Sin) Operand(i uint) Operator {
+	if i == 0 {
+		return sin.Op
+	}
+	return nil
+}
+
+// SetOperand replaces Sin's operand if i is equal to 0.
+func (sin Sin) SetOperand(i uint, op Operator) Operator {
+	if i == 0 {
+		sin.Op = op
+	}
+	return sin
+}
+
+// Simplify Sin.
+func (sin Sin) Simplify() Operator {
+	return sin
+}
+
+// Diff computes the following derivative: sin(u)' = u' * cos(u)
+func (sin Sin) Diff(i uint) Operator {
+	return Mul{sin.Op.Diff(i), Cos{sin.Op}}
+}
+
+// Name of Sin is "sin".
+func (sin Sin) Name() string {
 	return "sin"
+}
+
+// String formatting.
+func (sin Sin) String() string {
+	return fmt.Sprintf("sin(%s)", sin.Op)
 }

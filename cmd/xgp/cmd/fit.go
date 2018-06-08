@@ -25,17 +25,17 @@ var (
 	fitFuncs     string
 	fitConstMin  float64
 	fitConstMax  float64
-	fitPConstant float64
+	fitPConst    float64
 	fitPFull     float64
-	fitPTerminal float64
-	fitMinHeight int
-	fitMaxHeight int
+	fitPLeaf     float64
+	fitMinHeight uint
+	fitMaxHeight uint
 
 	// Genetic algorithm parameters
-	fitNPopulations       int
-	fitNIndividuals       int
-	fitNGenerations       int
-	fitNPolishGenerations int
+	fitNPopulations       uint
+	fitNIndividuals       uint
+	fitNGenerations       uint
+	fitNPolishGenerations uint
 	fitPHoistMutation     float64
 	fitPSubtreeMutation   float64
 	fitPPointMutation     float64
@@ -68,19 +68,19 @@ func init() {
 	fitCmd.Flags().StringVarP(&fitEvalMetricName, "eval", "", "", "metric used for monitoring progress; defaults to loss_metric if not provided")
 	fitCmd.Flags().Float64VarP(&fitParsimonyCoeff, "parsimony", "", 0.00001, "parsimony coefficient by which a program's height is multiplied to decrease it's fitness")
 
-	fitCmd.Flags().StringVarP(&fitFuncs, "funcs", "", "sum,sub,mul,div", "comma-separated set of authorised functions")
+	fitCmd.Flags().StringVarP(&fitFuncs, "funcs", "", "add,sub,mul,div", "comma-separated set of authorised functions")
 	fitCmd.Flags().Float64VarP(&fitConstMin, "const_min", "", -5, "lower bound used for generating random constants")
 	fitCmd.Flags().Float64VarP(&fitConstMax, "const_max", "", 5, "upper bound used for generating random constants")
-	fitCmd.Flags().Float64VarP(&fitPConstant, "p_constant", "", 0.5, "probability of generating a constant instead of a variable")
+	fitCmd.Flags().Float64VarP(&fitPConst, "p_const", "", 0.5, "probability of generating a constant instead of a variable")
 	fitCmd.Flags().Float64VarP(&fitPFull, "p_full", "", 0.5, "probability of using full initialization during ramped half-and-half initialization")
-	fitCmd.Flags().Float64VarP(&fitPTerminal, "p_terminal", "", 0.3, "probability of generating a terminal node during ramped half-and-half initialization")
-	fitCmd.Flags().IntVarP(&fitMinHeight, "min_height", "", 3, "minimum program height used in ramped half-and-half initialization")
-	fitCmd.Flags().IntVarP(&fitMaxHeight, "max_height", "", 5, "maximum program height used in ramped half-and-half initialization")
+	fitCmd.Flags().Float64VarP(&fitPLeaf, "p_leaf", "", 0.3, "probability of generating a terminal node during ramped half-and-half initialization")
+	fitCmd.Flags().UintVarP(&fitMinHeight, "min_height", "", 3, "minimum program height used in ramped half-and-half initialization")
+	fitCmd.Flags().UintVarP(&fitMaxHeight, "max_height", "", 5, "maximum program height used in ramped half-and-half initialization")
 
-	fitCmd.Flags().IntVarP(&fitNPopulations, "pops", "", 1, "number of populations used in the GA")
-	fitCmd.Flags().IntVarP(&fitNIndividuals, "indis", "", 100, "number of individuals used for each population in the GA")
-	fitCmd.Flags().IntVarP(&fitNGenerations, "gens", "", 30, "number of generations used in the GA")
-	fitCmd.Flags().IntVarP(&fitNPolishGenerations, "polish_gens", "", 0, "number of generations used to polish the best program")
+	fitCmd.Flags().UintVarP(&fitNPopulations, "pops", "", 1, "number of populations used in the GA")
+	fitCmd.Flags().UintVarP(&fitNIndividuals, "indis", "", 100, "number of individuals used for each population in the GA")
+	fitCmd.Flags().UintVarP(&fitNGenerations, "gens", "", 30, "number of generations used in the GA")
+	fitCmd.Flags().UintVarP(&fitNPolishGenerations, "polish_gens", "", 0, "number of generations used to polish the best program")
 	fitCmd.Flags().Float64VarP(&fitPHoistMutation, "p_hoist_mut", "", 0.1, "probability of applying hoist mutation")
 	fitCmd.Flags().Float64VarP(&fitPSubtreeMutation, "p_sub_mut", "", 0.1, "probability of applying subtree mutation")
 	fitCmd.Flags().Float64VarP(&fitPPointMutation, "p_point_mut", "", 0.1, "probability of applying point mutation")
@@ -135,14 +135,16 @@ var fitCmd = &cobra.Command{
 
 		// Instantiate an Estimator
 		var config = xgp.Config{
-			ConstMin: fitConstMin,
-			ConstMax: fitConstMax,
+			LossMetric:     lossMetric,
+			EvalMetric:     evalMetric,
+			ParsimonyCoeff: fitParsimonyCoeff,
 
-			EvalMetric: evalMetric,
-			LossMetric: lossMetric,
-
-			Funcs: fitFuncs,
-
+			Funcs:     fitFuncs,
+			ConstMin:  fitConstMin,
+			ConstMax:  fitConstMax,
+			PConst:    fitPConst,
+			PFull:     fitPFull,
+			PLeaf:     fitPLeaf,
 			MinHeight: fitMinHeight,
 			MaxHeight: fitMaxHeight,
 
@@ -150,19 +152,11 @@ var fitCmd = &cobra.Command{
 			NIndividuals:       fitNIndividuals,
 			NGenerations:       fitNGenerations,
 			NPolishGenerations: fitNPolishGenerations,
-
-			PConstant: fitPConstant,
-			PFull:     fitPFull,
-			PTerminal: fitPTerminal,
-
-			PHoistMutation:    fitPHoistMutation,
-			PPointMutation:    fitPPointMutation,
-			PSubtreeMutation:  fitPSubtreeMutation,
-			PointMutationRate: fitPointMutationRate,
-
-			PSubtreeCrossover: fitPSubtreeCrossover,
-
-			ParsimonyCoeff: fitParsimonyCoeff,
+			PHoistMutation:     fitPHoistMutation,
+			PSubtreeMutation:   fitPSubtreeMutation,
+			PPointMutation:     fitPPointMutation,
+			PointMutationRate:  fitPointMutationRate,
+			PSubtreeCrossover:  fitPSubtreeCrossover,
 
 			RNG: rng,
 		}
