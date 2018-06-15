@@ -69,18 +69,18 @@ func (add Add) Simplify() Operator {
 	add.Right = add.Right.Simplify()
 
 	// Try to simplify u+v
-	simpl, ok := add.simplify(add.Left, add.Right)
+	simple, ok := add.simplify(add.Left, add.Right)
 	if ok {
-		return simpl.Simplify()
+		return simple
 	}
 
 	// Try to simplify v+u
-	simpl, ok = add.simplify(add.Right, add.Left)
+	simple, ok = add.simplify(add.Right, add.Left)
 	if ok {
-		return simpl.Simplify()
+		return simple
 	}
 
-	return simpl
+	return simple
 }
 
 // Diff computes the following derivative: (u + v)' = u' + v'

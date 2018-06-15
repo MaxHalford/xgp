@@ -21,9 +21,9 @@ Because XGP doesn't require the loss metric to be differentiable you can use any
 | Authorized functions | `funcs` | `Funcs` | `funcs` | sum,sub,mul,div |
 | Constant minimum | `const_min` | `ConstMin` | `const_min` | -5 |
 | Constant maximum | `const_max` | `ConstMax` | `const_max` | 5 |
-| Constant probability  | `p_const` | `PConstant` | `p_const` | 0.5 |
+| Constant probability  | `p_const` | `PConst` | `p_const` | 0.5 |
 | Full initialization probability  | `p_full` | `PFull` | `p_full` | 0.5 |
-| Terminal probability  | `p_terminal` | `PTerminal` | `p_terminal` | 0.3 |
+| Terminal probability  | `p_leaf` | `PLeaf` | `p_leaf` | 0.3 |
 | Minimum height | `min_height` | `MinHeight` | `min_height` | 3 |
 | Maximum height | `max_height` | `MaxHeight` | `max_height` | 5 |
 

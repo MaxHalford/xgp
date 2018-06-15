@@ -43,6 +43,7 @@ func (inv Inv) SetOperand(i uint, op Operator) Operator {
 
 // Simplify Inv.
 func (inv Inv) Simplify() Operator {
+	inv.Op = inv.Op.Simplify()
 	switch operand := inv.Op.(type) {
 	case Inv:
 		return operand.Op

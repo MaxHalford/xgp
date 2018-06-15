@@ -46,8 +46,8 @@ func (est Estimator) String() string {
 }
 
 // BestProgram returns the Estimator's best obtained Program.
-func (est Estimator) BestProgram() *Program {
-	return est.GA.HallOfFame[0].Genome.(*Program)
+func (est Estimator) BestProgram() Program {
+	return *est.GA.HallOfFame[0].Genome.(*Program)
 }
 
 // Fit an Estimator to a dataset.
@@ -158,9 +158,16 @@ func (est *Estimator) Fit(
 		progress.Stop()
 	}
 
-	// Return the best program
+	// Extract the best Program
 	var best = est.BestProgram()
-	return *best, nil
+
+	// Polish the best Program
+	best, err = polishProgram(best)
+	if err != nil {
+		return best, err
+	}
+
+	return best, nil
 }
 
 func (est Estimator) newConst(rng *rand.Rand) op.Const {

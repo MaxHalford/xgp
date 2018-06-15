@@ -23,5 +23,5 @@ func (sc SubtreeCrossover) Apply(op1, op2 op.Operator, rng *rand.Rand) (op.Opera
 		sub1, i = op.Sample(op1, sc.Weight, rng)
 		sub2, j = op.Sample(op2, sc.Weight, rng)
 	)
-	return op.Replace(op1, i, sub2), op.Replace(op2, j, sub1)
+	return op.ReplaceAt(op1, i, sub2), op.ReplaceAt(op2, j, sub1)
 }

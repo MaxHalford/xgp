@@ -31,6 +31,6 @@ The data munging is adapted from this [Kaggle kernel](https://www.kaggle.com/sci
 
 ```sh
 >>> python examples/titanic/create_datasets.py
->>> xgp fit examples/titanic/train.csv --loss logloss --eval accuracy --val examples/titanic/val.csv --target Survived --ignore PassengerId --parsimony 0.001 --gens 64 --indis 256 --funcs sum,sub,mul,div,cos,sin,min,max
+>>> xgp fit examples/titanic/train.csv --loss logloss --eval accuracy --val examples/titanic/val.csv --target Survived --ignore PassengerId --parsimony 0.001 --gens 64 --indis 256 --funcs add,sub,mul,div,cos,sin,min,max
 >>> xgp predict examples/titanic/test.csv --output examples/titanic/submission.csv --keep PassengerId --target Survived
 ```

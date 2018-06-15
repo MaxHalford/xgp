@@ -39,7 +39,7 @@ func (hm HoistMutation) Apply(operator op.Operator, rng *rand.Rand) op.Operator 
 		subOp, pos  = op.Sample(operator, hm.Weight1, rng)
 		subSubOp, _ = op.Sample(subOp, hm.Weight2, rng)
 	)
-	return op.Replace(operator, pos, subSubOp)
+	return op.ReplaceAt(operator, pos, subSubOp)
 }
 
 // SubtreeMutation selects a suboperator at random and replaces it with a new
@@ -52,5 +52,5 @@ type SubtreeMutation struct {
 // Apply SubtreeMutation.
 func (sm SubtreeMutation) Apply(operator op.Operator, rng *rand.Rand) op.Operator {
 	var _, pos = op.Sample(operator, sm.Weight, rng)
-	return op.Replace(operator, pos, sm.NewOperator(rng))
+	return op.ReplaceAt(operator, pos, sm.NewOperator(rng))
 }

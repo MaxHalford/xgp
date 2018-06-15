@@ -1,11 +1,8 @@
 package op
 
 import (
-	"encoding/json"
-	"fmt"
 	"math/rand"
 	"sort"
-	"strconv"
 
 	"github.com/gonum/floats"
 )
@@ -48,7 +45,7 @@ func walk(op Operator, f func(op Operator, depth, pos uint) (stop bool)) {
 	step(op, 0)
 }
 
-// CalcHeight returns the height of an Operator. The height of a Operator is
+// CalcHeight returns the height of an Operator. The height of an Operator is
 // the height of it's root node. The height of a node is the number of edges
 // on the longest path between the node and a leaf.
 func CalcHeight(op Operator) (d uint) {
@@ -62,10 +59,10 @@ func CalcHeight(op Operator) (d uint) {
 	return
 }
 
-// Count returns the number of Operators that match a criteria.
-func Count(op Operator, crit func(Operator) bool) (n uint) {
+// Count returns the number of Operators that match a condition.
+func Count(op Operator, condition func(Operator) bool) (n uint) {
 	var f = func(op Operator, depth, pos uint) (stop bool) {
-		if crit(op) {
+		if condition(op) {
 			n++
 		}
 		return
@@ -87,6 +84,11 @@ func CountLeaves(op Operator) uint {
 // CountConsts returns the number of Consts in an Operator.
 func CountConsts(op Operator) uint {
 	return Count(op, func(op Operator) bool { _, ok := op.(Const); return ok })
+}
+
+// CountVars returns the number of Vars in an Operator.
+func CountVars(op Operator) uint {
+	return Count(op, func(op Operator) bool { _, ok := op.(Var); return ok })
 }
 
 // Select returns the nth Operator in an Operator.
@@ -131,16 +133,21 @@ func Sample(
 	return Select(op, i), i
 }
 
-// Replace replaces op's suboperator at position pos.
-func Replace(op Operator, pos uint, with Operator) Operator {
+// Replace replaces an Operator if a given condition is met.
+func Replace(
+	op Operator,
+	when func(Operator) bool,
+	how func(Operator) Operator,
+	stopAtFirst bool,
+) Operator {
 	var walk func(op Operator) (Operator, bool)
 	walk = func(op Operator) (Operator, bool) {
-		if pos == 0 {
-			return with, true
+		if when(op) {
+			return how(op), stopAtFirst
 		}
-		pos--
 		for i := uint(0); i < op.Arity(); i++ {
 			operand, stop := walk(op.Operand(i))
+			op = op.SetOperand(i, operand)
 			if stop {
 				return op.SetOperand(i, operand), true
 			}
@@ -151,78 +158,54 @@ func Replace(op Operator, pos uint, with Operator) Operator {
 	return op
 }
 
-type serialOperator struct {
-	Type     string           `json:"type"`
-	Value    string           `json:"value"`
-	Operands []serialOperator `json:"operands"`
+// ReplaceAt replaces op's suboperator at position pos.
+func ReplaceAt(op Operator, pos uint, with Operator) Operator {
+	var when = func(op Operator) bool {
+		if pos == 0 {
+			return true
+		}
+		pos--
+		return false
+	}
+	return Replace(op, when, func(op Operator) Operator { return with }, true)
 }
 
-func serializeOp(op Operator) serialOperator {
+// GetConsts returns the Consts contained in an Operator. Pre-order traversal
+// is used.
+func GetConsts(op Operator) []float64 {
 	var (
-		arity  = op.Arity()
-		serial = serialOperator{Operands: make([]serialOperator, arity)}
+		values = make([]float64, 0)
+		step   = func(op Operator, depth, pos uint) (stop bool) {
+			if c, ok := op.(Const); ok {
+				values = append(values, c.Value)
+			}
+			return false
+		}
 	)
-	for i := uint(0); i < op.Arity(); i++ {
-		serial.Operands[i] = serializeOp(op.Operand(i))
-	}
-	switch op := op.(type) {
-	case Const:
-		serial.Type = "const"
-		serial.Value = strconv.FormatFloat(op.Value, 'f', -1, 64)
-	case Var:
-		serial.Type = "var"
-		serial.Value = strconv.Itoa(int(op.Index))
-	default:
-		serial.Type = "func"
-		serial.Value = op.Name()
-	}
-	return serial
+	walk(op, step)
+	return values
 }
 
-func parseOp(serial serialOperator) (Operator, error) {
-	var op Operator
-	switch serial.Type {
-	case "const":
-		val, err := strconv.ParseFloat(serial.Value, 64)
-		if err != nil {
-			return nil, err
+// SetConsts sets the value of each Const. Pre-order traversal is used.
+func SetConsts(op Operator, values []float64) Operator {
+	var (
+		counter uint
+		walk    func(op Operator) (Operator, bool)
+	)
+	walk = func(op Operator) (Operator, bool) {
+		if _, ok := op.(Const); ok {
+			defer func() { counter++ }()
+			return Const{values[counter]}, int(counter) == len(values)
 		}
-		op = Const{val}
-	case "var":
-		idx, err := strconv.Atoi(serial.Value)
-		if err != nil {
-			return nil, err
+		for i := uint(0); i < op.Arity(); i++ {
+			operand, stop := walk(op.Operand(i))
+			op = op.SetOperand(i, operand)
+			if stop {
+				return op, true
+			}
 		}
-		op = Var{uint(idx)}
-	default:
-		function, err := ParseFunc(serial.Value)
-		if err != nil {
-			return nil, err
-		}
-		op = function
+		return op, int(counter) == len(values)
 	}
-	// Set the operands; this is where the recursion happens
-	for i, serialOperand := range serial.Operands {
-		operand, err := parseOp(serialOperand)
-		if err != nil {
-			return nil, err
-		}
-		op = op.SetOperand(uint(i), operand)
-	}
-	return op, nil
-}
-
-// MarshalJSON serializes an Operator into JSON.
-func MarshalJSON(op Operator) ([]byte, error) {
-	return json.Marshal(serializeOp(op))
-}
-
-// UnmarshalJSON parses JSON into an Operator.
-func UnmarshalJSON(raw []byte) (Operator, error) {
-	var serial = serialOperator{}
-	if err := json.Unmarshal(raw, &serial); err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
-	return parseOp(serial)
+	op, _ = walk(op)
+	return op
 }
