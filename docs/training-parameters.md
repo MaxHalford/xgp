@@ -11,6 +11,7 @@ The following tables gives an overview of all the parameters that can be used fo
 | Loss metric; is used to if the task is classification or regression | `loss` | `LossMetricName` | `loss_metric` | mae (for Python `XGPClassifier` defaults to logloss) |
 | Evaluation metric | `eval` | `EvalMetricName` | `eval_metric` (in `fit`) | Same as loss metric |
 | Parsimony coefficient | `parsimony` | `ParsimonyCoefficient` | `parsimony_coeff` | 0.00001 |
+| Polish the best program | `polish` | `PolishBest` | `polish_best` | true |
 
 Because XGP doesn't require the loss metric to be differentiable you can use any loss metric available. If you don't specify an evaluation metric then it will default to using the loss metric.
 
@@ -21,9 +22,9 @@ Because XGP doesn't require the loss metric to be differentiable you can use any
 | Authorized functions | `funcs` | `Funcs` | `funcs` | sum,sub,mul,div |
 | Constant minimum | `const_min` | `ConstMin` | `const_min` | -5 |
 | Constant maximum | `const_max` | `ConstMax` | `const_max` | 5 |
-| Constant probability  | `p_const` | `PConstant` | `p_const` | 0.5 |
+| Constant probability  | `p_const` | `PConst` | `p_const` | 0.5 |
 | Full initialization probability  | `p_full` | `PFull` | `p_full` | 0.5 |
-| Terminal probability  | `p_terminal` | `PTerminal` | `p_terminal` | 0.3 |
+| Terminal probability  | `p_leaf` | `PLeaf` | `p_leaf` | 0.3 |
 | Minimum height | `min_height` | `MinHeight` | `min_height` | 3 |
 | Maximum height | `max_height` | `MaxHeight` | `max_height` | 5 |
 
@@ -36,7 +37,6 @@ These parameters are used to generate the initial set of programs. They will als
 | Number of populations | `pops` | `NPopulations` | `n_populations` | 1 |
 | Number of individuals per population | `indis` | `NIndividuals` | `n_individuals` | 50 |
 | Number of generations | `gens` | `NGenerations` | `n_generations` | 30 |
-| Number of polish generations | `polish_gens` | `NPolishGenerations` | `n_polish_generations` | 0 |
 | Hoist mutation probability | `p_hoist_mut` | `PHoistMutation` | `p_hoist_mutation` | 0.1 |
 | Subtree mutation probability | `p_sub_mut` | `PSubtreeMutation` | `p_sub_tree_mutation` | 0.1 |
 | Point mutation probability | `p_point_mut` | `PPointMutation` | `p_point_mutation` | 0.1 |

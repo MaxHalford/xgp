@@ -3,6 +3,7 @@ package op
 import (
 	"fmt"
 	"math/rand"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -169,7 +170,7 @@ func TestSample(t *testing.T) {
 	}
 }
 
-func TestReplace(t *testing.T) {
+func TestReplaceAt(t *testing.T) {
 	var testCases = []struct {
 		in   Operator
 		pos  uint
@@ -197,7 +198,7 @@ func TestReplace(t *testing.T) {
 	}
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
-			out := Replace(tc.in, tc.pos, tc.with)
+			out := ReplaceAt(tc.in, tc.pos, tc.with)
 			if out != tc.out {
 				t.Errorf("Expected %s, got %s", tc.out, out)
 			}
@@ -222,5 +223,56 @@ func TestMarshalJSON(t *testing.T) {
 	if newOp != op {
 		t.Errorf("Expected %s, got %s", op, newOp)
 		return
+	}
+}
+
+func TestGetConsts(t *testing.T) {
+	var testCases = []struct {
+		op     Operator
+		values []float64
+	}{
+		{
+			op:     Const{42},
+			values: []float64{42},
+		},
+		{
+			op:     Add{Const{1}, Const{0}},
+			values: []float64{1, 0},
+		},
+	}
+	for i, tc := range testCases {
+		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
+			values := GetConsts(tc.op)
+			if !reflect.DeepEqual(values, tc.values) {
+				t.Errorf("Expected %v, got %v", tc.values, values)
+			}
+		})
+	}
+}
+
+func TestSetConsts(t *testing.T) {
+	var testCases = []struct {
+		in     Operator
+		values []float64
+		out    Operator
+	}{
+		{
+			in:     Const{42},
+			values: []float64{43},
+			out:    Const{43},
+		},
+		{
+			in:     Add{Const{1}, Const{0}},
+			values: []float64{0, 1},
+			out:    Add{Const{0}, Const{1}},
+		},
+	}
+	for i, tc := range testCases {
+		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
+			out := SetConsts(tc.in, tc.values)
+			if !reflect.DeepEqual(out, tc.out) {
+				t.Errorf("Expected %v, got %v", tc.out, out)
+			}
+		})
 	}
 }

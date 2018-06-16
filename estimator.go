@@ -24,7 +24,6 @@ type Estimator struct {
 	Functions        []op.Operator
 	Initializer      Initializer
 	GA               *gago.GA
-	PolishGA         *gago.GA
 	PointMutation    PointMutation
 	SubtreeMutation  SubtreeMutation
 	HoistMutation    HoistMutation
@@ -46,8 +45,58 @@ func (est Estimator) String() string {
 }
 
 // BestProgram returns the Estimator's best obtained Program.
-func (est Estimator) BestProgram() *Program {
-	return est.GA.HallOfFame[0].Genome.(*Program)
+func (est Estimator) BestProgram() Program {
+	return *est.GA.HallOfFame[0].Genome.(*Program)
+}
+
+func (est Estimator) progress(start time.Time) string {
+	// Add time spent
+	var message = fmtDuration(time.Since(start))
+	// Add training error
+	var (
+		best            = est.BestProgram()
+		yTrainPred, err = best.Predict(est.XTrain, est.EvalMetric.NeedsProbabilities())
+	)
+	if err != nil {
+		return ""
+	}
+	trainScore, err := est.EvalMetric.Apply(est.YTrain, yTrainPred, nil)
+	if err != nil {
+		return ""
+	}
+	message += fmt.Sprintf(", train %s: %.5f", est.EvalMetric.String(), trainScore)
+	// Add validation error
+	if est.XVal != nil && est.YVal != nil {
+		yEvalPred, err := best.Predict(est.XVal, est.EvalMetric.NeedsProbabilities())
+		if err != nil {
+			return ""
+		}
+		evalScore, err := est.EvalMetric.Apply(est.YVal, yEvalPred, est.WVal)
+		if err != nil {
+			return ""
+		}
+		message += fmt.Sprintf(", val %s: %.5f", est.EvalMetric.String(), evalScore)
+	}
+	return message
+}
+
+// polishBest takes the best Program and polishes it.
+func (est *Estimator) polishBest() error {
+	var (
+		best          = *est.GA.HallOfFame[0].Genome.(*Program)
+		polished, err = polishProgram(best)
+	)
+	if err != nil {
+		return err
+	}
+	fitness, err := polished.Evaluate()
+	if err != nil {
+		return err
+	}
+	if fitness < est.GA.HallOfFame[0].Fitness {
+		est.GA.HallOfFame[0].Genome = &polished
+	}
+	return nil
 }
 
 // Fit an Estimator to a dataset.
@@ -97,70 +146,49 @@ func (est *Estimator) Fit(
 		var start = time.Now()
 		progress = uiprogress.New()
 		progress.Start()
-		bar = progress.AddBar(int(est.NGenerations))
+		var steps = int(est.NGenerations)
+		if est.PolishBest {
+			steps++
+		}
+		bar = progress.AddBar(steps)
 		bar.PrependCompleted()
 		bar.AppendFunc(func(b *uiprogress.Bar) string {
-			// Add time spent
-			var message = fmtDuration(time.Since(start))
-			// Add training error
-			var (
-				best            = est.BestProgram()
-				yTrainPred, err = best.Predict(est.XTrain, est.EvalMetric.NeedsProbabilities())
-			)
-			if err != nil {
-				return ""
-			}
-			trainScore, err := est.EvalMetric.Apply(est.YTrain, yTrainPred, nil)
-			if err != nil {
-				return ""
-			}
-			message += fmt.Sprintf(", train %s: %.5f", est.EvalMetric.String(), trainScore)
-			// Add validation error
-			if est.XVal != nil && est.YVal != nil {
-				yEvalPred, err := best.Predict(est.XVal, est.EvalMetric.NeedsProbabilities())
-				if err != nil {
-					return ""
-				}
-				evalScore, err := est.EvalMetric.Apply(est.YVal, yEvalPred, est.WVal)
-				if err != nil {
-					return ""
-				}
-				message += fmt.Sprintf(", val %s: %.5f", est.EvalMetric.String(), evalScore)
-			}
-			return message
+			return est.progress(start)
 		})
 	}
 
+	// Make sure the progress bar will stop
+	if verbose {
+		defer func() { progress.Stop() }()
+	}
+
 	for i := uint(0); i < est.NGenerations; i++ {
+		// Update progress
 		if verbose {
 			bar.Incr()
 		}
-
-		// Make sure each tree has at least a height of 2
-		/*for j, pop := range est.GA.Populations {
-			for k, indi := range pop.Individuals {
-				var prog = indi.Genome.(*Program)
-				if prog.Tree.Height() < 2 { // MAGIC
-					est.SubtreeMutation.Apply(&prog.Tree, pop.RNG)
-					est.GA.Populations[j].Individuals[k].Evaluate()
-				}
-			}
-		}*/
-
+		// Evolve a new generation
 		err = est.GA.Evolve()
 		if err != nil {
-			return prog, err
+			return
 		}
 	}
 
-	// Close the progress bar
-	if verbose {
-		progress.Stop()
+	// Polish the best Program
+	if est.PolishBest {
+		err = est.polishBest()
+		if err != nil {
+			return
+		}
+		if verbose {
+			bar.Incr()
+		}
 	}
 
-	// Return the best program
+	// Extract the best Program
 	var best = est.BestProgram()
-	return *best, nil
+
+	return best, nil
 }
 
 func (est Estimator) newConst(rng *rand.Rand) op.Const {
@@ -178,7 +206,11 @@ func (est Estimator) newFunction(rng *rand.Rand) op.Operator {
 }
 
 func (est Estimator) newFunctionOfArity(arity uint, rng *rand.Rand) op.Operator {
-	return est.fm[arity][rng.Intn(len(est.fm[arity]))]
+	n := len(est.fm[arity])
+	if n == 0 {
+		return nil
+	}
+	return est.fm[arity][rng.Intn(n)]
 }
 
 func (est Estimator) newOperator(rng *rand.Rand) op.Operator {
@@ -213,6 +245,11 @@ func (est Estimator) mutateOperator(operator op.Operator, rng *rand.Rand) op.Ope
 		return est.newVar(rng)
 	default:
 		newOp := est.newFunctionOfArity(operator.Arity(), rng)
+		// newFunctionOfArity might return nil if there are no available
+		// operators of the given arity
+		if newOp == nil {
+			return operator
+		}
 		// Don't forget to set the new Operator's operands
 		for i := uint(0); i < operator.Arity(); i++ {
 			newOp = newOp.SetOperand(i, operator.Operand(i))

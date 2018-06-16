@@ -19,6 +19,7 @@ type Config struct {
 	LossMetric     metrics.Metric
 	EvalMetric     metrics.Metric
 	ParsimonyCoeff float64
+	PolishBest     bool
 	// Function parameters
 	Funcs     string
 	ConstMin  float64
@@ -29,15 +30,14 @@ type Config struct {
 	MinHeight uint
 	MaxHeight uint
 	// Genetic algorithm parameters
-	NPopulations       uint
-	NIndividuals       uint
-	NGenerations       uint
-	NPolishGenerations uint
-	PHoistMutation     float64
-	PSubtreeMutation   float64
-	PPointMutation     float64
-	PointMutationRate  float64
-	PSubtreeCrossover  float64
+	NPopulations      uint
+	NIndividuals      uint
+	NGenerations      uint
+	PHoistMutation    float64
+	PSubtreeMutation  float64
+	PPointMutation    float64
+	PointMutationRate float64
+	PSubtreeCrossover float64
 	// Other
 	RNG *rand.Rand
 }
@@ -51,6 +51,7 @@ func (c Config) String() string {
 			[]string{"Loss metric", c.LossMetric.String()},
 			[]string{"Evaluation metric", c.EvalMetric.String()},
 			[]string{"Parsimony coefficient", strconv.FormatFloat(c.ParsimonyCoeff, 'g', -1, 64)},
+			[]string{"Polish the best program", strconv.FormatBool(c.PolishBest)},
 
 			[]string{"Functions", c.Funcs},
 			[]string{"Constant minimum", strconv.FormatFloat(c.ConstMin, 'g', -1, 64)},
@@ -64,7 +65,6 @@ func (c Config) String() string {
 			[]string{"Number of populations", strconv.Itoa(int(c.NPopulations))},
 			[]string{"Number of individuals per population", strconv.Itoa(int(c.NIndividuals))},
 			[]string{"Number of generations", strconv.Itoa(int(c.NGenerations))},
-			[]string{"Number of tuning generations", strconv.Itoa(int(c.NPolishGenerations))},
 			[]string{"Hoist mutation probability", strconv.FormatFloat(c.PHoistMutation, 'g', -1, 64)},
 			[]string{"Subtree mutation probability", strconv.FormatFloat(c.PSubtreeMutation, 'g', -1, 64)},
 			[]string{"Point mutation probability", strconv.FormatFloat(c.PPointMutation, 'g', -1, 64)},
@@ -192,8 +192,10 @@ func (c Config) NewEstimator() (*Estimator, error) {
 // NewConfigWithDefaults returns a Config with default values.
 func NewConfigWithDefaults() Config {
 	return Config{
-		LossMetric: metrics.MeanSquaredError{},
-		EvalMetric: metrics.MeanSquaredError{},
+		LossMetric:     metrics.MeanSquaredError{},
+		EvalMetric:     metrics.MeanSquaredError{},
+		ParsimonyCoeff: 0,
+		PolishBest:     true,
 
 		Funcs:     "add,sub,mul,div",
 		ConstMin:  -5,
@@ -204,16 +206,13 @@ func NewConfigWithDefaults() Config {
 		PFull:     0.5,
 		PLeaf:     0.3,
 
-		NPopulations:       1,
-		NIndividuals:       100,
-		NGenerations:       30,
-		NPolishGenerations: 0,
-		PHoistMutation:     0.1,
-		PPointMutation:     0.1,
-		PSubtreeMutation:   0.1,
-		PointMutationRate:  0.3,
-		PSubtreeCrossover:  0.5,
-
-		ParsimonyCoeff: 0,
+		NPopulations:      1,
+		NIndividuals:      100,
+		NGenerations:      30,
+		PHoistMutation:    0.1,
+		PPointMutation:    0.1,
+		PSubtreeMutation:  0.1,
+		PointMutationRate: 0.3,
+		PSubtreeCrossover: 0.5,
 	}
 }

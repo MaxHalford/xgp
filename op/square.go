@@ -42,22 +42,20 @@ func (square Square) SetOperand(i uint, op Operator) Operator {
 
 // Simplify Square.
 func (square Square) Simplify() Operator {
+	square.Op = square.Op.Simplify()
 	switch op := square.Op.(type) {
 	case Const:
-		if op.Value == 0 || op.Value == 1 {
-			return op
-		}
+		return Const{math.Pow(op.Value, 2)}
 	case Neg:
 		return Square{op.Op}
 	default:
-		break
+		return square
 	}
-	return square
 }
 
 // Diff computes the following derivative: (u²)' = 2u'u
 func (square Square) Diff(i uint) Operator {
-	return Mul{square.Op.Diff(i), Mul{Const{2}, square.Op}}
+	return Mul{Const{2}, Mul{square.Op.Diff(i), square.Op}}
 }
 
 // Name of Square is "square".

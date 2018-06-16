@@ -52,6 +52,11 @@ func (div Div) SetOperand(i uint, op Operator) Operator {
 
 // Simplify Div.
 func (div Div) Simplify() Operator {
+
+	// Simplify branches
+	div.Left = div.Left.Simplify()
+	div.Right = div.Right.Simplify()
+
 	switch right := div.Right.(type) {
 	case Const:
 		switch right.Value {

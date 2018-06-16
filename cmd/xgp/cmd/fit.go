@@ -20,6 +20,7 @@ var (
 	fitLossMetricName string
 	fitEvalMetricName string
 	fitParsimonyCoeff float64
+	fitPolishBest     bool
 
 	// Function parameters
 	fitFuncs     string
@@ -32,15 +33,14 @@ var (
 	fitMaxHeight uint
 
 	// Genetic algorithm parameters
-	fitNPopulations       uint
-	fitNIndividuals       uint
-	fitNGenerations       uint
-	fitNPolishGenerations uint
-	fitPHoistMutation     float64
-	fitPSubtreeMutation   float64
-	fitPPointMutation     float64
-	fitPointMutationRate  float64
-	fitPSubtreeCrossover  float64
+	fitNPopulations      uint
+	fitNIndividuals      uint
+	fitNGenerations      uint
+	fitPHoistMutation    float64
+	fitPSubtreeMutation  float64
+	fitPPointMutation    float64
+	fitPointMutationRate float64
+	fitPSubtreeCrossover float64
 
 	// Other
 	fitSeed int64
@@ -67,6 +67,7 @@ func init() {
 	fitCmd.Flags().StringVarP(&fitLossMetricName, "loss", "", "mae", "metric used for scoring program; determines the task to perform")
 	fitCmd.Flags().StringVarP(&fitEvalMetricName, "eval", "", "", "metric used for monitoring progress; defaults to loss_metric if not provided")
 	fitCmd.Flags().Float64VarP(&fitParsimonyCoeff, "parsimony", "", 0.00001, "parsimony coefficient by which a program's height is multiplied to decrease it's fitness")
+	fitCmd.Flags().BoolVarP(&fitPolishBest, "polish", "", true, "whether or not to polish the best program")
 
 	fitCmd.Flags().StringVarP(&fitFuncs, "funcs", "", "add,sub,mul,div", "comma-separated set of authorised functions")
 	fitCmd.Flags().Float64VarP(&fitConstMin, "const_min", "", -5, "lower bound used for generating random constants")
@@ -80,7 +81,6 @@ func init() {
 	fitCmd.Flags().UintVarP(&fitNPopulations, "pops", "", 1, "number of populations used in the GA")
 	fitCmd.Flags().UintVarP(&fitNIndividuals, "indis", "", 100, "number of individuals used for each population in the GA")
 	fitCmd.Flags().UintVarP(&fitNGenerations, "gens", "", 30, "number of generations used in the GA")
-	fitCmd.Flags().UintVarP(&fitNPolishGenerations, "polish_gens", "", 0, "number of generations used to polish the best program")
 	fitCmd.Flags().Float64VarP(&fitPHoistMutation, "p_hoist_mut", "", 0.1, "probability of applying hoist mutation")
 	fitCmd.Flags().Float64VarP(&fitPSubtreeMutation, "p_sub_mut", "", 0.1, "probability of applying subtree mutation")
 	fitCmd.Flags().Float64VarP(&fitPPointMutation, "p_point_mut", "", 0.1, "probability of applying point mutation")
@@ -138,6 +138,7 @@ var fitCmd = &cobra.Command{
 			LossMetric:     lossMetric,
 			EvalMetric:     evalMetric,
 			ParsimonyCoeff: fitParsimonyCoeff,
+			PolishBest:     fitPolishBest,
 
 			Funcs:     fitFuncs,
 			ConstMin:  fitConstMin,
@@ -148,15 +149,14 @@ var fitCmd = &cobra.Command{
 			MinHeight: fitMinHeight,
 			MaxHeight: fitMaxHeight,
 
-			NPopulations:       fitNPopulations,
-			NIndividuals:       fitNIndividuals,
-			NGenerations:       fitNGenerations,
-			NPolishGenerations: fitNPolishGenerations,
-			PHoistMutation:     fitPHoistMutation,
-			PSubtreeMutation:   fitPSubtreeMutation,
-			PPointMutation:     fitPPointMutation,
-			PointMutationRate:  fitPointMutationRate,
-			PSubtreeCrossover:  fitPSubtreeCrossover,
+			NPopulations:      fitNPopulations,
+			NIndividuals:      fitNIndividuals,
+			NGenerations:      fitNGenerations,
+			PHoistMutation:    fitPHoistMutation,
+			PSubtreeMutation:  fitPSubtreeMutation,
+			PPointMutation:    fitPPointMutation,
+			PointMutationRate: fitPointMutationRate,
+			PSubtreeCrossover: fitPSubtreeCrossover,
 
 			RNG: rng,
 		}

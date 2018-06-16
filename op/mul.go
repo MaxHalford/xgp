@@ -68,14 +68,17 @@ func (mul Mul) simplify(left, right Operator) (Operator, bool) {
 // Simplify Mul.
 func (mul Mul) Simplify() Operator {
 
+	// Simplify branches
 	mul.Left = mul.Left.Simplify()
 	mul.Right = mul.Right.Simplify()
 
+	// Try to simplify left/right
 	simpl, ok := mul.simplify(mul.Left, mul.Right)
 	if ok {
 		return simpl.Simplify()
 	}
 
+	// Try to simplify right/left
 	simpl, ok = mul.simplify(mul.Right, mul.Left)
 	if ok {
 		return simpl.Simplify()

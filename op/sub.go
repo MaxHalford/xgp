@@ -47,12 +47,17 @@ func (sub Sub) SetOperand(i uint, op Operator) Operator {
 
 // Simplify Sub.
 func (sub Sub) Simplify() Operator {
+
+	// Simplify branches
+	sub.Left = sub.Left.Simplify()
+	sub.Right = sub.Right.Simplify()
+
 	switch left := sub.Left.(type) {
 	case Const:
 		switch left.Value {
 		// 0 - x = -x
 		case 0:
-			return Neg{}
+			return Neg{sub.Right}
 		default:
 			break
 		}

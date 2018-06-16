@@ -42,6 +42,7 @@ func (abs Abs) SetOperand(i uint, op Operator) Operator {
 
 // Simplify Abs.
 func (abs Abs) Simplify() Operator {
+	abs.Op = abs.Op.Simplify()
 	switch operand := abs.Op.(type) {
 	case Abs:
 		// ||x|| = |x|

@@ -42,7 +42,7 @@ func (sin Sin) SetOperand(i uint, op Operator) Operator {
 
 // Simplify Sin.
 func (sin Sin) Simplify() Operator {
-	return sin
+	return Sin{sin.Op.Simplify()}
 }
 
 // Diff computes the following derivative: sin(u)' = u' * cos(u)

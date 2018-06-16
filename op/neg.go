@@ -39,9 +39,15 @@ func (neg Neg) SetOperand(i uint, op Operator) Operator {
 
 // Simplify Neg.
 func (neg Neg) Simplify() Operator {
+	neg.Op = neg.Op.Simplify()
 	switch operand := neg.Op.(type) {
 	case Neg:
 		return operand.Op
+	case Const:
+		if operand.Value == 0 {
+			return operand
+		}
+		return neg
 	default:
 		return neg
 	}
