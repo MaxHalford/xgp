@@ -81,12 +81,13 @@ type Program struct {
 }
 ```
 
-The `Estimator` gives the `Program` context about what it is it has to learn. The `Estimator` contains a `LossMetric` field with determines how to score each `Program` and if the task is classification or regression. The `Estimator` is also the global structure that organizes the programs and handles the learning process. If you want to use XGP with Go then you'll be working with the `Estimator` struct.  importantly
+The `Estimator` gives the `Program` context about what it is it has to learn. The `Estimator` contains a `LossMetric` field with determines how to score each `Program` and if the task is classification or regression. The `Estimator` is also the global structure that organizes the programs and handles the learning process. If you want to use XGP with Go then you'll be working with the `Estimator` struct. However you shouldn't directly instantiate an `Estimator`; instead you should use the `Config` struct where you can speficify training parameters before calling the `NewEstimator` method.
 
 The [`metrics` package](https://github.com/MaxHalford/xgp/tree/master/metrics) is a completely independent package that contains implementations of machine learning metrics (such as accuracy and logarithmic loss). In theory it could be traded for another package if something standardized comes up.
 
-XGP does a few fancy tricks to make it competitive:
+XGP does a few fancy tricks to be competitive:
 
-- Tree simplication: because programs are randomly modified it can occur that some parts of the program can be simplified. For example the formula `sum(mul(2, 3), 4)` can simply be replaced by `10`. In practice catching these simplifications and avoiding unnecessary computations helps a lot.
+- Tree simplication: because programs are randomly modified it can occur that some parts of the program can be simplified. For example the formula `add(mul(2, 3), 4)` can simply be replaced by `10`. In practice catching these simplifications and avoiding unnecessary computations helps a lot.
 - Regularization: [bloat](http://dces.essex.ac.uk/staff/poli/gp-field-guide/113Bloat.html) is an unavoidable problem in genetic program. As the generations go on the programs will have a tendency to grow in complexity. First of all this increases the running time. It also produces complex programs that tend to overfit. By default XGP uses a **parsimony coefficient** to penalize programs based on the number of operators they possess.
+- Constant optimisation: the constants of the best program are "polished" using [CMA-ES](https://www.wikiwand.com/en/CMA-ES). This usually takes a negligible amount of time and helps a lot in practice.
 - More coming!

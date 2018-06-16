@@ -1,19 +1,9 @@
 package xgp
 
 import (
-	"errors"
-	"math"
-
 	"github.com/MaxHalford/xgp/op"
 	"gonum.org/v1/gonum/optimize"
 )
-
-func meanFloat64s(fs []float64) (mean float64) {
-	for _, f := range fs {
-		mean += f
-	}
-	return mean / float64(len(fs))
-}
 
 func polishProgram(prog Program) (Program, error) {
 	// Extract the Program's Consts
@@ -24,79 +14,25 @@ func polishProgram(prog Program) (Program, error) {
 		return prog, nil
 	}
 
-	// Determine the loss function
 	var (
-		nVars = op.CountVars(prog.Op)
-		loss  = op.Square{op.Sub{prog.Op, op.Var{nVars}}}
-	)
-	nVars++
-
-	// Replace the Consts by Vars in the loss
-	var (
-		when = func(operator op.Operator) bool {
-			_, ok := operator.(op.Const)
-			return ok
-		}
-		nConsts uint
-		how     = func(operator op.Operator) op.Operator {
-			defer func() { nConsts++ }()
-			return op.Var{nVars + nConsts}
-		}
-	)
-	loss, ok := op.Replace(loss, when, how, false).Simplify().(op.Square)
-	if !ok {
-		return prog, errors.New("Bad type conversion")
-	}
-
-	// Build the loss derivatives
-	var derivatives = make([]op.Operator, nConsts)
-	for i := uint(0); i < nConsts; i++ {
-		derivatives[i] = loss.Diff(nVars + i).(op.Mul).Right.Simplify()
-	}
-
-	// Replace the Consts by Vars in each derivative
-	when = func(operator op.Operator) bool {
-		v, ok := operator.(op.Var)
-		return ok && v.Index >= nVars
-	}
-	how = func(operator op.Operator) op.Operator {
-		defer func() { nConsts++ }()
-		return op.Const{consts[nConsts]}
-	}
-	for i := range derivatives {
-		nConsts = 0
-		derivatives[i] = op.Replace(derivatives[i], when, how, false)
-	}
-
-	// Replace the Consts by Vars in the loss
-	nConsts = 0
-	loss = op.Replace(loss, when, how, false).(op.Square)
-
-	// Define the function to minimize and the associated gradient
-	var m = make([][]float64, len(prog.Estimator.XTrain)+1)
-	for i, xi := range prog.Estimator.XTrain {
-		m[i] = xi
-	}
-	m[len(m)-1] = prog.Estimator.YTrain
-	var (
-		p = optimize.Problem{
+		problem = optimize.Problem{
 			Func: func(x []float64) float64 {
-				return math.Pow(meanFloat64s(op.SetConsts(loss, x).Eval(m)), 2)
-			},
-			Grad: func(grad []float64, x []float64) {
-				for i, d := range derivatives {
-					grad[i] = meanFloat64s(op.SetConsts(d, x).Eval(m))
-				}
+				fitness, _ := Program{
+					Op:        op.SetConsts(prog.Op, x),
+					Estimator: prog.Estimator,
+				}.Evaluate()
+				return fitness
 			},
 		}
+		method = &optimize.CmaEsChol{InitMean: consts}
 	)
 
 	// Run the optimisation
-	result, err := optimize.Local(p, consts, nil, nil)
+	result, err := optimize.Global(problem, len(consts), nil, method)
 	if err != nil {
 		return prog, err
 	}
 
-	// Return the Program with the best Consts
-	return Program{Op: op.SetConsts(prog.Op, result.X)}, nil
+	prog.Op = op.SetConsts(prog.Op, result.X)
+	return prog, nil
 }

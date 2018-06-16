@@ -91,6 +91,22 @@ func CountVars(op Operator) uint {
 	return Count(op, func(op Operator) bool { _, ok := op.(Var); return ok })
 }
 
+// CountDistinctVars returns the number of distinct Vars in an Operator.
+func CountDistinctVars(op Operator) uint {
+	var seen = make(map[uint]bool)
+	return Count(op, func(op Operator) bool {
+		v, ok := op.(Var)
+		if !ok {
+			return false
+		}
+		if seen[v.Index] {
+			return false
+		}
+		seen[v.Index] = true
+		return true
+	})
+}
+
 // Select returns the nth Operator in an Operator.
 func Select(op Operator, pos uint) Operator {
 	var (
@@ -208,4 +224,20 @@ func SetConsts(op Operator, values []float64) Operator {
 	}
 	op, _ = walk(op)
 	return op
+}
+
+// GetVars returns the Vars contained in an Operator. Pre-order traversal is
+// used.
+func GetVars(op Operator) []uint {
+	var (
+		idxs = make([]uint, 0)
+		step = func(op Operator, depth, pos uint) (stop bool) {
+			if c, ok := op.(Var); ok {
+				idxs = append(idxs, c.Index)
+			}
+			return false
+		}
+	)
+	walk(op, step)
+	return idxs
 }
