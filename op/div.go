@@ -12,11 +12,7 @@ func (div Div) Eval(X [][]float64) []float64 {
 	x := div.Left.Eval(X)
 	y := div.Right.Eval(X)
 	for i, yi := range y {
-		if yi == 0 {
-			x[i] = 1
-		} else {
-			x[i] /= yi
-		}
+		x[i] = safeDiv(x[i], yi)
 	}
 	return x
 }
@@ -68,16 +64,12 @@ func (div Div) Simplify() Operator {
 			return div.Left
 		// x / -1 = -x
 		case -1:
-			return Neg{div.Left}
-		default:
-			break
+			return Neg{div.Left}.Simplify()
 		}
 		switch left := div.Left.(type) {
 		// a / b = c
 		case Const:
-			return Const{left.Value / right.Value}
-		default:
-			break
+			return Const{safeDiv(left.Value, right.Value)}
 		}
 	case Var:
 		if left, ok := div.Left.(Var); ok {
@@ -86,17 +78,20 @@ func (div Div) Simplify() Operator {
 				return Const{1}
 			}
 		}
-	default:
-		break
 	}
 	switch left := div.Left.(type) {
 	case Const:
+		switch left.Value {
 		// 0 / x = 0
-		if left.Value == 0 {
+		case 0:
 			return Const{0}
+		// 1 / x = inv(x)
+		case 1:
+			return Inv{div.Right}.Simplify()
+		// -1 / x = inv(-x)
+		case -1:
+			return Inv{Neg{div.Right}}.Simplify()
 		}
-	default:
-		break
 	}
 	return div
 }

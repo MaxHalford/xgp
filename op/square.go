@@ -47,10 +47,9 @@ func (square Square) Simplify() Operator {
 	case Const:
 		return Const{math.Pow(op.Value, 2)}
 	case Neg:
-		return Square{op.Op}
-	default:
-		return square
+		return Square{op.Op}.Simplify()
 	}
+	return square
 }
 
 // Diff computes the following derivative: (u²)' = 2u'u

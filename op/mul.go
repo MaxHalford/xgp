@@ -50,17 +50,21 @@ func (mul Mul) simplify(left, right Operator) (Operator, bool) {
 	switch left := left.(type) {
 	case Const:
 		switch left.Value {
+		// 0 * a = 0
 		case 0:
 			return Const{0}, true
+		// 1 * a = a
 		case 1:
 			return right, true
+		// -1 * a = -a
 		case -1:
 			return Neg{right}, true
-		default:
-			break
 		}
-	default:
-		break
+		switch right := right.(type) {
+		// a * b = c
+		case Const:
+			return Const{left.Value * right.Value}, true
+		}
 	}
 	return mul, false
 }

@@ -50,7 +50,21 @@ func (min Min) SetOperand(i uint, op Operator) Operator {
 
 // Simplify Min.
 func (min Min) Simplify() Operator {
-	return Min{min.Left.Simplify(), min.Right.Simplify()}
+	min.Left = min.Left.Simplify()
+	min.Right = min.Right.Simplify()
+	// min(a, b) = c
+	left, ok := min.Left.(Const)
+	if !ok {
+		return min
+	}
+	right, ok := min.Right.(Const)
+	if !ok {
+		return min
+	}
+	if left.Value > right.Value {
+		return right
+	}
+	return left
 }
 
 // Diff computes the following derivative: min(u, v)' = ((u + v - |u - v|) / 2)'

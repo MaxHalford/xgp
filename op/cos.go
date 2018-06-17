@@ -43,6 +43,10 @@ func (cos Cos) SetOperand(i uint, op Operator) Operator {
 // Simplify Cos.
 func (cos Cos) Simplify() Operator {
 	cos.Op = cos.Op.Simplify()
+	switch op := cos.Op.(type) {
+	case Const:
+		return Const{math.Cos(op.Value)}
+	}
 	return cos
 }
 

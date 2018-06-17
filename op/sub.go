@@ -57,16 +57,12 @@ func (sub Sub) Simplify() Operator {
 		switch left.Value {
 		// 0 - x = -x
 		case 0:
-			return Neg{sub.Right}
-		default:
-			break
+			return Neg{sub.Right}.Simplify()
 		}
 		switch right := sub.Right.(type) {
 		// a - b = c
 		case Const:
 			return Const{left.Value - right.Value}
-		default:
-			break
 		}
 	case Var:
 		if right, ok := sub.Right.(Var); ok {
@@ -75,8 +71,6 @@ func (sub Sub) Simplify() Operator {
 				return Const{0}
 			}
 		}
-	default:
-		break
 	}
 	switch right := sub.Right.(type) {
 	case Const:
@@ -84,8 +78,6 @@ func (sub Sub) Simplify() Operator {
 		if right.Value == 0 {
 			return sub.Left
 		}
-	default:
-		break
 	}
 	return sub
 }

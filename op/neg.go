@@ -44,13 +44,9 @@ func (neg Neg) Simplify() Operator {
 	case Neg:
 		return operand.Op
 	case Const:
-		if operand.Value == 0 {
-			return operand
-		}
-		return neg
-	default:
-		return neg
+		return Const{-operand.Value}
 	}
+	return neg
 }
 
 // Diff compute the following derivative: (-u)' = -u'.

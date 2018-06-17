@@ -50,13 +50,15 @@ func (add Add) simplify(left, right Operator) (Operator, bool) {
 	switch left := left.(type) {
 	case Const:
 		switch left.Value {
+		// 0 + a = a
 		case 0:
 			return right, true
-		default:
-			break
 		}
-	default:
-		break
+		switch right := right.(type) {
+		// a + b = c
+		case Const:
+			return Const{left.Value + right.Value}, true
+		}
 	}
 	return add, false
 }

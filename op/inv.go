@@ -2,6 +2,13 @@ package op
 
 import "fmt"
 
+func safeDiv(a, b float64) float64 {
+	if b == 0 {
+		return 1
+	}
+	return a / b
+}
+
 // The Inv operator.
 type Inv struct {
 	Op Operator
@@ -11,11 +18,7 @@ type Inv struct {
 func (inv Inv) Eval(X [][]float64) []float64 {
 	x := inv.Op.Eval(X)
 	for i, xi := range x {
-		if xi == 0 {
-			x[i] = 1
-		} else {
-			x[i] = 1 / xi
-		}
+		x[i] = safeDiv(1, xi)
 	}
 	return x
 }
@@ -45,11 +48,14 @@ func (inv Inv) SetOperand(i uint, op Operator) Operator {
 func (inv Inv) Simplify() Operator {
 	inv.Op = inv.Op.Simplify()
 	switch operand := inv.Op.(type) {
+	// 1 / (1 / x) = x
 	case Inv:
 		return operand.Op
-	default:
-		return inv
+	// 1 / a = b
+	case Const:
+		return Const{safeDiv(1, operand.Value)}
 	}
+	return inv
 }
 
 // Diff compute the following derivative: (1 / u)' = -u' / u².

@@ -50,9 +50,11 @@ func (abs Abs) Simplify() Operator {
 	case Neg:
 		// |-x| = x
 		return operand.Op
-	default:
-		return abs
+	case Const:
+		// |a| = b
+		return Const{math.Abs(operand.Value)}
 	}
+	return abs
 }
 
 // Diff compute the following derivative: |u|' = uu' / |u|.
@@ -67,5 +69,5 @@ func (abs Abs) Name() string {
 
 // String formatting.
 func (abs Abs) String() string {
-	return fmt.Sprintf("1/%s", parenthesize(abs.Op))
+	return fmt.Sprintf("|%s|", parenthesize(abs.Op))
 }

@@ -50,7 +50,21 @@ func (max Max) SetOperand(i uint, op Operator) Operator {
 
 // Simplify Max.
 func (max Max) Simplify() Operator {
-	return Max{max.Left.Simplify(), max.Right.Simplify()}
+	max.Left = max.Left.Simplify()
+	max.Right = max.Right.Simplify()
+	// max(a, b) = c
+	left, ok := max.Left.(Const)
+	if !ok {
+		return max
+	}
+	right, ok := max.Right.(Const)
+	if !ok {
+		return max
+	}
+	if left.Value > right.Value {
+		return left
+	}
+	return right
 }
 
 // Diff computes the following derivative: max(u, v)' = ((u + v + |u - v|) / 2)'
