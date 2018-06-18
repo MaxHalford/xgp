@@ -1,11 +1,15 @@
 package xgp
 
 import (
+	"math"
+	"math/rand"
+
 	"github.com/MaxHalford/xgp/op"
+	xrand "golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/optimize"
 )
 
-func polishProgram(prog Program) (Program, error) {
+func polishProgram(prog Program, rng *rand.Rand) (Program, error) {
 	// Extract the Program's Consts
 	var consts = op.GetConsts(prog.Op)
 
@@ -24,7 +28,11 @@ func polishProgram(prog Program) (Program, error) {
 				return fitness
 			},
 		}
-		method = &optimize.CmaEsChol{InitMean: consts}
+		method = &optimize.CmaEsChol{
+			InitMean:   consts,
+			Population: int(15 + math.Floor(3*math.Log(float64(len(consts))))), // MAGIC
+			Src:        xrand.NewSource(rng.Uint64()),
+		}
 	)
 
 	// Run the optimisation

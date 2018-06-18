@@ -84,7 +84,7 @@ func (est Estimator) progress(start time.Time) string {
 func (est *Estimator) polishBest() error {
 	var (
 		best          = *est.GA.HallOfFame[0].Genome.(*Program)
-		polished, err = polishProgram(best)
+		polished, err = polishProgram(best, est.RNG)
 	)
 	if err != nil {
 		return err

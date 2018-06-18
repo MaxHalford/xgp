@@ -17,11 +17,6 @@ func randInt(min, max int, rng *rand.Rand) int {
 	return min + rng.Intn(max-min+1)
 }
 
-// randFloat64 returns a random float64 in [min, max].
-func randFloat64(min, max float64, rng *rand.Rand) float64 {
-	return min + rng.Float64()*(max-min)
-}
-
 // sigmoid applies the sigmoid transform.
 func sigmoid(y float64) float64 {
 	return 1 / (1 + math.Exp(-y))

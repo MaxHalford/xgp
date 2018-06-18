@@ -51,7 +51,7 @@ func (c Config) String() string {
 			[]string{"Loss metric", c.LossMetric.String()},
 			[]string{"Evaluation metric", c.EvalMetric.String()},
 			[]string{"Parsimony coefficient", strconv.FormatFloat(c.ParsimonyCoeff, 'g', -1, 64)},
-			[]string{"Polish the best program", strconv.FormatBool(c.PolishBest)},
+			[]string{"Polish best program", strconv.FormatBool(c.PolishBest)},
 
 			[]string{"Functions", c.Funcs},
 			[]string{"Constant minimum", strconv.FormatFloat(c.ConstMin, 'g', -1, 64)},
@@ -193,7 +193,7 @@ func (c Config) NewEstimator() (*Estimator, error) {
 func NewConfigWithDefaults() Config {
 	return Config{
 		LossMetric:     metrics.MeanSquaredError{},
-		EvalMetric:     metrics.MeanSquaredError{},
+		EvalMetric:     nil,
 		ParsimonyCoeff: 0,
 		PolishBest:     true,
 

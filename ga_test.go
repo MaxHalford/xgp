@@ -2,6 +2,7 @@ package xgp
 
 import (
 	"fmt"
+	"math/rand"
 	"testing"
 
 	"github.com/MaxHalford/xgp/metrics"
@@ -41,7 +42,7 @@ func TestEvaluate(t *testing.T) {
 	}
 }
 
-/*func TestMutate(t *testing.T) {
+func TestMutate(t *testing.T) {
 	var (
 		rng       = newRand()
 		testCases = []struct {
@@ -88,4 +89,10 @@ func TestEvaluate(t *testing.T) {
 		})
 	}
 }
-*/
+
+func TestGAValidate(t *testing.T) {
+	var err = gaModel{}.Validate()
+	if err != nil {
+		t.Errorf("Expected nil, got %s", err)
+	}
+}

@@ -1,20 +1,24 @@
 package xgp
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/MaxHalford/xgp/metrics"
+)
 
 func ExampleConfig() {
-	var (
-		conf     = NewConfigWithDefaults()
-		est, err = conf.NewEstimator()
-	)
+	var conf = NewConfigWithDefaults()
+	conf.LossMetric = metrics.BinaryF1{}
+	var est, err = conf.NewEstimator()
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println(est)
 	// Output:
-	// Loss metric: mse
-	// Evaluation metric: mse
+	// Loss metric: neg_f1
+	// Evaluation metric: f1
 	// Parsimony coefficient: 0
+	// Polish best program: true
 	// Functions: add,sub,mul,div
 	// Constant minimum: -5
 	// Constant maximum: 5
@@ -26,7 +30,6 @@ func ExampleConfig() {
 	// Number of populations: 1
 	// Number of individuals per population: 100
 	// Number of generations: 30
-	// Number of tuning generations: 0
 	// Hoist mutation probability: 0.1
 	// Subtree mutation probability: 0.1
 	// Point mutation probability: 0.1
