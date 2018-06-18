@@ -97,5 +97,5 @@ func (add Add) Name() string {
 
 // String formatting.
 func (add Add) String() string {
-	return fmt.Sprintf("%s+%s", parenthesize(add.Left), parenthesize(add.Right))
+	return fmt.Sprintf("%s+%s", add.Left, add.Right)
 }

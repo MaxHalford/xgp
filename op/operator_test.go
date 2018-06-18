@@ -2,11 +2,189 @@ package op
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"reflect"
 	"testing"
 	"time"
 )
+
+func TestEval(t *testing.T) {
+	var testCases = []struct {
+		in  [][]float64
+		op  Operator
+		out []float64
+	}{
+		{
+			in:  [][]float64{[]float64{1, -1, 0}},
+			op:  Abs{Var{0}},
+			out: []float64{1, 1, 0},
+		},
+		{
+			in:  [][]float64{[]float64{1, -1, 0}},
+			op:  Const{42},
+			out: []float64{42, 42, 42},
+		},
+		{
+			in:  [][]float64{[]float64{-1, 0, 1}},
+			op:  Add{Var{0}, Const{1}},
+			out: []float64{0, 1, 2},
+		},
+		{
+			in:  [][]float64{[]float64{0, math.Pi}},
+			op:  Cos{Var{0}},
+			out: []float64{1, -1},
+		},
+		{
+			in: [][]float64{
+				[]float64{0, 1, 2},
+				[]float64{1, 0, 1},
+			},
+			op:  Div{Var{0}, Var{1}},
+			out: []float64{0, 1, 2},
+		},
+		{
+			in:  [][]float64{[]float64{0, 1, 2}},
+			op:  Inv{Var{0}},
+			out: []float64{1, 1, 0.5},
+		},
+		{
+			in:  [][]float64{[]float64{0, 1, 2}},
+			op:  Max{Var{0}, Const{1}},
+			out: []float64{1, 1, 2},
+		},
+		{
+			in:  [][]float64{[]float64{0, 1, 2}},
+			op:  Min{Var{0}, Const{1}},
+			out: []float64{0, 1, 1},
+		},
+		{
+			in:  [][]float64{[]float64{0, 1, 2}},
+			op:  Mul{Var{0}, Const{-1}},
+			out: []float64{0, -1, -2},
+		},
+		{
+			in:  [][]float64{[]float64{0, 1, 2}},
+			op:  Neg{Var{0}},
+			out: []float64{0, -1, -2},
+		},
+		{
+			in:  [][]float64{[]float64{0, 0.5 * math.Pi}},
+			op:  Sin{Var{0}},
+			out: []float64{0, 1},
+		},
+		{
+			in:  [][]float64{[]float64{-2, 1, 2}},
+			op:  Square{Var{0}},
+			out: []float64{4, 1, 4},
+		},
+		{
+			in:  [][]float64{[]float64{0, 1, 2}},
+			op:  Sub{Var{0}, Const{-1}},
+			out: []float64{1, 2, 3},
+		},
+	}
+	for i, tc := range testCases {
+		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
+			out := tc.op.Eval(tc.in)
+			if !reflect.DeepEqual(out, tc.out) {
+				t.Errorf("Expected %v, got %v", tc.out, out)
+			}
+		})
+	}
+}
+
+func TestArity(t *testing.T) {
+	var testCases = []struct {
+		in  Operator
+		out uint
+	}{
+		{Const{42}, 0},
+		{Var{42}, 0},
+		{Abs{}, 1},
+		{Add{}, 2},
+		{Cos{}, 1},
+		{Div{}, 2},
+		{Inv{}, 1},
+		{Max{}, 2},
+		{Min{}, 2},
+		{Sin{}, 1},
+		{Square{}, 1},
+		{Sub{}, 2},
+	}
+	for i, tc := range testCases {
+		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
+			out := tc.in.Arity()
+			if out != tc.out {
+				t.Errorf("Expected %d, got %d", tc.out, out)
+			}
+		})
+	}
+}
+
+func TestString(t *testing.T) {
+	var testCases = []struct {
+		in  Operator
+		out string
+	}{
+		{
+			in:  Const{-42.42},
+			out: "-42.42",
+		},
+		{
+			in:  Var{42},
+			out: "x42",
+		},
+		{
+			in:  Abs{Var{0}},
+			out: "|x0|",
+		},
+		{
+			in:  Add{Var{0}, Add{Var{1}, Const{42}}},
+			out: "x0+x1+42",
+		},
+		{
+			in:  Cos{Add{Var{0}, Var{1}}},
+			out: "cos(x0+x1)",
+		},
+		{
+			in:  Div{Add{Var{0}, Var{1}}, Const{5}},
+			out: "(x0+x1)/5",
+		},
+		{
+			in:  Inv{Add{Var{0}, Var{1}}},
+			out: "1/(x0+x1)",
+		},
+		{
+			in:  Max{Add{Var{0}, Var{1}}, Const{3}},
+			out: "max(x0+x1, 3)",
+		},
+		{
+			in:  Min{Add{Var{0}, Var{1}}, Const{3}},
+			out: "min(x0+x1, 3)",
+		},
+		{
+			in:  Sin{Max{Var{0}, Var{1}}},
+			out: "sin(max(x0, x1))",
+		},
+		{
+			in:  Square{Max{Var{0}, Var{1}}},
+			out: "(max(x0, x1))²",
+		},
+		{
+			in:  Sub{Max{Var{0}, Var{1}}, Var{2}},
+			out: "max(x0, x1)-x2",
+		},
+	}
+	for i, tc := range testCases {
+		t.Run(fmt.Sprintf("TC %d", i), func(t *testing.T) {
+			out := tc.in.String()
+			if out != tc.out {
+				t.Errorf("Expected %s, got %s", tc.out, out)
+			}
+		})
+	}
+}
 
 func TestHeight(t *testing.T) {
 	var testCases = []struct {

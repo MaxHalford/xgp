@@ -94,5 +94,5 @@ func (sub Sub) Name() string {
 
 // String formatting.
 func (sub Sub) String() string {
-	return fmt.Sprintf("%s-%s", parenthesize(sub.Left), parenthesize(sub.Right))
+	return fmt.Sprintf("%s-%s", sub.Left, sub.Right)
 }
