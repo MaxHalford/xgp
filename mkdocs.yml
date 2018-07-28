@@ -9,7 +9,7 @@ repo_name: 'GitHub'
 repo_url: 'https://github.com/MaxHalford/xgp'
 
 # Copyright
-copyright: 'Copyright &copy; 2017 Max Halford'
+copyright: 'Copyright &copy; 2018 Max Halford'
 
 # Theme
 theme:
@@ -18,11 +18,14 @@ theme:
   logo:
     icon: 'home'
   palette:
-    primary: 'teal'
-    accent: 'teal'
+    primary: 'deep-purple'
+    accent: 'pink'
   social:
     - type: 'github'
       link: 'https://github.com/MaxHalford/xgp'
+
+extra_css:
+  - 'stylesheets/extra.css'
 
 # Pages
 pages:

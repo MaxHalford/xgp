@@ -1,0 +1,22 @@
+.md-header,.md-footer-nav {
+    background-image: linear-gradient(
+        45deg,
+        #051e3e 0%,
+        #251e3e 24%,
+        #451e3e 53%,
+        #651e3e 78%,
+        #851e3e 100%
+    );
+}
+
+.md-typeset table:not([class]) th {
+    background-color: #451e3e;
+}
+
+.md-typeset .admonition {
+    font-size: 0.9em;
+}
+
+.md-typeset table:not([class]) {
+    font-size: 0.9em;
+}
