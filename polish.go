@@ -29,14 +29,13 @@ func polishProgram(prog Program, rng *rand.Rand) (Program, error) {
 			},
 		}
 		method = &optimize.CmaEsChol{
-			InitMean:   consts,
 			Population: int(15 + math.Floor(3*math.Log(float64(len(consts))))), // MAGIC
 			Src:        xrand.NewSource(rng.Uint64()),
 		}
 	)
 
 	// Run the optimisation
-	result, err := optimize.Global(problem, len(consts), nil, method)
+	result, err := optimize.Minimize(problem, consts, nil, method)
 	if err != nil {
 		return prog, err
 	}
