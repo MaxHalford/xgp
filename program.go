@@ -11,8 +11,8 @@ import (
 
 // A Program is a thin layer on top of an Operator.
 type Program struct {
-	Op        op.Operator
-	Estimator *Estimator
+	Op op.Operator
+	GP *GP
 }
 
 // String formatting.
@@ -21,11 +21,11 @@ func (prog Program) String() string {
 }
 
 // Classification determines if the Program has to perform classification or
-// not. It does so by looking at the Estimator's LossMetric.
+// not. It does so by looking at the GP's LossMetric.
 func (prog Program) classification() bool {
-	if prog.Estimator != nil {
-		if prog.Estimator.LossMetric != nil {
-			return prog.Estimator.LossMetric.Classification()
+	if prog.GP != nil {
+		if prog.GP.LossMetric != nil {
+			return prog.GP.LossMetric.Classification()
 		}
 	}
 	return false
@@ -84,7 +84,7 @@ func (prog *Program) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(&serialProgram{
 		Op:         raw,
-		LossMetric: prog.Estimator.LossMetric.String(),
+		LossMetric: prog.GP.LossMetric.String(),
 	})
 }
 
@@ -103,6 +103,6 @@ func (prog *Program) UnmarshalJSON(bytes []byte) error {
 		return err
 	}
 	prog.Op = operator
-	prog.Estimator = &Estimator{LossMetric: loss}
+	prog.GP = &GP{LossMetric: loss}
 	return nil
 }

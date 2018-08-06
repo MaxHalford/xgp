@@ -2,7 +2,7 @@
 
 ## Overview
 
-The following tables gives an overview of all the parameters that can be used for training XGP. The defaults are the same regardless of where you're using XGP from (please [open an issue](https://github.com/MaxHalford/xgp/issues/new) if you notice any descrepancies). The values indicated for Go are the ones that can be passed to a `Config` struct. For Python some parameters have to be passed in the `fit` method.
+The following tables gives an overview of all the parameters that can be used for training XGP. The defaults are the same regardless of where you're using XGP from (please [open an issue](https://github.com/MaxHalford/xgp/issues/new) if you notice any descrepancies). The values indicated for Go are the ones that can be passed to a `GPConfig` struct. For Python some parameters have to be passed in the `fit` method.
 
 ### Learning parameters
 

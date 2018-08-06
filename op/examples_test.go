@@ -3,7 +3,7 @@ package op
 import "fmt"
 
 // From https://stats.stackexchange.com/questions/224140/step-by-step-example-of-reverse-mode-automatic-differentiation.
-func Example() {
+func ExampleDiff() {
 	var z = Add{Mul{Var{0}, Var{1}}, Sin{Var{0}}}
 	fmt.Println("z:", z)
 	fmt.Println("∂z/∂x0:", z.Diff(0).Simplify())

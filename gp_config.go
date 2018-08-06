@@ -7,14 +7,14 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/MaxHalford/gago"
+	"github.com/MaxHalford/eaopt"
 
 	"github.com/MaxHalford/xgp/metrics"
 	"github.com/MaxHalford/xgp/op"
 )
 
-// A Config contains all the information needed to instantiate an Estimator.
-type Config struct {
+// A GPConfig contains all the information needed to instantiate an GP.
+type GPConfig struct {
 	// Learning parameters
 	LossMetric     metrics.Metric
 	EvalMetric     metrics.Metric
@@ -42,9 +42,9 @@ type Config struct {
 	RNG *rand.Rand
 }
 
-// String representation of a Config. It returns a string containing the
+// String representation of a GPConfig. It returns a string containing the
 // parameters line by line.
-func (c Config) String() string {
+func (c GPConfig) String() string {
 	var (
 		buffer     = new(bytes.Buffer)
 		parameters = [][]string{
@@ -78,8 +78,8 @@ func (c Config) String() string {
 	return strings.Trim(buffer.String(), "\n")
 }
 
-// NewEstimator returns an Estimator from a Config.
-func (c Config) NewEstimator() (*Estimator, error) {
+// NewGP returns an GP from a GPConfig.
+func (c GPConfig) NewGP() (*GP, error) {
 
 	// Default the evaluation metric to the fitness metric if it's nil
 	if c.EvalMetric == nil {
@@ -97,9 +97,9 @@ func (c Config) NewEstimator() (*Estimator, error) {
 		return nil, err
 	}
 
-	// Instantiate an Estimator
-	var estimator = &Estimator{
-		Config:     c,
+	// Instantiate an GP
+	var estimator = &GP{
+		GPConfig:   c,
 		Functions:  functions,
 		EvalMetric: c.EvalMetric,
 		LossMetric: c.LossMetric,
@@ -113,15 +113,13 @@ func (c Config) NewEstimator() (*Estimator, error) {
 	}
 
 	// Set the initial GA
-	estimator.GA = &gago.GA{
-		NewGenome: func(rng *rand.Rand) gago.Genome {
-			var prog = estimator.newProgram(rng)
-			return &prog
-		},
-		NPops:   int(c.NPopulations),
-		PopSize: int(c.NIndividuals),
+	estimator.GA, err = eaopt.GAConfig{
+		NPops:        c.NPopulations,
+		PopSize:      c.NIndividuals,
+		NGenerations: c.NGenerations,
+		HofSize:      1,
 		Model: gaModel{
-			selector: gago.SelTournament{
+			selector: eaopt.SelTournament{
 				NContestants: 3,
 			},
 			pMutate:    c.PHoistMutation + c.PPointMutation + c.PSubtreeMutation,
@@ -129,6 +127,10 @@ func (c Config) NewEstimator() (*Estimator, error) {
 		},
 		RNG:          c.RNG,
 		ParallelEval: true,
+	}.NewGA()
+
+	if err != nil {
+		return nil, err
 	}
 
 	// Build fm which maps arities to functions
@@ -189,9 +191,9 @@ func (c Config) NewEstimator() (*Estimator, error) {
 	return estimator, nil
 }
 
-// NewConfigWithDefaults returns a Config with default values.
-func NewConfigWithDefaults() Config {
-	return Config{
+// NewDefaultGPConfig returns a GPConfig with default values.
+func NewDefaultGPConfig() GPConfig {
+	return GPConfig{
 		LossMetric:     metrics.MeanSquaredError{},
 		EvalMetric:     nil,
 		ParsimonyCoeff: 0,

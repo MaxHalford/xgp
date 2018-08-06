@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"strings"
 	"time"
@@ -133,8 +131,8 @@ var fitCmd = &cobra.Command{
 			return err
 		}
 
-		// Instantiate an Estimator
-		var config = xgp.Config{
+		// Instantiate an GP
+		var config = xgp.GPConfig{
 			LossMetric:     lossMetric,
 			EvalMetric:     evalMetric,
 			ParsimonyCoeff: fitParsimonyCoeff,
@@ -159,10 +157,6 @@ var fitCmd = &cobra.Command{
 			PSubtreeCrossover: fitPSubtreeCrossover,
 
 			RNG: rng,
-		}
-		estimator, err := config.NewEstimator()
-		if err != nil {
-			return err
 		}
 
 		// Load the training set in memory
@@ -220,42 +214,30 @@ var fitCmd = &cobra.Command{
 		}
 
 		// Train
-		var ensemble meta.Ensemble
-		switch fitMode {
-		case "bagging":
-			ensemble, err = meta.Bagging{
-				NPrograms:           fitNPrograms,
-				RowSampling:         fitRowSampling,
-				ColSampling:         fitColSampling,
-				EvalMetric:          evalMetric,
-				EarlyStoppingRounds: fitEarlyStoppingRounds,
-				RNG:                 rng,
-			}.Train(estimator, XTrain, YTrain, XVal, YVal, fitVerbose)
-		case "adaboost":
-			ensemble, err = meta.AdaBoost{
-				LearningRate:        fitLearningRate,
-				NPrograms:           fitNPrograms,
-				RowSampling:         fitRowSampling,
-				EvalMetric:          evalMetric,
-				EarlyStoppingRounds: fitEarlyStoppingRounds,
-				RNG:                 rng,
-			}.Train(estimator, XTrain, YTrain, XVal, YVal, fitVerbose)
-		default:
-			return fmt.Errorf("'%s' is not a recognized mode, has to be one of ('adaboost', 'bagging')", fitMode)
+		gb, err := meta.NewGradBoost(
+			config,
+			fitNPrograms,
+			fitEarlyStoppingRounds,
+			fitLearningRate,
+			meta.SquareLoss{},
+		)
+		if err != nil {
+			return err
 		}
+		err = gb.Fit(XTrain, YTrain, XVal, YVal)
 		if err != nil {
 			return err
 		}
 
 		// Save the ensemble
-		bytes, err := json.Marshal(ensemble)
+		/*bytes, err := json.Marshal(ensemble)
 		if err != nil {
 			return err
 		}
 		err = ioutil.WriteFile(fitOutputName, bytes, 0644)
 		if err != nil {
 			return err
-		}
+		}*/
 
 		return nil
 	},

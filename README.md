@@ -16,7 +16,7 @@
   </a>
   <!-- Build status -->
   <a href="https://travis-ci.org/MaxHalford/xgp">
-    <img src="https://img.shields.io/travis/MaxHalford/gago/master.svg?style=flat-square" alt="build_status" />
+    <img src="https://img.shields.io/travis/MaxHalford/eaopt/master.svg?style=flat-square" alt="build_status" />
   </a>
   <!-- Coverage status -->
   <a href="https://coveralls.io/github/MaxHalford/xgp?branch=master">
@@ -57,8 +57,8 @@ package main
 import "github.com/MaxHalford/xgp"
 
 func main() {
-    config := xgp.NewConfigWithDefaults()
-    estimator := config.NewEstimator()
+    config := xgp.NewDefaultGPConfig()
+    estimator := config.NewGP()
 
     estimator.Fit(XTrain, YTrain)
     yPred := estimator.Predict()
@@ -82,7 +82,7 @@ The core of XGP has the following dependencies.
 
 - [gonum/gonum](https://github.com/gonum/gonum) for [SIMD operations](https://www.wikiwand.com/en/SIMD) and calculating metrics
 - [gosuri/uiprogress](https://github.com/gosuri/uiprogress) for displaying progress bars
-- [MaxHalford/gago](https://github.com/MaxHalford/gago) for the genetic algorithm part
+- [MaxHalford/eaopt](https://github.com/MaxHalford/eaopt) for the genetic algorithm part
 
 ## License
 

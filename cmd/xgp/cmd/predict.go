@@ -1,18 +1,6 @@
 package cmd
 
-import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"os"
-	"strings"
-
-	"github.com/MaxHalford/xgp/meta"
-	"github.com/gonum/floats"
-	"github.com/kniren/gota/series"
-	"github.com/spf13/cobra"
-)
-
+/*
 var (
 	predPredictProba bool
 	predKeptColumns  string
@@ -97,3 +85,4 @@ var predCmd = &cobra.Command{
 		return nil
 	},
 }
+*/

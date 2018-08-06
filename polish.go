@@ -22,8 +22,8 @@ func polishProgram(prog Program, rng *rand.Rand) (Program, error) {
 		problem = optimize.Problem{
 			Func: func(x []float64) float64 {
 				fitness, _ := Program{
-					Op:        op.SetConsts(prog.Op, x),
-					Estimator: prog.Estimator,
+					Op: op.SetConsts(prog.Op, x),
+					GP: prog.GP,
 				}.Evaluate()
 				return fitness
 			},

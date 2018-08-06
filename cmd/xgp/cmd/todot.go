@@ -1,16 +1,6 @@
 package cmd
 
-import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"os"
-
-	"github.com/MaxHalford/xgp/meta"
-	"github.com/MaxHalford/xgp/op"
-	"github.com/spf13/cobra"
-)
-
+/*
 var (
 	toDOTRound      int
 	toDOTSave       bool
@@ -68,4 +58,4 @@ var toDOTCmd = &cobra.Command{
 		file.Sync()
 		return nil
 	},
-}
+}*/

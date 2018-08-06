@@ -17,7 +17,7 @@ func TestEvaluate(t *testing.T) {
 		{
 			prog: Program{
 				Op: op.Add{op.Var{0}, op.Var{1}},
-				Estimator: &Estimator{
+				GP: &GP{
 					XTrain: [][]float64{
 						[]float64{1, 2, 3},
 						[]float64{2, 1, 4},
@@ -52,8 +52,8 @@ func TestMutate(t *testing.T) {
 			{
 				in: Program{
 					Op: op.Add{op.Const{42}, op.Var{1}},
-					Estimator: &Estimator{
-						Config: Config{PHoistMutation: 1},
+					GP: &GP{
+						GPConfig: GPConfig{PHoistMutation: 1},
 						HoistMutation: HoistMutation{
 							Weight1: func(operator op.Operator, depth uint, rng *rand.Rand) float64 {
 								switch operator.(type) {

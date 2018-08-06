@@ -4,21 +4,21 @@ import (
 	"math"
 	"math/rand"
 
-	"github.com/MaxHalford/gago"
+	"github.com/MaxHalford/eaopt"
 	"github.com/MaxHalford/xgp/op"
 )
 
-// Evaluate is required to implement gago.Genome.
+// Evaluate is required to implement eaopt.Genome.
 func (prog Program) Evaluate() (float64, error) {
 	// For convenience
-	est := prog.Estimator
+	gp := prog.GP
 	// Run the training set through the Program
-	var yPred, err = prog.Predict(est.XTrain, est.LossMetric.NeedsProbabilities())
+	var yPred, err = prog.Predict(gp.XTrain, gp.LossMetric.NeedsProbabilities())
 	if err != nil {
 		return math.Inf(1), err
 	}
-	// Use the Metric defined in the Estimator
-	fitness, err := est.LossMetric.Apply(est.YTrain, yPred, est.WTrain)
+	// Use the Metric defined in the GP
+	fitness, err := gp.LossMetric.Apply(gp.YTrain, yPred, gp.WTrain)
 	if err != nil {
 		return math.Inf(1), err
 	}
@@ -26,59 +26,59 @@ func (prog Program) Evaluate() (float64, error) {
 		return math.Inf(1), nil
 	}
 	// Apply the parsimony coefficient
-	if est.ParsimonyCoeff != 0 {
-		fitness += est.ParsimonyCoeff * float64(op.CountOps(prog.Op))
+	if gp.ParsimonyCoeff != 0 {
+		fitness += gp.ParsimonyCoeff * float64(op.CountOps(prog.Op))
 	}
 	return fitness, nil
 }
 
-// Mutate is required to implement gago.Genome.
+// Mutate is required to implement eaopt.Genome.
 func (prog *Program) Mutate(rng *rand.Rand) {
 	var (
-		pHoist   = prog.Estimator.PHoistMutation
-		pSubtree = prog.Estimator.PSubtreeMutation
-		pPoint   = prog.Estimator.PPointMutation
+		pHoist   = prog.GP.PHoistMutation
+		pSubtree = prog.GP.PSubtreeMutation
+		pPoint   = prog.GP.PPointMutation
 		dice     = rng.Float64() * (pHoist + pSubtree + pPoint)
 	)
 	// Apply hoist mutation
 	if dice < pHoist {
-		prog.Op = prog.Estimator.HoistMutation.Apply(prog.Op, rng)
+		prog.Op = prog.GP.HoistMutation.Apply(prog.Op, rng)
 		return
 	}
 	// Apply subtree mutation
 	if dice < pHoist+pSubtree {
-		prog.Op = prog.Estimator.SubtreeMutation.Apply(prog.Op, rng)
+		prog.Op = prog.GP.SubtreeMutation.Apply(prog.Op, rng)
 		return
 	}
 	// Apply point mutation
-	prog.Op = prog.Estimator.PointMutation.Apply(prog.Op, rng).Simplify()
+	prog.Op = prog.GP.PointMutation.Apply(prog.Op, rng).Simplify()
 }
 
-// Crossover is required to implement gago.Genome.
-func (prog *Program) Crossover(prog2 gago.Genome, rng *rand.Rand) {
-	newOp1, newOp2 := prog.Estimator.SubtreeCrossover.Apply(prog.Op, prog2.(*Program).Op, rng)
+// Crossover is required to implement eaopt.Genome.
+func (prog *Program) Crossover(prog2 eaopt.Genome, rng *rand.Rand) {
+	newOp1, newOp2 := prog.GP.SubtreeCrossover.Apply(prog.Op, prog2.(*Program).Op, rng)
 	prog.Op = newOp1.Simplify()
 	prog2.(*Program).Op = newOp2.Simplify()
 }
 
-// Clone is required to implement gago.Genome.
-func (prog Program) Clone() gago.Genome {
+// Clone is required to implement eaopt.Genome.
+func (prog Program) Clone() eaopt.Genome {
 	return &Program{
-		Op:        prog.Op,
-		Estimator: prog.Estimator,
+		Op: prog.Op,
+		GP: prog.GP,
 	}
 }
 
 // Custom genetic algorithm model.
 type gaModel struct {
-	selector   gago.Selector
+	selector   eaopt.Selector
 	pMutate    float64
 	pCrossover float64
 }
 
-// Apply is necessary to implement gago.Model.
-func (mod gaModel) Apply(pop *gago.Population) error {
-	var offsprings = make(gago.Individuals, len(pop.Individuals))
+// Apply is necessary to implement eaopt.Model.
+func (mod gaModel) Apply(pop *eaopt.Population) error {
+	var offsprings = make(eaopt.Individuals, len(pop.Individuals))
 	for i := range offsprings {
 		// Select an individual
 		selected, _, err := mod.selector.Apply(1, pop.Individuals, pop.RNG)
@@ -107,7 +107,7 @@ func (mod gaModel) Apply(pop *gago.Population) error {
 	return nil
 }
 
-// Validate is necessary to implement gago.Model.
+// Validate is necessary to implement eaopt.Model.
 func (mod gaModel) Validate() error {
 	return nil
 }

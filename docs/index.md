@@ -13,7 +13,7 @@
   </a>
   <!-- Build status -->
   <a href="https://travis-ci.org/MaxHalford/xgp">
-    <img src="https://img.shields.io/travis/MaxHalford/gago/master.svg?style=flat-square" alt="build_status" />
+    <img src="https://img.shields.io/travis/MaxHalford/eaopt/master.svg?style=flat-square" alt="build_status" />
   </a>
   <!-- Coverage status -->
   <a href="https://coveralls.io/github/MaxHalford/xgp?branch=master">

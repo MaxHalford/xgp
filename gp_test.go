@@ -7,14 +7,14 @@ import (
 	"time"
 )
 
-func TestEstimator(t *testing.T) {
-	var conf = NewConfigWithDefaults()
+func TestGP(t *testing.T) {
+	var conf = NewDefaultGPConfig()
 	conf.RNG = rand.New(rand.NewSource(42))
 	conf.NIndividuals = 30
 	conf.MinHeight = 1
 	conf.MaxHeight = 3
 	conf.PolishBest = false
-	var est, err = conf.NewEstimator()
+	var gp, err = conf.NewGP()
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -25,8 +25,8 @@ func TestEstimator(t *testing.T) {
 		}
 		Y = []float64{5, 7, 9}
 	)
-	est.Fit(X, Y, nil, nil, nil, nil, false)
-	var prog = est.BestProgram()
+	gp.Fit(X, Y, nil, nil, nil, nil, false)
+	var prog = gp.BestProgram()
 	fmt.Println(prog)
 	var pred, _ = prog.PredictPartial([]float64{4, 7}, false)
 	fmt.Println(pred)
@@ -35,14 +35,14 @@ func TestEstimator(t *testing.T) {
 	// 11
 }
 
-func TestEstimatorProgress(t *testing.T) {
-	var conf = NewConfigWithDefaults()
+func TestGPProgress(t *testing.T) {
+	var conf = NewDefaultGPConfig()
 	conf.RNG = rand.New(rand.NewSource(42))
 	conf.NIndividuals = 30
 	conf.MinHeight = 1
 	conf.MaxHeight = 3
 	conf.PolishBest = false
-	var est, err = conf.NewEstimator()
+	var gp, err = conf.NewGP()
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -53,9 +53,9 @@ func TestEstimatorProgress(t *testing.T) {
 		}
 		Y = []float64{5, 7, 9}
 	)
-	est.Fit(X, Y, nil, nil, nil, nil, false)
+	gp.Fit(X, Y, nil, nil, nil, nil, false)
 	var (
-		progress = est.progress(time.Now())
+		progress = gp.progress(time.Now())
 		expected = "00:00:00, train mse: 0.00000"
 	)
 	if progress != expected {

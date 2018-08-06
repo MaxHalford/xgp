@@ -28,7 +28,7 @@ Each operator, regardless of it's type, has an **arity** which determines how ma
 !!! info
     This diagram was generated with the [CLI's todot command](cli#visualization).
 
-The goal of symbolic regression is to find an optimal combination of operators. Not only do appropriate operators have to be chosen, they also have to associated in a good way. The search space is very complex and cannot be explored with gradient-based optimization techniques. Instead symbolic regression relies on **evolutionary algorithms** such as **genetic algorithms** (which is what XGP uses) to perform the optimization. Under the hood XGP uses [gago](https://github.com/MaxHalford/gago).
+The goal of symbolic regression is to find an optimal combination of operators. Not only do appropriate operators have to be chosen, they also have to associated in a good way. The search space is very complex and cannot be explored with gradient-based optimization techniques. Instead symbolic regression relies on **evolutionary algorithms** such as **genetic algorithms** (which is what XGP uses) to perform the optimization. Under the hood XGP uses [eaopt](https://github.com/MaxHalford/eaopt).
 
 !!! info
     Symbolic regression is part of the larger family of **genetic programming**.
@@ -77,11 +77,11 @@ At a higher-level, a `Program` is what is used to do the actual learning; it has
 ```go
 type Program struct {
     Tree      tree.Tree
-    Estimator *Estimator
+    GP *GP
 }
 ```
 
-The `Estimator` gives the `Program` context about what it is it has to learn. The `Estimator` contains a `LossMetric` field with determines how to score each `Program` and if the task is classification or regression. The `Estimator` is also the global structure that organizes the programs and handles the learning process. If you want to use XGP with Go then you'll be working with the `Estimator` struct. However you shouldn't directly instantiate an `Estimator`; instead you should use the `Config` struct where you can speficify training parameters before calling the `NewEstimator` method.
+The `GP` gives the `Program` context about what it is it has to learn. The `GP` contains a `LossMetric` field with determines how to score each `Program` and if the task is classification or regression. The `GP` is also the global structure that organizes the programs and handles the learning process. If you want to use XGP with Go then you'll be working with the `GP` struct. However you shouldn't directly instantiate an `GP`; instead you should use the `GPConfig` struct where you can speficify training parameters before calling the `NewGP` method.
 
 The [`metrics` package](https://github.com/MaxHalford/xgp/tree/master/metrics) is a completely independent package that contains implementations of machine learning metrics (such as accuracy and logarithmic loss). In theory it could be traded for another package if something standardized comes up.
 

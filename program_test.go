@@ -33,8 +33,8 @@ func TestProgramPredict(t *testing.T) {
 				[]float64{-0.3, 0.4, 0.2, 2},
 			},
 			program: Program{
-				Op:        op.Add{op.Var{0}, op.Var{1}},
-				Estimator: nil,
+				Op: op.Add{op.Var{0}, op.Var{1}},
+				GP: nil,
 			},
 			proba:       true,
 			y:           []float64{-0.2, 0.1, 0.6, 3},
@@ -46,8 +46,8 @@ func TestProgramPredict(t *testing.T) {
 				[]float64{-0.3, 0.4, 0.2, 2},
 			},
 			program: Program{
-				Op:        op.Add{op.Var{0}, op.Var{1}},
-				Estimator: &Estimator{},
+				Op: op.Add{op.Var{0}, op.Var{1}},
+				GP: &GP{},
 			},
 			proba:       false,
 			y:           []float64{-0.2, 0.1, 0.6, 3},
@@ -59,8 +59,8 @@ func TestProgramPredict(t *testing.T) {
 				[]float64{-0.3, 0.4, 0.2, 2},
 			},
 			program: Program{
-				Op:        op.Add{op.Var{0}, op.Var{1}},
-				Estimator: &Estimator{},
+				Op: op.Add{op.Var{0}, op.Var{1}},
+				GP: &GP{},
 			},
 			proba:       true,
 			y:           []float64{-0.2, 0.1, 0.6, 3},
@@ -72,8 +72,8 @@ func TestProgramPredict(t *testing.T) {
 				[]float64{-0.3, 0.4, 0.2, 2},
 			},
 			program: Program{
-				Op:        op.Add{op.Var{0}, op.Var{1}},
-				Estimator: &Estimator{LossMetric: metrics.MeanSquaredError{}},
+				Op: op.Add{op.Var{0}, op.Var{1}},
+				GP: &GP{LossMetric: metrics.MeanSquaredError{}},
 			},
 			proba:       false,
 			y:           []float64{-0.2, 0.1, 0.6, 3},
@@ -85,8 +85,8 @@ func TestProgramPredict(t *testing.T) {
 				[]float64{-0.3, 0.4, 0.2, 2},
 			},
 			program: Program{
-				Op:        op.Add{op.Var{0}, op.Var{1}},
-				Estimator: &Estimator{LossMetric: metrics.MeanSquaredError{}},
+				Op: op.Add{op.Var{0}, op.Var{1}},
+				GP: &GP{LossMetric: metrics.MeanSquaredError{}},
 			},
 			proba:       true,
 			y:           []float64{-0.2, 0.1, 0.6, 3},
@@ -98,8 +98,8 @@ func TestProgramPredict(t *testing.T) {
 				[]float64{-0.3, 0.4, 0.2, 2},
 			},
 			program: Program{
-				Op:        op.Add{op.Var{0}, op.Var{1}},
-				Estimator: &Estimator{LossMetric: metrics.Accuracy{}},
+				Op: op.Add{op.Var{0}, op.Var{1}},
+				GP: &GP{LossMetric: metrics.Accuracy{}},
 			},
 			proba:       false,
 			y:           []float64{0, 0, 1, 1},
@@ -111,8 +111,8 @@ func TestProgramPredict(t *testing.T) {
 				[]float64{-0.3, 0.4, 0.2, 2},
 			},
 			program: Program{
-				Op:        op.Add{op.Var{0}, op.Var{1}},
-				Estimator: &Estimator{LossMetric: metrics.Accuracy{}},
+				Op: op.Add{op.Var{0}, op.Var{1}},
+				GP: &GP{LossMetric: metrics.Accuracy{}},
 			},
 			proba:       true,
 			y:           []float64{0.45017, 0.52498, 0.64566, 0.95257},
@@ -124,8 +124,8 @@ func TestProgramPredict(t *testing.T) {
 				[]float64{-0.3, 0.4, 0.2, 2},
 			},
 			program: Program{
-				Op:        op.Add{op.Var{0}, op.Var{1}},
-				Estimator: &Estimator{LossMetric: metrics.Accuracy{}},
+				Op: op.Add{op.Var{0}, op.Var{1}},
+				GP: &GP{LossMetric: metrics.Accuracy{}},
 			},
 			proba:       false,
 			y:           nil,
@@ -150,8 +150,8 @@ func TestProgramPredict(t *testing.T) {
 func TestProgramMarshalJSON(t *testing.T) {
 	var (
 		prog = Program{
-			Op:        op.Add{op.Var{0}, op.Const{42}},
-			Estimator: &Estimator{LossMetric: metrics.BinaryLogLoss{}},
+			Op: op.Add{op.Var{0}, op.Const{42}},
+			GP: &GP{LossMetric: metrics.BinaryLogLoss{}},
 		}
 		bytes, err = prog.MarshalJSON()
 	)

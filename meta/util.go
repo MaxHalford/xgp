@@ -12,7 +12,16 @@ func newRand() *rand.Rand {
 	return rand.New(rand.NewSource(time.Now().UnixNano()))
 }
 
-func checkEarlyStop(scores []float64, rounds, i uint, metric metrics.Metric) bool {
-	return (metric.BiggerIsBetter() && (scores[i] <= scores[i-rounds])) ||
-		(!metric.BiggerIsBetter() && (scores[i] >= scores[i-rounds]))
+// checkEarlyStop checks if early stopping should occur at round i given k
+// early stopping rounds.
+func checkEarlyStop(scores []float64, metric metrics.Metric, i, k uint) bool {
+	return (metric.BiggerIsBetter() && (scores[i] <= scores[i-k])) ||
+		(!metric.BiggerIsBetter() && (scores[i] >= scores[i-k]))
+}
+
+func mean(x []float64) (m float64) {
+	for _, xi := range x {
+		m += xi
+	}
+	return m / float64(len(x))
 }

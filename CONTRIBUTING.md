@@ -29,7 +29,7 @@ Most of the behavior of xgp can be determined by the user. However for various r
 
 ### Steps
 
-1. Add to the `Estimator`'s fields if needed
+1. Add to the `GP`'s fields if needed
 2. Add to the `New` method
 3. Add to each language package
 4. Add to the documentation

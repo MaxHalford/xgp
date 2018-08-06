@@ -1,16 +1,6 @@
 package cmd
 
-import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-
-	"github.com/MaxHalford/xgp/meta"
-	"github.com/MaxHalford/xgp/metrics"
-	"github.com/spf13/cobra"
-)
-
-var (
+/*var (
 	scoreMetricName   string
 	scoreEnsembleName string
 	scoreTargetCol    string
@@ -79,3 +69,4 @@ var scoreCmd = &cobra.Command{
 		return nil
 	},
 }
+*/

@@ -6,10 +6,10 @@ import (
 	"github.com/MaxHalford/xgp/metrics"
 )
 
-func ExampleConfig() {
-	var conf = NewConfigWithDefaults()
+func ExampleGPConfig() {
+	var conf = NewDefaultGPConfig()
 	conf.LossMetric = metrics.BinaryF1{}
-	var est, err = conf.NewEstimator()
+	var est, err = conf.NewGP()
 	if err != nil {
 		fmt.Println(err)
 	}
