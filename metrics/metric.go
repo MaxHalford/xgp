@@ -10,3 +10,9 @@ type Metric interface {
 	NeedsProbabilities() bool
 	String() string
 }
+
+// A DiffMetric is a Metric that is differentiable.
+type DiffMetric interface {
+	Metric
+	Gradient(yTrue, yPred []float64) ([]float64, error)
+}

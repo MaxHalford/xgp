@@ -22,11 +22,10 @@ cd ..
 # Naviguate to the CLI root directory
 cd cmd/xgp
 
-# Boston bagging
+# Boston
 python examples/boston/create_datasets.py
 go run main.go fit examples/boston/train.csv \
-    --mode bagging \
-    --loss mae \
+    --loss mse \
     --indis 20 \
     --gens 10 \
     --output examples/boston/ensemble.json \
@@ -38,7 +37,6 @@ go run main.go predict examples/boston/test.csv \
 # Breast cancer bagging
 python examples/breast_cancer/create_datasets.py
 go run main.go fit examples/breast_cancer/train.csv \
-    --mode bagging \
     --loss logloss \
     --eval accuracy \
     --val examples/breast_cancer/val.csv \

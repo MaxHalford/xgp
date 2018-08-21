@@ -30,9 +30,9 @@ type GP struct {
 	SubtreeCrossover SubtreeCrossover
 
 	fm       map[uint][]op.Operator
-	XTrain   [][]float64
-	YTrain   []float64
-	WTrain   []float64
+	X        [][]float64
+	Y        []float64
+	W        []float64
 	XVal     [][]float64
 	YVal     []float64
 	WVal     []float64
@@ -45,22 +45,26 @@ func (gp GP) String() string {
 }
 
 // BestProgram returns the GP's best obtained Program.
-func (gp GP) BestProgram() Program {
-	return *gp.GA.HallOfFame[0].Genome.(*Program)
+func (gp GP) BestProgram() (Program, error) {
+	if len(gp.GA.HallOfFame) == 0 {
+		return Program{}, errors.New("The GP has not been trained yet")
+	}
+	return *gp.GA.HallOfFame[0].Genome.(*Program), nil
 }
 
 func (gp GP) progress(start time.Time) string {
 	// Add time spent
 	var message = fmtDuration(time.Since(start))
 	// Add training error
-	var (
-		best            = gp.BestProgram()
-		yTrainPred, err = best.Predict(gp.XTrain, gp.EvalMetric.NeedsProbabilities())
-	)
+	best, err := gp.BestProgram()
 	if err != nil {
 		return ""
 	}
-	trainScore, err := gp.EvalMetric.Apply(gp.YTrain, yTrainPred, nil)
+	yTrainPred, err := best.Predict(gp.X, gp.EvalMetric.NeedsProbabilities())
+	if err != nil {
+		return ""
+	}
+	trainScore, err := gp.EvalMetric.Apply(gp.Y, yTrainPred, nil)
 	if err != nil {
 		return ""
 	}
@@ -82,10 +86,11 @@ func (gp GP) progress(start time.Time) string {
 
 // polishBest takes the best Program and polishes it.
 func (gp *GP) polishBest() error {
-	var (
-		best          = *gp.GA.HallOfFame[0].Genome.(*Program)
-		polished, err = polishProgram(best, gp.RNG)
-	)
+	best, err := gp.BestProgram()
+	if err != nil {
+		return err
+	}
+	polished, err := polishProgram(best, gp.RNG)
 	if err != nil {
 		return err
 	}
@@ -102,20 +107,20 @@ func (gp *GP) polishBest() error {
 // Fit an GP to a dataset.
 func (gp *GP) Fit(
 	// Required arguments
-	XTrain [][]float64,
-	YTrain []float64,
+	X [][]float64,
+	Y []float64,
 	// Optional arguments (can safely be nil)
-	WTrain []float64,
+	W []float64,
 	XVal [][]float64,
 	YVal []float64,
 	WVal []float64,
 	verbose bool,
-) (prog Program, err error) {
+) error {
 
 	// Set the training set
-	gp.XTrain = XTrain
-	gp.YTrain = YTrain
-	gp.WTrain = WTrain
+	gp.X = X
+	gp.Y = Y
+	gp.W = W
 
 	// Set the validation set
 	gp.XVal = XVal
@@ -125,9 +130,9 @@ func (gp *GP) Fit(
 	// Count the number of classes if the task is classification
 	if gp.LossMetric.Classification() {
 		// Check that the task to perform is not multi-class classification
-		gp.nClasses = countDistinct(YTrain)
+		gp.nClasses = countDistinct(Y)
 		if gp.nClasses > 2 {
-			return prog, errors.New("Multi-class classification is not supported")
+			return errors.New("Multi-class classification is not supported")
 		}
 	}
 
@@ -157,26 +162,45 @@ func (gp *GP) Fit(
 	}
 
 	// Run the GA
-	err = gp.GA.Minimize(func(rng *rand.Rand) eaopt.Genome {
+	err := gp.GA.Minimize(func(rng *rand.Rand) eaopt.Genome {
 		var prog = gp.newProgram(rng)
 		return &prog
 	})
+	if err != nil {
+		return err
+	}
 
 	// Polish the best Program
 	if gp.PolishBest {
-		err = gp.polishBest()
+		err := gp.polishBest()
 		if err != nil {
-			return
+			return err
 		}
 		if verbose {
 			bar.Incr()
 		}
 	}
 
-	// Extract the best Program
-	var best = gp.BestProgram()
+	return nil
+}
 
-	return best, nil
+// Predict makes predictions with the best obtained Program as so far.
+func (gp GP) Predict(X [][]float64, proba bool) ([]float64, error) {
+	var best, err = gp.BestProgram()
+	if err != nil {
+		return nil, err
+	}
+	return best.Predict(X, proba)
+}
+
+// PredictPartial is a convenience function on top of Predict to make
+// predictions on a single instance.
+func (gp GP) PredictPartial(x []float64, proba bool) (float64, error) {
+	var best, err = gp.BestProgram()
+	if err != nil {
+		return 0, err
+	}
+	return best.PredictPartial(x, proba)
 }
 
 func (gp GP) newConst(rng *rand.Rand) op.Const {
@@ -186,7 +210,7 @@ func (gp GP) newConst(rng *rand.Rand) op.Const {
 }
 
 func (gp GP) newVar(rng *rand.Rand) op.Var {
-	return op.Var{Index: uint(rng.Intn(len(gp.XTrain)))}
+	return op.Var{Index: uint(rng.Intn(len(gp.X)))}
 }
 
 func (gp GP) newFunction(rng *rand.Rand) op.Operator {

@@ -18,12 +18,12 @@ func TestEvaluate(t *testing.T) {
 			prog: Program{
 				Op: op.Add{op.Var{0}, op.Var{1}},
 				GP: &GP{
-					XTrain: [][]float64{
+					X: [][]float64{
 						[]float64{1, 2, 3},
 						[]float64{2, 1, 4},
 					},
-					YTrain:     []float64{2, 4, 7},
-					LossMetric: metrics.MeanAbsoluteError{},
+					Y:          []float64{2, 4, 7},
+					LossMetric: metrics.MAE{},
 				},
 			},
 			fitness: 2.0 / 3,

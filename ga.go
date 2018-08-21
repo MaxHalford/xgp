@@ -13,12 +13,12 @@ func (prog Program) Evaluate() (float64, error) {
 	// For convenience
 	gp := prog.GP
 	// Run the training set through the Program
-	var yPred, err = prog.Predict(gp.XTrain, gp.LossMetric.NeedsProbabilities())
+	var yPred, err = prog.Predict(gp.X, gp.LossMetric.NeedsProbabilities())
 	if err != nil {
 		return math.Inf(1), err
 	}
 	// Use the Metric defined in the GP
-	fitness, err := gp.LossMetric.Apply(gp.YTrain, yPred, gp.WTrain)
+	fitness, err := gp.LossMetric.Apply(gp.Y, yPred, gp.W)
 	if err != nil {
 		return math.Inf(1), err
 	}
@@ -34,6 +34,7 @@ func (prog Program) Evaluate() (float64, error) {
 
 // Mutate is required to implement eaopt.Genome.
 func (prog *Program) Mutate(rng *rand.Rand) {
+	defer func() { prog.Op = prog.Op.Simplify() }()
 	var (
 		pHoist   = prog.GP.PHoistMutation
 		pSubtree = prog.GP.PSubtreeMutation
@@ -51,7 +52,7 @@ func (prog *Program) Mutate(rng *rand.Rand) {
 		return
 	}
 	// Apply point mutation
-	prog.Op = prog.GP.PointMutation.Apply(prog.Op, rng).Simplify()
+	prog.Op = prog.GP.PointMutation.Apply(prog.Op, rng)
 }
 
 // Crossover is required to implement eaopt.Genome.

@@ -5,7 +5,7 @@ package metrics
 type Accuracy struct{}
 
 // Apply Accuracy.
-func (metric Accuracy) Apply(yTrue, yPred, weights []float64) (float64, error) {
+func (acc Accuracy) Apply(yTrue, yPred, weights []float64) (float64, error) {
 
 	if len(yTrue) != len(yPred) {
 		return 0, &errMismatchedLengths{len(yTrue), len(yPred)}
@@ -34,21 +34,21 @@ func (metric Accuracy) Apply(yTrue, yPred, weights []float64) (float64, error) {
 }
 
 // Classification method of Accuracy.
-func (metric Accuracy) Classification() bool {
+func (acc Accuracy) Classification() bool {
 	return true
 }
 
 // BiggerIsBetter method of Accuracy.
-func (metric Accuracy) BiggerIsBetter() bool {
+func (acc Accuracy) BiggerIsBetter() bool {
 	return true
 }
 
 // NeedsProbabilities method of Accuracy.
-func (metric Accuracy) NeedsProbabilities() bool {
+func (acc Accuracy) NeedsProbabilities() bool {
 	return false
 }
 
 // String method of Accuracy.
-func (metric Accuracy) String() string {
+func (acc Accuracy) String() string {
 	return "accuracy"
 }

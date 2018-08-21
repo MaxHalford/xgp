@@ -8,8 +8,8 @@ type NegativeMetric struct {
 }
 
 // Apply NegativeMetric.
-func (metric NegativeMetric) Apply(yTrue, yPred, weights []float64) (float64, error) {
-	var output, err = metric.Metric.Apply(yTrue, yPred, weights)
+func (neg NegativeMetric) Apply(yTrue, yPred, weights []float64) (float64, error) {
+	var output, err = neg.Metric.Apply(yTrue, yPred, weights)
 	if err != nil {
 		return 0, err
 	}
@@ -17,21 +17,21 @@ func (metric NegativeMetric) Apply(yTrue, yPred, weights []float64) (float64, er
 }
 
 // Classification method of NegativeMetric.
-func (metric NegativeMetric) Classification() bool {
-	return metric.Metric.Classification()
+func (neg NegativeMetric) Classification() bool {
+	return neg.Metric.Classification()
 }
 
 // BiggerIsBetter method of NegativeMetric.
-func (metric NegativeMetric) BiggerIsBetter() bool {
-	return !metric.Metric.BiggerIsBetter()
+func (neg NegativeMetric) BiggerIsBetter() bool {
+	return !neg.Metric.BiggerIsBetter()
 }
 
 // NeedsProbabilities method of NegativeMetric.
-func (metric NegativeMetric) NeedsProbabilities() bool {
-	return metric.Metric.NeedsProbabilities()
+func (neg NegativeMetric) NeedsProbabilities() bool {
+	return neg.Metric.NeedsProbabilities()
 }
 
 // String method of NegativeMetric.
-func (metric NegativeMetric) String() string {
-	return fmt.Sprintf("neg_%s", metric.Metric.String())
+func (neg NegativeMetric) String() string {
+	return fmt.Sprintf("neg_%s", neg.Metric.String())
 }

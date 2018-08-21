@@ -2,34 +2,34 @@ package metrics
 
 import "math"
 
-// RootMeanSquaredError measures the root mean squared error (RMSE).
-type RootMeanSquaredError struct{}
+// RMSE measures the root mean squared error (RMSE).
+type RMSE struct{}
 
-// Apply RootMeanSquaredError.
-func (metric RootMeanSquaredError) Apply(yTrue, yPred, weights []float64) (float64, error) {
-	var mse, err = MeanSquaredError{}.Apply(yTrue, yPred, weights)
+// Apply RMSE.
+func (rmse RMSE) Apply(yTrue, yPred, weights []float64) (float64, error) {
+	var mse, err = MSE{}.Apply(yTrue, yPred, weights)
 	if err != nil {
 		return math.Inf(1), err
 	}
 	return math.Pow(mse, 0.5), nil
 }
 
-// Classification method of RootMeanSquaredError.
-func (metric RootMeanSquaredError) Classification() bool {
+// Classification method of RMSE.
+func (rmse RMSE) Classification() bool {
 	return false
 }
 
-// BiggerIsBetter method of RootMeanSquaredError.
-func (metric RootMeanSquaredError) BiggerIsBetter() bool {
+// BiggerIsBetter method of RMSE.
+func (rmse RMSE) BiggerIsBetter() bool {
 	return false
 }
 
-// NeedsProbabilities method of RootMeanSquaredError.
-func (metric RootMeanSquaredError) NeedsProbabilities() bool {
+// NeedsProbabilities method of RMSE.
+func (rmse RMSE) NeedsProbabilities() bool {
 	return false
 }
 
-// String method of RootMeanSquaredError.
-func (metric RootMeanSquaredError) String() string {
+// String method of RMSE.
+func (rmse RMSE) String() string {
 	return "rmse"
 }

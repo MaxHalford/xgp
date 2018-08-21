@@ -35,36 +35,42 @@ Once you have an `GP`, you're ready to call to it's `Fit` method to train it on 
 ```go
 func (est *GP) Fit(
     // Required arguments
-    XTrain [][]float64,
-    YTrain []float64,
+    X [][]float64,
+    Y []float64,
     // Optional arguments (can safely be nil)
-    WTrain []float64,
+    W []float64,
     XVal [][]float64,
     YVal []float64,
     WVal []float64,
-    verbose bool
+    verbose bool,
 ) error
 ```
 
-Just like for the CLI, the only required arguments to the `GP`'s `Fit` method are a matrix of features `XTrain` and a list of targets `YTrain`. `WTrain` can be used to weight the samples in `XTrain` during program evaluation, which is particularly useful for higher-level learning algorithms such as [boosting](https://www.wikiwand.com/en/Boosting_(machine_learning)). One important thing to notice is that **`XTrain` and `XVal` should be ordered column-wise**; that is `X[0]` should access the first column in the dataset, not the first row.
+Just like for the CLI, the only required arguments to the `GP`'s `Fit` method are a matrix of features `X` and a list of targets `Y`. `W` can be used to weight the samples in `X` during program evaluation, which is particularly useful for higher-level learning algorithms such as [boosting](https://www.wikiwand.com/en/Boosting_(machine_learning)). One important thing to notice is that **`X` and `XVal` should be ordered column-wise**; that is `X[0]` should access the first column in the dataset, not the first row.
 
 !!! warning
     For the while XGP does not handle categorical data. You should preemptively encode the categorical features in your dataset before feeding it to XGP. The recommended way is to use [label encoding](http://scikit-learn.org/stable/modules/preprocessing_targets.html#label-encoding) for ordinal data and [one-hot encoding](http://scikit-learn.org/stable/modules/preprocessing.html#encoding-categorical-features) for non-ordinal data.
 
 !!! warning
-    For the while xgp does not handle missing values.
+    For the while XGP does not handle missing values.
 
 Like the `val_set` argument in the CLI, `XVal`, `YVal`, and `WVal` can be used to track the performance of the best program on out-of-bag data. `notifyEvery` can be used to indicate at what frequency (in terms of genetic algorithm generations) progress should be displayed.
+
+You can extract the best obtained `Program` with the `BestProgram` method.
+
+```go
+var best = gp.BestProgram()
+```
 
 Finally the `Fit` method returns an error which you should handle.
 
 ### Prediction
 
-Once the `Fit` method has been called, then the `Predict` method can be called to make predictions on a dataset. Just like in the CLI, the columns in the test set should be ordered in the same way as in the training set. Here is the `Predict` method's signature:
+Once the `Fit` method has been called, the `Predict` method can be used to make predictions given a set of features.
 
 ```go
 func (est GP) Predict(X [][]float64, predictProba bool) ([]float64, error)
 ```
 
-Apart from the input dataset, the `predictProba` argument can be used to indicate if probabilities should be returned in the case of a classification task.
+The columns in `X` should be ordered in the same way as in the training set. The `proba` argument can be used to indicate if probabilities should be returned in the case of classification.
 

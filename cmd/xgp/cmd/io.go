@@ -3,18 +3,25 @@ package cmd
 import (
 	"bufio"
 	"encoding/csv"
+	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"os"
 	"strings"
 	"time"
 
+	"github.com/MaxHalford/xgp"
+	"github.com/MaxHalford/xgp/meta"
+	"github.com/MaxHalford/xgp/metrics"
 	"github.com/kniren/gota/dataframe"
 	"github.com/kniren/gota/series"
 )
 
-// ReadFile loads a file with the appropriate method based on the file's
+const perm = 0644
+
+// readFile loads a file with the appropriate method based on the file's
 // extension.
-func ReadFile(path string) (dataframe.DataFrame, time.Duration, error) {
+func readFile(path string) (dataframe.DataFrame, time.Duration, error) {
 	var (
 		df  dataframe.DataFrame
 		t   = time.Now()
@@ -44,4 +51,81 @@ func readCSV(path string) (dataframe.DataFrame, error) {
 		dataframe.DefaultType(series.Float),
 	)
 	return df, nil
+}
+
+func metricToTask(m metrics.Metric) string {
+	if m.Classification() {
+		return "classification"
+	}
+	return "regression"
+}
+
+func writeProgram(prog xgp.Program, path string) error {
+	bytes, err := json.Marshal(serialModel{
+		Task:   metricToTask(prog.LossMetric),
+		Flavor: "vanilla",
+		Model:  prog,
+	})
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(path, bytes, perm)
+	return err
+}
+
+func writeGradientBoosting(gb *meta.GradientBoosting, path string) error {
+	bytes, err := json.Marshal(serialModel{
+		Task:   metricToTask(gb.Loss),
+		Flavor: "boosting",
+		Model:  gb,
+	})
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(path, bytes, perm)
+	return err
+}
+
+func readModel(path string) (sm serialModel, err error) {
+	// Read the model file
+	bytes, err := ioutil.ReadFile(path)
+	if err != nil {
+		return
+	}
+	// Extract its keys
+	var raw map[string]*json.RawMessage
+	err = json.Unmarshal(bytes, &raw)
+	if err != nil {
+		return
+	}
+	// Extract the task
+	err = json.Unmarshal(*raw["task"], &sm.Task)
+	if err != nil {
+		return
+	}
+	// Extract the flavor
+	err = json.Unmarshal(*raw["flavor"], &sm.Flavor)
+	if err != nil {
+		return
+	}
+	switch sm.Flavor {
+	case "vanilla":
+		var prog xgp.Program
+		err = json.Unmarshal(*raw["model"], &prog)
+		if err != nil {
+			return
+		}
+		sm.Model = prog
+		return
+	case "boosting":
+		var gb meta.GradientBoosting
+		err = json.Unmarshal(*raw["model"], &gb)
+		if err != nil {
+			return
+		}
+		sm.Model = gb
+		return
+	}
+	err = errUnknownFlavor{sm.Flavor}
+	return
 }

@@ -5,13 +5,13 @@ import (
 	"testing"
 )
 
-func TestMeanSquaredError(t *testing.T) {
+func TestMSE(t *testing.T) {
 	var testCases = []metricTestCase{
 		{
 			yTrue:   []float64{3, -0.5, 2, 7},
 			yPred:   []float64{2.5, 0, 2, 8},
 			weights: nil,
-			metric:  MeanSquaredError{},
+			metric:  MSE{},
 			score:   0.375,
 			err:     nil,
 		},

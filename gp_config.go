@@ -194,7 +194,7 @@ func (c GPConfig) NewGP() (*GP, error) {
 // NewDefaultGPConfig returns a GPConfig with default values.
 func NewDefaultGPConfig() GPConfig {
 	return GPConfig{
-		LossMetric:     metrics.MeanSquaredError{},
+		LossMetric:     metrics.MSE{},
 		EvalMetric:     nil,
 		ParsimonyCoeff: 0,
 		PolishBest:     true,

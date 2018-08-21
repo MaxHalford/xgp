@@ -11,7 +11,7 @@ import (
 type ROCAUC struct{}
 
 // Apply ROCAUC.
-func (metric ROCAUC) Apply(yTrue, yPred, weights []float64) (float64, error) {
+func (rocauc ROCAUC) Apply(yTrue, yPred, weights []float64) (float64, error) {
 	if len(yTrue) != len(yPred) {
 		return 0, &errMismatchedLengths{len(yTrue), len(yPred)}
 	}
@@ -53,21 +53,21 @@ func (metric ROCAUC) Apply(yTrue, yPred, weights []float64) (float64, error) {
 }
 
 // Classification method of ROCAUC.
-func (metric ROCAUC) Classification() bool {
+func (rocauc ROCAUC) Classification() bool {
 	return true
 }
 
 // BiggerIsBetter method of ROCAUC.
-func (metric ROCAUC) BiggerIsBetter() bool {
+func (rocauc ROCAUC) BiggerIsBetter() bool {
 	return true
 }
 
 // NeedsProbabilities method of ROCAUC.
-func (metric ROCAUC) NeedsProbabilities() bool {
+func (rocauc ROCAUC) NeedsProbabilities() bool {
 	return true
 }
 
 // String method of ROCAUC.
-func (metric ROCAUC) String() string {
+func (rocauc ROCAUC) String() string {
 	return "roc_auc"
 }

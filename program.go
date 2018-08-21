@@ -11,8 +11,8 @@ import (
 
 // A Program is a thin layer on top of an Operator.
 type Program struct {
+	*GP
 	Op op.Operator
-	GP *GP
 }
 
 // String formatting.
@@ -39,21 +39,15 @@ func (prog Program) Predict(X [][]float64, proba bool) ([]float64, error) {
 	if floats.HasNaN(yPred) {
 		return nil, errors.New("yPred contains NaNs")
 	}
-	// Classification
-	if prog.classification() {
-		// Binary classification with probabilities
-		if proba {
-			for i, y := range yPred {
-				yPred[i] = sigmoid(y)
-			}
-			return yPred, nil
-		}
-		for i, y := range yPred {
-			yPred[i] = binary(y)
-		}
+	// Regression
+	if !prog.classification() {
 		return yPred, nil
 	}
-	// Regression
+	// Classification
+	var transform = map[bool]func(float64) float64{true: sigmoid, false: binary}[proba]
+	for i, y := range yPred {
+		yPred[i] = transform(y)
+	}
 	return yPred, nil
 }
 
@@ -72,18 +66,14 @@ func (prog Program) PredictPartial(x []float64, proba bool) (float64, error) {
 }
 
 type serialProgram struct {
-	Op         []byte `json:"op"`
-	LossMetric string `json:"loss_metric"`
+	Op         op.SerialOp `json:"op"`
+	LossMetric string      `json:"loss_metric"`
 }
 
 // MarshalJSON serializes a Program.
-func (prog *Program) MarshalJSON() ([]byte, error) {
-	var raw, err = op.MarshalJSON(prog.Op)
-	if err != nil {
-		return nil, err
-	}
+func (prog Program) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&serialProgram{
-		Op:         raw,
+		Op:         op.SerializeOp(prog.Op),
 		LossMetric: prog.GP.LossMetric.String(),
 	})
 }
@@ -98,7 +88,7 @@ func (prog *Program) UnmarshalJSON(bytes []byte) error {
 	if err != nil {
 		return err
 	}
-	operator, err := op.UnmarshalJSON(serial.Op)
+	operator, err := op.ParseOp(serial.Op)
 	if err != nil {
 		return err
 	}

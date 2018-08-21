@@ -22,7 +22,7 @@ func TestProgramPredict(t *testing.T) {
 				[]float64{0.1, -0.3, 0.4, 1},
 				[]float64{-0.3, 0.4, 0.2, 2},
 			},
-			program:     Program{op.Add{op.Var{0}, op.Var{1}}, nil},
+			program:     Program{nil, op.Add{op.Var{0}, op.Var{1}}},
 			proba:       false,
 			y:           []float64{-0.2, 0.1, 0.6, 3},
 			raisesError: false,
@@ -73,7 +73,7 @@ func TestProgramPredict(t *testing.T) {
 			},
 			program: Program{
 				Op: op.Add{op.Var{0}, op.Var{1}},
-				GP: &GP{LossMetric: metrics.MeanSquaredError{}},
+				GP: &GP{LossMetric: metrics.MSE{}},
 			},
 			proba:       false,
 			y:           []float64{-0.2, 0.1, 0.6, 3},
@@ -86,7 +86,7 @@ func TestProgramPredict(t *testing.T) {
 			},
 			program: Program{
 				Op: op.Add{op.Var{0}, op.Var{1}},
-				GP: &GP{LossMetric: metrics.MeanSquaredError{}},
+				GP: &GP{LossMetric: metrics.MSE{}},
 			},
 			proba:       true,
 			y:           []float64{-0.2, 0.1, 0.6, 3},
@@ -151,7 +151,7 @@ func TestProgramMarshalJSON(t *testing.T) {
 	var (
 		prog = Program{
 			Op: op.Add{op.Var{0}, op.Const{42}},
-			GP: &GP{LossMetric: metrics.BinaryLogLoss{}},
+			GP: &GP{LossMetric: metrics.LogLoss{}},
 		}
 		bytes, err = prog.MarshalJSON()
 	)

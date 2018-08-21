@@ -24,6 +24,8 @@ func containsString(s []string, e string) bool {
 	return false
 }
 
+// dataFrameToFloat64 converts a dataframe.DataFrame to a slice of float64
+// slices.
 func dataFrameToFloat64(df dataframe.DataFrame) [][]float64 {
 	var X = make([][]float64, df.Ncol())
 	for i, col := range df.Names() {

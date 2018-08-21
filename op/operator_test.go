@@ -384,26 +384,6 @@ func TestReplaceAt(t *testing.T) {
 	}
 }
 
-func TestMarshalJSON(t *testing.T) {
-	var (
-		op         = Add{Var{0}, Const{42.24}}
-		bytes, err = MarshalJSON(op)
-	)
-	if err != nil {
-		t.Errorf("Expected nil, got %s", err)
-		return
-	}
-	newOp, err := UnmarshalJSON(bytes)
-	if err != nil {
-		t.Errorf("Expected nil, got %s", err)
-		return
-	}
-	if newOp != op {
-		t.Errorf("Expected %s, got %s", op, newOp)
-		return
-	}
-}
-
 func TestGetConsts(t *testing.T) {
 	var testCases = []struct {
 		op     Operator

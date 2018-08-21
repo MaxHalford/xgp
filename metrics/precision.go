@@ -1,19 +1,19 @@
 package metrics
 
-// BinaryPrecision measures the fraction of times a class was correctly predicted.
-type BinaryPrecision struct {
+// Precision measures the fraction of times a class was correctly predicted.
+type Precision struct {
 	Class float64
 }
 
-// Apply BinaryPrecision.
-func (metric BinaryPrecision) Apply(yTrue, yPred, weights []float64) (float64, error) {
+// Apply Precision.
+func (precision Precision) Apply(yTrue, yPred, weights []float64) (float64, error) {
 	var cm, err = MakeConfusionMatrix(yTrue, yPred, weights)
 	if err != nil {
 		return 0, err
 	}
 	var (
-		TP = cm.TruePositives(metric.Class)
-		FP = cm.FalsePositives(metric.Class)
+		TP = cm.TruePositives(precision.Class)
+		FP = cm.FalsePositives(precision.Class)
 	)
 	// If the class has never been predicted return 0
 	if TP+FP == 0 {
@@ -22,23 +22,23 @@ func (metric BinaryPrecision) Apply(yTrue, yPred, weights []float64) (float64, e
 	return TP / (TP + FP), nil
 }
 
-// Classification method of BinaryPrecision.
-func (metric BinaryPrecision) Classification() bool {
+// Classification method of Precision.
+func (precision Precision) Classification() bool {
 	return true
 }
 
-// BiggerIsBetter method of BinaryPrecision.
-func (metric BinaryPrecision) BiggerIsBetter() bool {
+// BiggerIsBetter method of Precision.
+func (precision Precision) BiggerIsBetter() bool {
 	return true
 }
 
-// NeedsProbabilities method of BinaryPrecision.
-func (metric BinaryPrecision) NeedsProbabilities() bool {
+// NeedsProbabilities method of Precision.
+func (precision Precision) NeedsProbabilities() bool {
 	return false
 }
 
-// String method of BinaryPrecision.
-func (metric BinaryPrecision) String() string {
+// String method of Precision.
+func (precision Precision) String() string {
 	return "precision"
 }
 
@@ -47,7 +47,7 @@ func (metric BinaryPrecision) String() string {
 type MicroPrecision struct{}
 
 // Apply MicroPrecision.
-func (metric MicroPrecision) Apply(yTrue, yPred, weights []float64) (float64, error) {
+func (precision MicroPrecision) Apply(yTrue, yPred, weights []float64) (float64, error) {
 	var cm, err = MakeConfusionMatrix(yTrue, yPred, weights)
 	if err != nil {
 		return 0, err
@@ -64,22 +64,22 @@ func (metric MicroPrecision) Apply(yTrue, yPred, weights []float64) (float64, er
 }
 
 // Classification method of MicroPrecision.
-func (metric MicroPrecision) Classification() bool {
+func (precision MicroPrecision) Classification() bool {
 	return true
 }
 
 // BiggerIsBetter method of MicroPrecision.
-func (metric MicroPrecision) BiggerIsBetter() bool {
+func (precision MicroPrecision) BiggerIsBetter() bool {
 	return true
 }
 
 // NeedsProbabilities method of MicroPrecision.
-func (metric MicroPrecision) NeedsProbabilities() bool {
+func (precision MicroPrecision) NeedsProbabilities() bool {
 	return false
 }
 
 // String method of MicroPrecision.
-func (metric MicroPrecision) String() string {
+func (precision MicroPrecision) String() string {
 	return "micro_precision"
 }
 
@@ -88,36 +88,36 @@ func (metric MicroPrecision) String() string {
 type MacroPrecision struct{}
 
 // Apply MacroPrecision.
-func (metric MacroPrecision) Apply(yTrue, yPred, weights []float64) (float64, error) {
+func (precision MacroPrecision) Apply(yTrue, yPred, weights []float64) (float64, error) {
 	var cm, err = MakeConfusionMatrix(yTrue, yPred, weights)
 	if err != nil {
 		return 0, err
 	}
 	var sum float64
 	for _, class := range cm.Classes() {
-		var precision, _ = BinaryPrecision{Class: class}.Apply(yTrue, yPred, weights)
+		var precision, _ = Precision{Class: class}.Apply(yTrue, yPred, weights)
 		sum += precision
 	}
 	return sum / float64(cm.NClasses()), nil
 }
 
 // Classification method of MacroPrecision.
-func (metric MacroPrecision) Classification() bool {
+func (precision MacroPrecision) Classification() bool {
 	return true
 }
 
 // BiggerIsBetter method of MacroPrecision.
-func (metric MacroPrecision) BiggerIsBetter() bool {
+func (precision MacroPrecision) BiggerIsBetter() bool {
 	return true
 }
 
 // NeedsProbabilities method of MacroPrecision.
-func (metric MacroPrecision) NeedsProbabilities() bool {
+func (precision MacroPrecision) NeedsProbabilities() bool {
 	return false
 }
 
 // String method of MacroPrecision.
-func (metric MacroPrecision) String() string {
+func (precision MacroPrecision) String() string {
 	return "macro_precision"
 }
 
@@ -126,7 +126,7 @@ func (metric MacroPrecision) String() string {
 type WeightedPrecision struct{}
 
 // Apply WeightedPrecision.
-func (metric WeightedPrecision) Apply(yTrue, yPred, weights []float64) (float64, error) {
+func (precision WeightedPrecision) Apply(yTrue, yPred, weights []float64) (float64, error) {
 	var cm, err = MakeConfusionMatrix(yTrue, yPred, weights)
 	if err != nil {
 		return 0, err
@@ -137,7 +137,7 @@ func (metric WeightedPrecision) Apply(yTrue, yPred, weights []float64) (float64,
 	)
 	for _, class := range cm.Classes() {
 		var (
-			precision, _ = BinaryPrecision{Class: class}.Apply(yTrue, yPred, weights)
+			precision, _ = Precision{Class: class}.Apply(yTrue, yPred, weights)
 			TP           = cm.TruePositives(class)
 			FN           = cm.FalseNegatives(class)
 		)
@@ -148,21 +148,21 @@ func (metric WeightedPrecision) Apply(yTrue, yPred, weights []float64) (float64,
 }
 
 // Classification method of WeightedPrecision.
-func (metric WeightedPrecision) Classification() bool {
+func (precision WeightedPrecision) Classification() bool {
 	return true
 }
 
 // BiggerIsBetter method of WeightedPrecision.
-func (metric WeightedPrecision) BiggerIsBetter() bool {
+func (precision WeightedPrecision) BiggerIsBetter() bool {
 	return true
 }
 
 // NeedsProbabilities method of WeightedPrecision.
-func (metric WeightedPrecision) NeedsProbabilities() bool {
+func (precision WeightedPrecision) NeedsProbabilities() bool {
 	return false
 }
 
 // String method of WeightedPrecision.
-func (metric WeightedPrecision) String() string {
+func (precision WeightedPrecision) String() string {
 	return "weighted_precision"
 }

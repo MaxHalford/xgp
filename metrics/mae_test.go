@@ -5,13 +5,13 @@ import (
 	"testing"
 )
 
-func TestMeanAbsoluteError(t *testing.T) {
+func TestMAE(t *testing.T) {
 	var testCases = []metricTestCase{
 		{
 			yTrue:   []float64{3, -0.5, 2, 7},
 			yPred:   []float64{2.5, 0, 2, 8},
 			weights: nil,
-			metric:  MeanAbsoluteError{},
+			metric:  MAE{},
 			score:   0.5,
 			err:     nil,
 		},
@@ -19,7 +19,7 @@ func TestMeanAbsoluteError(t *testing.T) {
 			yTrue:   []float64{3, -0.5, 2, 7},
 			yPred:   []float64{2.5, 0, 2, 8},
 			weights: []float64{2, 1, 1, 2},
-			metric:  MeanAbsoluteError{},
+			metric:  MAE{},
 			score:   (1 + 0.5 + 2) / 6, // 0.58333...
 			err:     nil,
 		},

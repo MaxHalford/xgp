@@ -8,7 +8,7 @@ import (
 
 func ExampleGPConfig() {
 	var conf = NewDefaultGPConfig()
-	conf.LossMetric = metrics.BinaryF1{}
+	conf.LossMetric = metrics.F1{}
 	var est, err = conf.NewGP()
 	if err != nil {
 		fmt.Println(err)

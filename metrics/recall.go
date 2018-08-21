@@ -1,19 +1,19 @@
 package metrics
 
-// BinaryRecall measures the fraction of times a true class was predicted.
-type BinaryRecall struct {
+// Recall measures the fraction of times a true class was predicted.
+type Recall struct {
 	Class float64
 }
 
-// Apply BinaryRecall.
-func (metric BinaryRecall) Apply(yTrue, yPred, weights []float64) (float64, error) {
+// Apply Recall.
+func (recall Recall) Apply(yTrue, yPred, weights []float64) (float64, error) {
 	var cm, err = MakeConfusionMatrix(yTrue, yPred, weights)
 	if err != nil {
 		return 0, err
 	}
 	var (
-		TP = cm.TruePositives(metric.Class)
-		FN = cm.FalseNegatives(metric.Class)
+		TP = cm.TruePositives(recall.Class)
+		FN = cm.FalseNegatives(recall.Class)
 	)
 	// If the class has never been predicted return 0
 	if TP+FN == 0 {
@@ -22,23 +22,23 @@ func (metric BinaryRecall) Apply(yTrue, yPred, weights []float64) (float64, erro
 	return TP / (TP + FN), nil
 }
 
-// Classification method of BinaryRecall.
-func (metric BinaryRecall) Classification() bool {
+// Classification method of Recall.
+func (recall Recall) Classification() bool {
 	return true
 }
 
-// BiggerIsBetter method of BinaryRecall.
-func (metric BinaryRecall) BiggerIsBetter() bool {
+// BiggerIsBetter method of Recall.
+func (recall Recall) BiggerIsBetter() bool {
 	return true
 }
 
-// NeedsProbabilities method of BinaryRecall.
-func (metric BinaryRecall) NeedsProbabilities() bool {
+// NeedsProbabilities method of Recall.
+func (recall Recall) NeedsProbabilities() bool {
 	return false
 }
 
-// String method of BinaryRecall.
-func (metric BinaryRecall) String() string {
+// String method of Recall.
+func (recall Recall) String() string {
 	return "recall"
 }
 
@@ -47,7 +47,7 @@ func (metric BinaryRecall) String() string {
 type MicroRecall struct{}
 
 // Apply MicroRecall.
-func (metric MicroRecall) Apply(yTrue, yPred, weights []float64) (float64, error) {
+func (recall MicroRecall) Apply(yTrue, yPred, weights []float64) (float64, error) {
 	var cm, err = MakeConfusionMatrix(yTrue, yPred, weights)
 	if err != nil {
 		return 0, err
@@ -64,22 +64,22 @@ func (metric MicroRecall) Apply(yTrue, yPred, weights []float64) (float64, error
 }
 
 // Classification method of MicroRecall.
-func (metric MicroRecall) Classification() bool {
+func (recall MicroRecall) Classification() bool {
 	return true
 }
 
 // BiggerIsBetter method of MicroRecall.
-func (metric MicroRecall) BiggerIsBetter() bool {
+func (recall MicroRecall) BiggerIsBetter() bool {
 	return true
 }
 
 // NeedsProbabilities method of MicroRecall.
-func (metric MicroRecall) NeedsProbabilities() bool {
+func (recall MicroRecall) NeedsProbabilities() bool {
 	return false
 }
 
 // String method of MicroRecall.
-func (metric MicroRecall) String() string {
+func (recall MicroRecall) String() string {
 	return "micro_recall"
 }
 
@@ -88,36 +88,36 @@ func (metric MicroRecall) String() string {
 type MacroRecall struct{}
 
 // Apply MacroRecall.
-func (metric MacroRecall) Apply(yTrue, yPred, weights []float64) (float64, error) {
+func (recall MacroRecall) Apply(yTrue, yPred, weights []float64) (float64, error) {
 	var cm, err = MakeConfusionMatrix(yTrue, yPred, weights)
 	if err != nil {
 		return 0, err
 	}
 	var sum float64
 	for _, class := range cm.Classes() {
-		var recall, _ = BinaryRecall{Class: class}.Apply(yTrue, yPred, weights)
+		var recall, _ = Recall{Class: class}.Apply(yTrue, yPred, weights)
 		sum += recall
 	}
 	return sum / float64(cm.NClasses()), nil
 }
 
 // Classification method of MacroRecall.
-func (metric MacroRecall) Classification() bool {
+func (recall MacroRecall) Classification() bool {
 	return true
 }
 
 // BiggerIsBetter method of MacroRecall.
-func (metric MacroRecall) BiggerIsBetter() bool {
+func (recall MacroRecall) BiggerIsBetter() bool {
 	return true
 }
 
 // NeedsProbabilities method of MacroRecall.
-func (metric MacroRecall) NeedsProbabilities() bool {
+func (recall MacroRecall) NeedsProbabilities() bool {
 	return false
 }
 
 // String method of MacroRecall.
-func (metric MacroRecall) String() string {
+func (recall MacroRecall) String() string {
 	return "macro_recall"
 }
 
@@ -126,7 +126,7 @@ func (metric MacroRecall) String() string {
 type WeightedRecall struct{}
 
 // Apply WeightedRecall.
-func (metric WeightedRecall) Apply(yTrue, yPred, weights []float64) (float64, error) {
+func (recall WeightedRecall) Apply(yTrue, yPred, weights []float64) (float64, error) {
 	var cm, err = MakeConfusionMatrix(yTrue, yPred, weights)
 	if err != nil {
 		return 0, err
@@ -137,7 +137,7 @@ func (metric WeightedRecall) Apply(yTrue, yPred, weights []float64) (float64, er
 	)
 	for _, class := range cm.Classes() {
 		var (
-			recall, _ = BinaryRecall{Class: class}.Apply(yTrue, yPred, weights)
+			recall, _ = Recall{Class: class}.Apply(yTrue, yPred, weights)
 			TP        = cm.TruePositives(class)
 			FN        = cm.FalseNegatives(class)
 		)
@@ -148,21 +148,21 @@ func (metric WeightedRecall) Apply(yTrue, yPred, weights []float64) (float64, er
 }
 
 // Classification method of WeightedRecall.
-func (metric WeightedRecall) Classification() bool {
+func (recall WeightedRecall) Classification() bool {
 	return true
 }
 
 // BiggerIsBetter method of WeightedRecall.
-func (metric WeightedRecall) BiggerIsBetter() bool {
+func (recall WeightedRecall) BiggerIsBetter() bool {
 	return true
 }
 
 // NeedsProbabilities method of WeightedRecall.
-func (metric WeightedRecall) NeedsProbabilities() bool {
+func (recall WeightedRecall) NeedsProbabilities() bool {
 	return false
 }
 
 // String method of WeightedRecall.
-func (metric WeightedRecall) String() string {
+func (recall WeightedRecall) String() string {
 	return "weighted_recall"
 }

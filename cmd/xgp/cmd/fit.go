@@ -13,232 +13,247 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	// Learning parameters
-	fitLossMetricName string
-	fitEvalMetricName string
-	fitParsimonyCoeff float64
-	fitPolishBest     bool
+type fitCmd struct {
+	flavor string
 
-	// Function parameters
-	fitFuncs     string
-	fitConstMin  float64
-	fitConstMax  float64
-	fitPConst    float64
-	fitPFull     float64
-	fitPLeaf     float64
-	fitMinHeight uint
-	fitMaxHeight uint
+	// GP learning parameters
+	lossName       string
+	evalName       string
+	parsimonyCoeff float64
+	polishBest     bool
+	funcs          string
+	constMin       float64
+	constMax       float64
+	pConst         float64
+	pFull          float64
+	pLeaf          float64
+	minHeight      uint
+	maxHeight      uint
 
-	// Genetic algorithm parameters
-	fitNPopulations      uint
-	fitNIndividuals      uint
-	fitNGenerations      uint
-	fitPHoistMutation    float64
-	fitPSubtreeMutation  float64
-	fitPPointMutation    float64
-	fitPointMutationRate float64
-	fitPSubtreeCrossover float64
+	// GA parameters
+	nPops         uint
+	popSize       uint
+	nGenerations  uint
+	pHoistMut     float64
+	pSubtreeMut   float64
+	pPointMut     float64
+	pointMutRate  float64
+	pSubtreeCross float64
+
+	// Ensemble learning parameters
+	learningRate         float64
+	nRounds              uint
+	nEarlyStoppingRounds uint
 
 	// Other
-	fitSeed int64
-
-	// Ensemble parameters
-	fitMode                string
-	fitLearningRate        float64
-	fitNPrograms           uint
-	fitRowSampling         float64
-	fitColSampling         float64
-	fitEarlyStoppingRounds uint
+	seed int64
 
 	// CLI parameters
-	fitIgnoredCols string
-	fitOutputName  string
-	fitTargetCol   string
-	fitValPath     string
-	fitVerbose     bool
-)
+	ignoredCols string
+	outputPath  string
+	targetCol   string
+	valPath     string
+	verbose     bool
 
-func init() {
-	RootCmd.AddCommand(fitCmd)
-
-	fitCmd.Flags().StringVarP(&fitLossMetricName, "loss", "", "mae", "metric used for scoring program; determines the task to perform")
-	fitCmd.Flags().StringVarP(&fitEvalMetricName, "eval", "", "", "metric used for monitoring progress; defaults to loss_metric if not provided")
-	fitCmd.Flags().Float64VarP(&fitParsimonyCoeff, "parsimony", "", 0.00001, "parsimony coefficient by which a program's height is multiplied to decrease it's fitness")
-	fitCmd.Flags().BoolVarP(&fitPolishBest, "polish", "", true, "whether or not to polish the best program")
-
-	fitCmd.Flags().StringVarP(&fitFuncs, "funcs", "", "add,sub,mul,div", "comma-separated set of authorised functions")
-	fitCmd.Flags().Float64VarP(&fitConstMin, "const_min", "", -5, "lower bound used for generating random constants")
-	fitCmd.Flags().Float64VarP(&fitConstMax, "const_max", "", 5, "upper bound used for generating random constants")
-	fitCmd.Flags().Float64VarP(&fitPConst, "p_const", "", 0.5, "probability of generating a constant instead of a variable")
-	fitCmd.Flags().Float64VarP(&fitPFull, "p_full", "", 0.5, "probability of using full initialization during ramped half-and-half initialization")
-	fitCmd.Flags().Float64VarP(&fitPLeaf, "p_leaf", "", 0.3, "probability of generating a terminal node during ramped half-and-half initialization")
-	fitCmd.Flags().UintVarP(&fitMinHeight, "min_height", "", 3, "minimum program height used in ramped half-and-half initialization")
-	fitCmd.Flags().UintVarP(&fitMaxHeight, "max_height", "", 5, "maximum program height used in ramped half-and-half initialization")
-
-	fitCmd.Flags().UintVarP(&fitNPopulations, "pops", "", 1, "number of populations used in the GA")
-	fitCmd.Flags().UintVarP(&fitNIndividuals, "indis", "", 100, "number of individuals used for each population in the GA")
-	fitCmd.Flags().UintVarP(&fitNGenerations, "gens", "", 30, "number of generations used in the GA")
-	fitCmd.Flags().Float64VarP(&fitPHoistMutation, "p_hoist_mut", "", 0.1, "probability of applying hoist mutation")
-	fitCmd.Flags().Float64VarP(&fitPSubtreeMutation, "p_sub_mut", "", 0.1, "probability of applying subtree mutation")
-	fitCmd.Flags().Float64VarP(&fitPPointMutation, "p_point_mut", "", 0.1, "probability of applying point mutation")
-	fitCmd.Flags().Float64VarP(&fitPointMutationRate, "point_mut_rate", "", 0.3, "probability of modifying an operator during point mutation")
-	fitCmd.Flags().Float64VarP(&fitPSubtreeCrossover, "p_sub_cross", "", 0.5, "probability of applying subtree crossover")
-
-	fitCmd.Flags().Int64VarP(&fitSeed, "seed", "", 0, "seed for random number generation")
-
-	fitCmd.Flags().StringVarP(&fitMode, "mode", "", "adaboost", "training mode")
-	fitCmd.Flags().UintVarP(&fitNPrograms, "n_programs", "", 30, "number of programs to use in the ensemble")
-	fitCmd.Flags().Float64VarP(&fitLearningRate, "learning_rate", "", 0.05, "learning rate used for boosting")
-	fitCmd.Flags().Float64VarP(&fitRowSampling, "row_sampling", "", 0.6, "row sampling used for bagging")
-	fitCmd.Flags().Float64VarP(&fitColSampling, "col_sampling", "", 1, "column sampling used for bagging")
-	fitCmd.Flags().UintVarP(&fitEarlyStoppingRounds, "early_stopping", "", 5, "number of rounds after which training stops if the evaluation score worsens")
-
-	fitCmd.Flags().StringVarP(&fitIgnoredCols, "ignore", "", "", "comma-separated columns to ignore")
-	fitCmd.Flags().StringVarP(&fitOutputName, "output", "", "ensemble.json", "path where to save the JSON representation of the best program ")
-	fitCmd.Flags().StringVarP(&fitTargetCol, "target", "", "y", "name of the target column in the training and validation datasets")
-	fitCmd.Flags().StringVarP(&fitValPath, "val", "", "", "path to a validation dataset that can be used to monitor out-of-bag performance")
-	fitCmd.Flags().BoolVarP(&fitVerbose, "verbose", "", true, "display progress in the shell")
+	*cobra.Command
 }
 
-var fitCmd = &cobra.Command{
-	Use:   "fit",
-	Short: "Fits a program to a dataset",
-	Long:  "Fits a program to a dataset",
-	Args:  cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
+func (c *fitCmd) run(cmd *cobra.Command, args []string) error {
+	// Instantiate a random number generator
+	var rng *rand.Rand
+	if c.seed == 0 {
+		rng = rand.New(rand.NewSource(time.Now().UnixNano()))
+	} else {
+		rng = rand.New(rand.NewSource(c.seed))
+	}
 
-		// Instantiate a random number generator
-		var rng *rand.Rand
-		if fitSeed == 0 {
-			rng = rand.New(rand.NewSource(time.Now().UnixNano()))
-		} else {
-			rng = rand.New(rand.NewSource(fitSeed))
+	// Determine the loss metric
+	lossMetric, err := metrics.ParseMetric(c.lossName, 1)
+	if err != nil {
+		return err
+	}
+
+	// Determine the evaluation metric
+	if c.evalName == "" {
+		c.evalName = c.lossName
+	}
+	evalMetric, err := metrics.ParseMetric(c.evalName, 1)
+	if err != nil {
+		return err
+	}
+
+	// Instantiate a GP
+	var config = xgp.GPConfig{
+		LossMetric:     lossMetric,
+		EvalMetric:     evalMetric,
+		ParsimonyCoeff: c.parsimonyCoeff,
+		PolishBest:     c.polishBest,
+
+		Funcs:     c.funcs,
+		ConstMin:  c.constMin,
+		ConstMax:  c.constMax,
+		PConst:    c.pConst,
+		PFull:     c.pFull,
+		PLeaf:     c.pLeaf,
+		MinHeight: c.minHeight,
+		MaxHeight: c.maxHeight,
+
+		NPopulations:      c.nPops,
+		NIndividuals:      c.popSize,
+		NGenerations:      c.nGenerations,
+		PHoistMutation:    c.pHoistMut,
+		PSubtreeMutation:  c.pSubtreeMut,
+		PPointMutation:    c.pPointMut,
+		PointMutationRate: c.pointMutRate,
+		PSubtreeCrossover: c.pSubtreeCross,
+
+		RNG: rng,
+	}
+
+	// Load the training set in memory
+	train, duration, err := readFile(args[0])
+	if err != nil {
+		return err
+	}
+	fmt.Println(fmt.Sprintf("Training dataset took %v to load", duration))
+
+	// Check the target column exists
+	var columns = train.Names()
+	if !containsString(columns, c.targetCol) {
+		return fmt.Errorf("No column named %s", c.targetCol)
+	}
+	var featureCols = removeString(columns, c.targetCol)
+
+	// Remove ignored columns
+	for _, col := range strings.Split(c.ignoredCols, ",") {
+		featureCols = removeString(featureCols, col)
+	}
+
+	// Extract the features and target from the training set
+	var (
+		XTrain = dataFrameToFloat64(train.Select(featureCols))
+		YTrain = train.Col(c.targetCol).Float()
+	)
+
+	// Check XTrain doesn't contain any NaNs
+	for i, x := range XTrain {
+		if floats.HasNaN(x) {
+			return fmt.Errorf("Column '%s' in the training set has NaNs", featureCols[i])
 		}
+	}
 
-		// Determine the loss metric
-		lossMetric, err := metrics.ParseMetric(fitLossMetricName, 1)
+	// Load the validation set in memory
+	var (
+		XVal [][]float64
+		YVal []float64
+	)
+	if c.valPath != "" {
+		val, duration, err := readFile(c.valPath)
 		if err != nil {
 			return err
 		}
+		fmt.Println(fmt.Sprintf("Validation dataset took %v to load", duration))
+		XVal = dataFrameToFloat64(val.Select(featureCols))
+		YVal = val.Col(c.targetCol).Float()
+	}
 
-		// Determine the evaluation metric
-		if fitEvalMetricName == "" {
-			fitEvalMetricName = fitLossMetricName
+	// Check XVal doesn't contain any NaNs
+	for i, x := range XVal {
+		if floats.HasNaN(x) {
+			return fmt.Errorf("Column '%s' in the validation set has NaNs", featureCols[i])
 		}
-		evalMetric, err := metrics.ParseMetric(fitEvalMetricName, 1)
+	}
+
+	// Train
+	switch c.flavor {
+
+	case "vanilla":
+		gp, err := config.NewGP()
 		if err != nil {
 			return err
 		}
-
-		// Instantiate an GP
-		var config = xgp.GPConfig{
-			LossMetric:     lossMetric,
-			EvalMetric:     evalMetric,
-			ParsimonyCoeff: fitParsimonyCoeff,
-			PolishBest:     fitPolishBest,
-
-			Funcs:     fitFuncs,
-			ConstMin:  fitConstMin,
-			ConstMax:  fitConstMax,
-			PConst:    fitPConst,
-			PFull:     fitPFull,
-			PLeaf:     fitPLeaf,
-			MinHeight: fitMinHeight,
-			MaxHeight: fitMaxHeight,
-
-			NPopulations:      fitNPopulations,
-			NIndividuals:      fitNIndividuals,
-			NGenerations:      fitNGenerations,
-			PHoistMutation:    fitPHoistMutation,
-			PSubtreeMutation:  fitPSubtreeMutation,
-			PPointMutation:    fitPPointMutation,
-			PointMutationRate: fitPointMutationRate,
-			PSubtreeCrossover: fitPSubtreeCrossover,
-
-			RNG: rng,
-		}
-
-		// Load the training set in memory
-		train, duration, err := ReadFile(args[0])
+		err = gp.Fit(XTrain, YTrain, nil, XVal, YVal, nil, c.verbose)
 		if err != nil {
 			return err
 		}
-		fmt.Println(fmt.Sprintf("Training dataset took %v to load", duration))
-
-		// Check the target column exists
-		var columns = train.Names()
-		if !containsString(columns, fitTargetCol) {
-			return fmt.Errorf("No column named %s", fitTargetCol)
+		best, err := gp.BestProgram()
+		if err != nil {
+			return err
 		}
-		var featureColumns = removeString(columns, fitTargetCol)
+		return writeProgram(best, c.outputPath)
 
-		// Remove ignored columns
-		for _, col := range strings.Split(fitIgnoredCols, ",") {
-			featureColumns = removeString(featureColumns, col)
+	case "boosting":
+		loss, ok := lossMetric.(metrics.DiffMetric)
+		if !ok {
+			return fmt.Errorf("The '%s' metric can't be used for gradient boosting because it is"+
+				" not differentiable", lossMetric.String())
 		}
-
-		// Extract the features and target from the training set
-		var (
-			XTrain = dataFrameToFloat64(train.Select(featureColumns))
-			YTrain = train.Col(fitTargetCol).Float()
-		)
-
-		// Check XTrain doesn't contain any NaNs
-		for i, x := range XTrain {
-			if floats.HasNaN(x) {
-				return fmt.Errorf("Column '%s' in the training set has NaNs", featureColumns[i])
-			}
-		}
-
-		// Load the validation set in memory
-		var (
-			XVal [][]float64
-			YVal []float64
-		)
-		if fitValPath != "" {
-			val, duration, err := ReadFile(fitValPath)
-			if err != nil {
-				return err
-			}
-			fmt.Println(fmt.Sprintf("Validation dataset took %v to load", duration))
-			XVal = dataFrameToFloat64(val.Select(featureColumns))
-			YVal = val.Col(fitTargetCol).Float()
-		}
-
-		// Check XVal doesn't contain any NaNs
-		for i, x := range XVal {
-			if floats.HasNaN(x) {
-				return fmt.Errorf("Column '%s' in the validation set has NaNs", featureColumns[i])
-			}
-		}
-
-		// Train
-		gb, err := meta.NewGradBoost(
+		gb, err := meta.NewGradientBoosting(
 			config,
-			fitNPrograms,
-			fitEarlyStoppingRounds,
-			fitLearningRate,
-			meta.SquareLoss{},
+			c.nRounds,
+			c.nEarlyStoppingRounds,
+			c.learningRate,
+			loss,
 		)
 		if err != nil {
 			return err
 		}
-		err = gb.Fit(XTrain, YTrain, XVal, YVal)
+		err = gb.Fit(XTrain, YTrain, nil, XVal, YVal, nil, c.verbose)
 		if err != nil {
 			return err
 		}
+		return writeGradientBoosting(gb, c.outputPath)
 
-		// Save the ensemble
-		/*bytes, err := json.Marshal(ensemble)
-		if err != nil {
-			return err
-		}
-		err = ioutil.WriteFile(fitOutputName, bytes, 0644)
-		if err != nil {
-			return err
-		}*/
+	}
 
-		return nil
-	},
+	return errUnknownFlavor{c.flavor}
+}
+
+func newFitCmd() *fitCmd {
+	c := &fitCmd{}
+	c.Command = &cobra.Command{
+		Use:   "fit [dataset path]",
+		Short: "Fits an ensemble of programs to a dataset",
+		Long:  "Fits an ensemble of programs to a dataset",
+		Args:  cobra.ExactArgs(1),
+		RunE:  c.run,
+	}
+
+	c.Flags().StringVarP(&c.flavor, "flavor", "", "boosting", "training flavor to use ('boosting' or 'vanilla')")
+
+	c.Flags().StringVarP(&c.lossName, "loss", "", "mse", "metric used for scoring program; determines the task to perform")
+	c.Flags().StringVarP(&c.evalName, "eval", "", "", "metric used for monitoring progress; defaults to loss_metric if not provided")
+	c.Flags().Float64VarP(&c.parsimonyCoeff, "parsimony", "", 0.00001, "parsimony coefficient by which a program's height is multiplied to decrease it's fitness")
+	c.Flags().BoolVarP(&c.polishBest, "polish", "", true, "whether or not to polish the best program")
+	c.Flags().StringVarP(&c.funcs, "funcs", "", "min,max,add,sub,mul,div", "comma-separated set of authorised functions")
+	c.Flags().Float64VarP(&c.constMin, "const_min", "", -5, "lower bound used for generating random constants")
+	c.Flags().Float64VarP(&c.constMax, "const_max", "", 5, "upper bound used for generating random constants")
+	c.Flags().Float64VarP(&c.pConst, "p_const", "", 0.5, "probability of generating a constant instead of a variable")
+	c.Flags().Float64VarP(&c.pFull, "p_full", "", 0.5, "probability of using full initialization during ramped half-and-half initialization")
+	c.Flags().Float64VarP(&c.pLeaf, "p_leaf", "", 0.3, "probability of generating a terminal node during ramped half-and-half initialization")
+	c.Flags().UintVarP(&c.minHeight, "min_height", "", 3, "minimum program height used in ramped half-and-half initialization")
+	c.Flags().UintVarP(&c.maxHeight, "max_height", "", 5, "maximum program height used in ramped half-and-half initialization")
+
+	c.Flags().UintVarP(&c.nPops, "pops", "", 1, "number of populations used in the GA")
+	c.Flags().UintVarP(&c.popSize, "indis", "", 50, "number of individuals used for each population in the GA")
+	c.Flags().UintVarP(&c.nGenerations, "gens", "", 30, "number of generations used in the GA")
+	c.Flags().Float64VarP(&c.pHoistMut, "p_hoist_mut", "", 0.1, "probability of applying hoist mutation")
+	c.Flags().Float64VarP(&c.pSubtreeMut, "p_sub_mut", "", 0.1, "probability of applying subtree mutation")
+	c.Flags().Float64VarP(&c.pPointMut, "p_point_mut", "", 0.1, "probability of applying point mutation")
+	c.Flags().Float64VarP(&c.pointMutRate, "point_mut_rate", "", 0.3, "probability of modifying an operator during point mutation")
+	c.Flags().Float64VarP(&c.pSubtreeCross, "p_sub_cross", "", 0.5, "probability of applying subtree crossover")
+
+	c.Flags().UintVarP(&c.nRounds, "rounds", "", 30, "number of programs to use in case of using an ensemble")
+	c.Flags().Float64VarP(&c.learningRate, "learning_rate", "", 0.05, "learning rate used for boosting")
+	c.Flags().UintVarP(&c.nEarlyStoppingRounds, "early_stopping", "", 5, "number of rounds after which training stops if the evaluation score worsens")
+
+	c.Flags().Int64VarP(&c.seed, "seed", "", 0, "seed for random number generation")
+
+	c.Flags().StringVarP(&c.ignoredCols, "ignore", "", "", "comma-separated columns to ignore")
+	c.Flags().StringVarP(&c.outputPath, "output", "", "model.json", "path where to save the JSON representation of the final model")
+	c.Flags().StringVarP(&c.targetCol, "target", "", "y", "name of the target column in the training and validation datasets")
+	c.Flags().StringVarP(&c.valPath, "val", "", "", "path to a validation dataset that can be used to monitor out-of-bag performance")
+	c.Flags().BoolVarP(&c.verbose, "verbose", "", true, "display progress in the shell")
+
+	return c
 }

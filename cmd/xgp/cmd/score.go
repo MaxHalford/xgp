@@ -1,72 +1,75 @@
 package cmd
 
-/*var (
-	scoreMetricName   string
-	scoreEnsembleName string
-	scoreTargetCol    string
+import (
+	"fmt"
+
+	"github.com/MaxHalford/xgp/metrics"
+	"github.com/spf13/cobra"
 )
 
-func init() {
-	RootCmd.AddCommand(scoreCmd)
+type scoreCmd struct {
+	modelPath  string
+	targetCol  string
+	metricName string
 
-	scoreCmd.Flags().StringVarP(&scoreMetricName, "metric", "", "mse", "evaluation metric")
-	scoreCmd.Flags().StringVarP(&scoreEnsembleName, "ensemble", "", "ensemble.json", "path to the program to score")
-	scoreCmd.Flags().StringVarP(&scoreTargetCol, "target", "", "y", "name of the target column in the dataset")
+	*cobra.Command
 }
 
-var scoreCmd = &cobra.Command{
-	Use:   "score",
-	Short: "Loads an ensemble and computes a score for a given dataset",
-	Long:  "Loads an ensemble and computes a score for a given dataset",
-	Args:  cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
+func (c *scoreCmd) run(cmd *cobra.Command, args []string) error {
+	// Determine the metric to use
+	metric, err := metrics.ParseMetric(c.metricName, 1)
+	if err != nil {
+		return err
+	}
 
-		// Load the ensemble
-		var (
-			ensemble   meta.Ensemble
-			bytes, err = ioutil.ReadFile(scoreEnsembleName)
-		)
-		if err != nil {
-			return err
-		}
-		err = json.Unmarshal(bytes, &ensemble)
-		if err != nil {
-			return err
-		}
+	// Load the model
+	sm, err := readModel(c.modelPath)
+	if err != nil {
+		return err
+	}
 
-		// Determine the metric to use
-		metric, err := metrics.ParseMetric(scoreMetricName, 1)
-		if err != nil {
-			return err
-		}
+	// Load the dataset in memory
+	df, duration, err := readFile(args[0])
+	if err != nil {
+		return err
+	}
+	fmt.Println(fmt.Sprintf("Dataset took %v to load", duration))
 
-		// Load the test set in memory
-		df, duration, err := ReadFile(args[0])
-		if err != nil {
-			return err
-		}
-		fmt.Println(fmt.Sprintf("Dataset set took %v to load", duration))
+	// Check the target column exists
+	var columns = df.Names()
+	if !containsString(columns, c.targetCol) {
+		return fmt.Errorf("No column named %s", c.targetCol)
+	}
 
-		// Check the target column exists
-		var columns = df.Names()
-		if !containsString(columns, scoreTargetCol) {
-			return fmt.Errorf("No column named %s", scoreTargetCol)
-		}
+	// Make predictions
+	yPred, err := sm.Model.Predict(dataFrameToFloat64(df), metric.NeedsProbabilities())
+	if err != nil {
+		return err
+	}
 
-		// Make predictions
-		yPred, err := ensemble.Predict(dataFrameToFloat64(df), metric.NeedsProbabilities())
-		if err != nil {
-			return err
-		}
+	// Calculate score
+	score, err := metric.Apply(df.Col(c.targetCol).Float(), yPred, nil)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("%s: %.5f\n", metric.String(), score)
 
-		// Calculate score
-		score, err := metric.Apply(df.Col(scoreTargetCol).Float(), yPred, nil)
-		if err != nil {
-			return err
-		}
-		fmt.Printf("%s: %.5f\n", metric.String(), score)
-
-		return nil
-	},
+	return nil
 }
-*/
+
+func newScoreCmd() *scoreCmd {
+	c := &scoreCmd{}
+	c.Command = &cobra.Command{
+		Use:   "score [dataset path]",
+		Short: "Loads a model and computes a score for a given dataset",
+		Long:  "Loads a model and computes a score for a given dataset",
+		Args:  cobra.ExactArgs(1),
+		RunE:  c.run,
+	}
+
+	c.Flags().StringVarP(&c.modelPath, "model", "", "model.json", "path to the program to score")
+	c.Flags().StringVarP(&c.targetCol, "target", "", "y", "name of the target column in the dataset")
+	c.Flags().StringVarP(&c.metricName, "metric", "", "mse", "evaluation metric")
+
+	return c
+}

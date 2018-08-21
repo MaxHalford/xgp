@@ -21,11 +21,11 @@ func TestPolish(t *testing.T) {
 				prog: Program{
 					Op: op.Add{op.Const{2}, op.Mul{op.Const{3}, op.Var{0}}},
 					GP: &GP{
-						XTrain: [][]float64{
+						X: [][]float64{
 							[]float64{1, 2, 3, 4, 5},
 						},
-						YTrain:     []float64{8, 13, 18, 23, 28},
-						LossMetric: metrics.MeanSquaredError{},
+						Y:          []float64{8, 13, 18, 23, 28},
+						LossMetric: metrics.MSE{},
 					},
 				},
 				consts: []float64{3, 5},
@@ -34,11 +34,11 @@ func TestPolish(t *testing.T) {
 				prog: Program{
 					Op: op.Add{op.Var{2}, op.Mul{op.Var{1}, op.Var{0}}},
 					GP: &GP{
-						XTrain: [][]float64{
+						X: [][]float64{
 							[]float64{1, 2, 3, 4, 5},
 						},
-						YTrain:     []float64{8, 13, 18, 23, 28},
-						LossMetric: metrics.MeanSquaredError{},
+						Y:          []float64{8, 13, 18, 23, 28},
+						LossMetric: metrics.MSE{},
 					},
 				},
 				consts: []float64{},

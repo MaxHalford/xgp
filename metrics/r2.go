@@ -6,7 +6,7 @@ import "math"
 type R2 struct{}
 
 // Apply R2.
-func (metric R2) Apply(yTrue, yPred, weights []float64) (float64, error) {
+func (r2 R2) Apply(yTrue, yPred, weights []float64) (float64, error) {
 	if len(yTrue) != len(yPred) {
 		return math.Inf(1), &errMismatchedLengths{len(yTrue), len(yPred)}
 	}
@@ -49,21 +49,21 @@ func (metric R2) Apply(yTrue, yPred, weights []float64) (float64, error) {
 }
 
 // Classification method of R2.
-func (metric R2) Classification() bool {
+func (r2 R2) Classification() bool {
 	return false
 }
 
 // BiggerIsBetter method of R2.
-func (metric R2) BiggerIsBetter() bool {
+func (r2 R2) BiggerIsBetter() bool {
 	return false
 }
 
 // NeedsProbabilities method of R2.
-func (metric R2) NeedsProbabilities() bool {
+func (r2 R2) NeedsProbabilities() bool {
 	return false
 }
 
 // String method of R2.
-func (metric R2) String() string {
+func (r2 R2) String() string {
 	return "r2"
 }

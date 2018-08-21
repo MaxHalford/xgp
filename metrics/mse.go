@@ -2,11 +2,11 @@ package metrics
 
 import "math"
 
-// MeanSquaredError measures the mean squared error (MSE).
-type MeanSquaredError struct{}
+// MSE measures the mean squared error (MSE).
+type MSE struct{}
 
-// Apply MeanSquaredError.
-func (metric MeanSquaredError) Apply(yTrue, yPred, weights []float64) (float64, error) {
+// Apply MSE.
+func (mse MSE) Apply(yTrue, yPred, weights []float64) (float64, error) {
 	if len(yTrue) != len(yPred) {
 		return math.Inf(1), &errMismatchedLengths{len(yTrue), len(yPred)}
 	}
@@ -30,22 +30,31 @@ func (metric MeanSquaredError) Apply(yTrue, yPred, weights []float64) (float64, 
 	return sum / float64(len(yTrue)), nil
 }
 
-// Classification method of MeanSquaredError.
-func (metric MeanSquaredError) Classification() bool {
+// Classification method of MSE.
+func (mse MSE) Classification() bool {
 	return false
 }
 
-// BiggerIsBetter method of MeanSquaredError.
-func (metric MeanSquaredError) BiggerIsBetter() bool {
+// BiggerIsBetter method of MSE.
+func (mse MSE) BiggerIsBetter() bool {
 	return false
 }
 
-// NeedsProbabilities method of MeanSquaredError.
-func (metric MeanSquaredError) NeedsProbabilities() bool {
+// NeedsProbabilities method of MSE.
+func (mse MSE) NeedsProbabilities() bool {
 	return false
 }
 
-// String method of MeanSquaredError.
-func (metric MeanSquaredError) String() string {
+// String method of MSE.
+func (mse MSE) String() string {
 	return "mse"
+}
+
+// Gradient computes yPred - yTrue.
+func (mse MSE) Gradient(yTrue, yPred []float64) ([]float64, error) {
+	var grad = make([]float64, len(yTrue))
+	for i, y := range yTrue {
+		grad[i] = yPred[i] - y
+	}
+	return grad, nil
 }

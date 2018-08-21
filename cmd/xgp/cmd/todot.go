@@ -1,61 +1,84 @@
 package cmd
 
-/*
-var (
-	toDOTRound      int
-	toDOTSave       bool
-	toDOTShell      bool
-	toDOTOutputName string
+import (
+	"fmt"
+	"os"
+
+	"github.com/MaxHalford/xgp"
+	"github.com/MaxHalford/xgp/meta"
+	"github.com/MaxHalford/xgp/op"
+	"github.com/spf13/cobra"
 )
 
-func init() {
-	RootCmd.AddCommand(toDOTCmd)
+type toDOTCmd struct {
+	modelPath  string
+	round      uint
+	shell      bool
+	save       bool
+	outputPath string // Only applies if save is true
 
-	toDOTCmd.Flags().IntVarP(&toDOTRound, "round", "", 0, "position of the program in the ensemble")
-	toDOTCmd.Flags().StringVarP(&toDOTOutputName, "output", "", "program.dot", "path to the DOT file output")
-	toDOTCmd.Flags().BoolVarP(&toDOTSave, "save", "", false, "save to a DOT file or not")
-	toDOTCmd.Flags().BoolVarP(&toDOTShell, "shell", "", true, "output in the terminal or not")
+	*cobra.Command
 }
 
-var toDOTCmd = &cobra.Command{
-	Use:   "todot",
-	Short: "Produces a DOT language representation of a program",
-	Long:  "Produces a DOT language representation of a program",
-	Args:  cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
+func (c *toDOTCmd) run(cmd *cobra.Command, args []string) error {
+	// Load the model
+	sm, err := readModel(c.modelPath)
+	if err != nil {
+		return err
+	}
 
-		// Load the ensemble
-		var (
-			ensemble   meta.Ensemble
-			bytes, err = ioutil.ReadFile(args[0])
-		)
-		if err != nil {
-			return err
+	// Build the Graphviz representation
+	var (
+		disp = op.GraphvizDisplay{}
+		str  string
+	)
+	switch sm.Flavor {
+	case "vanilla":
+		str = disp.Apply(sm.Model.(xgp.Program).Op)
+	case "boosting":
+		gb := sm.Model.(meta.GradientBoosting)
+		if uint(len(gb.Programs)) < c.round+1 {
+			return fmt.Errorf("Ensemble only contains %d programs", len(gb.Programs))
 		}
-		err = json.Unmarshal(bytes, &ensemble)
-		if err != nil {
-			return err
-		}
+		str = disp.Apply(gb.Programs[c.round].Op)
+	default:
+		return errUnknownFlavor{sm.Flavor}
+	}
 
-		// Make the Graphviz representation
-		var str = op.GraphvizDisplay{}.Apply(ensemble.Programs[toDOTRound].Op)
+	// Output in the shell if instructed
+	if c.shell {
+		fmt.Println(str)
+	}
 
-		// Output in the shell
-		if toDOTShell {
-			fmt.Println(str)
-		}
-
-		// Create the output file
-		if toDOTSave {
-			return nil
-		}
-		file, err := os.Create(toDOTOutputName)
-		if err != nil {
-			return err
-		}
-		defer file.Close()
-		file.WriteString(str)
-		file.Sync()
+	// Save the output if instructed
+	if !c.save {
 		return nil
-	},
-}*/
+	}
+	file, err := os.Create(c.outputPath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	file.WriteString(str)
+	file.Sync()
+	return nil
+}
+
+func newToDOTCmd() *toDOTCmd {
+	c := &toDOTCmd{}
+	c.Command = &cobra.Command{
+		Use:   "todot",
+		Short: "Produces a DOT language representation of a program",
+		Long:  "Produces a DOT language representation of a program",
+		Args:  cobra.ExactArgs(0),
+		RunE:  c.run,
+	}
+
+	c.Flags().StringVarP(&c.modelPath, "model", "", "model.json", "path to the model used to make predictions")
+	c.Flags().UintVarP(&c.round, "round", "", 0, "position of the program in the ensemble")
+	c.Flags().BoolVarP(&c.shell, "shell", "", true, "output in the terminal or not")
+	c.Flags().BoolVarP(&c.save, "save", "", false, "save to a DOT file or not")
+	c.Flags().StringVarP(&c.outputPath, "output", "", "program.dot", "path to the DOT file output")
+
+	return c
+}

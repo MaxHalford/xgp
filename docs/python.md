@@ -10,7 +10,7 @@ If you're using one of the following setups then you are in luck because a wheel
 
 |            | manylinux x86_64 |
 |------------|:----------------:|
-| Python 3.5 | ✅ |
+| Python 3.5 |  |
 | Python 3.6 | ✅ |
 
 You need to have the `wheel` package installed.
@@ -89,4 +89,4 @@ The full list of parameters is available in the [training parameters section](tr
     For the while XGP does not handle categorical data. You should preemptively encode the categorical features in your dataset before feeding it to XGP. The recommended way is to use [label encoding](http://scikit-learn.org/stable/modules/preprocessing_targets.html#label-encoding) for ordinal data and [one-hot encoding](http://scikit-learn.org/stable/modules/preprocessing.html#encoding-categorical-features) for non-ordinal data.
 
 !!! warning
-    For the while xgp does not handle missing values.
+    For the while XGP does not handle missing values.

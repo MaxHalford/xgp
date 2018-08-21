@@ -4,11 +4,11 @@ import (
 	"math"
 )
 
-// BinaryLogLoss implementes logistic loss.
-type BinaryLogLoss struct{}
+// LogLoss implementes logistic loss.
+type LogLoss struct{}
 
-// Apply BinaryLogLoss.
-func (metric BinaryLogLoss) Apply(yTrue, yPred, weights []float64) (float64, error) {
+// Apply LogLoss.
+func (ll LogLoss) Apply(yTrue, yPred, weights []float64) (float64, error) {
 
 	if len(yTrue) != len(yPred) {
 		return math.Inf(1), &errMismatchedLengths{len(yTrue), len(yPred)}
@@ -35,22 +35,31 @@ func (metric BinaryLogLoss) Apply(yTrue, yPred, weights []float64) (float64, err
 	return -score / float64(len(yTrue)), nil
 }
 
-// Classification method of BinaryLogLoss.
-func (metric BinaryLogLoss) Classification() bool {
+// Classification method of LogLoss.
+func (ll LogLoss) Classification() bool {
 	return true
 }
 
-// BiggerIsBetter method of BinaryLogLoss.
-func (metric BinaryLogLoss) BiggerIsBetter() bool {
+// BiggerIsBetter method of LogLoss.
+func (ll LogLoss) BiggerIsBetter() bool {
 	return false
 }
 
-// NeedsProbabilities method of BinaryLogLoss.
-func (metric BinaryLogLoss) NeedsProbabilities() bool {
+// NeedsProbabilities method of LogLoss.
+func (ll LogLoss) NeedsProbabilities() bool {
 	return true
 }
 
-// String method of BinaryLogLoss.
-func (metric BinaryLogLoss) String() string {
+// String method of LogLoss.
+func (ll LogLoss) String() string {
 	return "logloss"
+}
+
+// Gradient computes yPred - yTrue.
+func (ll LogLoss) Gradient(yTrue, yPred []float64) ([]float64, error) {
+	var grad = make([]float64, len(yTrue))
+	for i, y := range yTrue {
+		grad[i] = yPred[i] - y
+	}
+	return grad, nil
 }

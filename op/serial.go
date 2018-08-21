@@ -1,24 +1,60 @@
 package op
 
 import (
-	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 )
 
-type serialOperator struct {
-	Type     string           `json:"type"`
-	Value    string           `json:"value"`
-	Operands []serialOperator `json:"operands"`
+// ParseFunc parses a name and returns the corresponding Operator.
+func ParseFunc(name string) (Operator, error) {
+	var f, ok = map[string]Operator{
+		If{}.Name():     If{},
+		Abs{}.Name():    Abs{},
+		Add{}.Name():    Add{},
+		Cos{}.Name():    Cos{},
+		Div{}.Name():    Div{},
+		Inv{}.Name():    Inv{},
+		Max{}.Name():    Max{},
+		Min{}.Name():    Min{},
+		Mul{}.Name():    Mul{},
+		Neg{}.Name():    Neg{},
+		Sin{}.Name():    Sin{},
+		Square{}.Name(): Square{},
+		Sub{}.Name():    Sub{},
+	}[name]
+	if !ok {
+		return nil, fmt.Errorf("Unknown function name '%s'", name)
+	}
+	return f, nil
 }
 
-func serializeOp(op Operator) serialOperator {
+// ParseFuncs parses a string into a slice of Operators.
+func ParseFuncs(names, sep string) ([]Operator, error) {
+	var funcs = make([]Operator, strings.Count(names, sep)+1)
+	for i, name := range strings.Split(names, sep) {
+		var f, err = ParseFunc(name)
+		if err != nil {
+			return nil, err
+		}
+		funcs[i] = f
+	}
+	return funcs, nil
+}
+
+type SerialOp struct {
+	Type     string     `json:"type"`
+	Value    string     `json:"value"`
+	Operands []SerialOp `json:"operands"`
+}
+
+func SerializeOp(op Operator) SerialOp {
 	var (
 		arity  = op.Arity()
-		serial = serialOperator{Operands: make([]serialOperator, arity)}
+		serial = SerialOp{Operands: make([]SerialOp, arity)}
 	)
 	for i := uint(0); i < op.Arity(); i++ {
-		serial.Operands[i] = serializeOp(op.Operand(i))
+		serial.Operands[i] = SerializeOp(op.Operand(i))
 	}
 	switch op := op.(type) {
 	case Const:
@@ -34,7 +70,7 @@ func serializeOp(op Operator) serialOperator {
 	return serial
 }
 
-func parseOp(serial serialOperator) (Operator, error) {
+func ParseOp(serial SerialOp) (Operator, error) {
 	var op Operator
 	switch serial.Type {
 	case "const":
@@ -57,27 +93,12 @@ func parseOp(serial serialOperator) (Operator, error) {
 		op = function
 	}
 	// Set the operands; this is where the recursion happens
-	for i, serialOperand := range serial.Operands {
-		operand, err := parseOp(serialOperand)
+	for i, serialOp := range serial.Operands {
+		operand, err := ParseOp(serialOp)
 		if err != nil {
 			return nil, err
 		}
 		op = op.SetOperand(uint(i), operand)
 	}
 	return op, nil
-}
-
-// MarshalJSON serializes an Operator into JSON.
-func MarshalJSON(op Operator) ([]byte, error) {
-	return json.Marshal(serializeOp(op))
-}
-
-// UnmarshalJSON parses JSON into an Operator.
-func UnmarshalJSON(raw []byte) (Operator, error) {
-	var serial = serialOperator{}
-	if err := json.Unmarshal(raw, &serial); err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
-	return parseOp(serial)
 }
