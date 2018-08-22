@@ -28,7 +28,7 @@ extra_css:
   - 'stylesheets/extra.css'
 
 # Pages
-pages:
+nav:
   - Introduction: index.md
   - How it works: how-it-works.md
   - Command-line interface (CLI): cli.md

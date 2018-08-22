@@ -15,6 +15,6 @@ if [[ ! -f miniconda.sh ]]
     fi
 chmod +x miniconda.sh && ./miniconda.sh -b
 export PATH=/home/travis/miniconda3/bin:$PATH
-pip install mkdocs mkdocs-material python-markdown-math
+pip install mkdocs==1.0.1 mkdocs-material==3.0.3 python-markdown-math==0.6
 cd ..
 mkdocs build --verbose --clean --strict
