@@ -62,12 +62,7 @@ func (c *predictCmd) run(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	var pred = df.Select(keptCols)
-	if sm.Task == "classification" && !c.proba {
-		pred = pred.Mutate(series.New(yPred, series.Int, c.targetCol))
-	} else {
-		pred = pred.Mutate(series.New(yPred, series.Float, c.targetCol))
-	}
+	var pred = df.Select(keptCols).Mutate(series.New(yPred, series.Float, c.targetCol))
 	pred.WriteCSV(outFile)
 
 	return nil

@@ -1,6 +1,7 @@
 package meta
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 	"time"
@@ -11,15 +12,15 @@ import (
 
 // GradientBoosting implements gradient boosting on top of genetic programming.
 type GradientBoosting struct {
-	xgp.GPConfig         `json:"-"`
-	NRounds              uint               `json:"-"`
-	NEarlyStoppingRounds uint               `json:"-"`
-	LearningRate         float64            `json:"-"`
-	Loss                 metrics.DiffMetric `json:"-"`
-	Programs             []xgp.Program      `json:"programs"`
-	ValScores            []float64          `json:"val_scores"`
-	TrainScores          []float64          `json:"train_scores"`
-	YMean                float64            `json:"y_mean"` // Set during Fit
+	xgp.GPConfig
+	NRounds              uint
+	NEarlyStoppingRounds uint
+	LearningRate         float64
+	Loss                 metrics.DiffMetric
+	Programs             []xgp.Program
+	ValScores            []float64
+	TrainScores          []float64
+	YMean                float64
 }
 
 // NewGradientBoosting returns a GradientBoosting.
@@ -223,4 +224,55 @@ func (gb GradientBoosting) Predict(X [][]float64, proba bool) ([]float64, error)
 		}
 	}
 	return YPred, nil
+}
+
+type serialGradientBoosting struct {
+	NRounds              uint          `json:"n_rounds"`
+	NEarlyStoppingRounds uint          `json:"n_early_stopping_round"`
+	LearningRate         float64       `json:"learning_rate"`
+	Loss                 string        `json:"loss_metric"`
+	Programs             []xgp.Program `json:"programs"`
+	ValScores            []float64     `json:"val_scores"`
+	TrainScores          []float64     `json:"train_scores"`
+	YMean                float64       `json:"y_mean"`
+}
+
+// MarshalJSON serializes a GradientBoosting.
+func (gb GradientBoosting) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&serialGradientBoosting{
+		NRounds:              gb.NRounds,
+		NEarlyStoppingRounds: gb.NEarlyStoppingRounds,
+		LearningRate:         gb.LearningRate,
+		Loss:                 gb.Loss.String(),
+		Programs:             gb.Programs,
+		ValScores:            gb.ValScores,
+		TrainScores:          gb.TrainScores,
+		YMean:                gb.YMean,
+	})
+}
+
+// UnmarshalJSON parses a GradientBoosting.
+func (gb *GradientBoosting) UnmarshalJSON(bytes []byte) error {
+	var serial = &serialGradientBoosting{}
+	if err := json.Unmarshal(bytes, serial); err != nil {
+		return err
+	}
+	loss, err := metrics.ParseMetric(serial.Loss, 1)
+	if err != nil {
+		return err
+	}
+	dloss, ok := loss.(metrics.DiffMetric)
+	if !ok {
+		return fmt.Errorf("The '%s' metric can't be used for gradient boosting because it is"+
+			" not differentiable", loss.String())
+	}
+	gb.NRounds = serial.NRounds
+	gb.NEarlyStoppingRounds = serial.NEarlyStoppingRounds
+	gb.LearningRate = serial.LearningRate
+	gb.Loss = dloss
+	gb.Programs = serial.Programs
+	gb.ValScores = serial.ValScores
+	gb.TrainScores = serial.TrainScores
+	gb.YMean = serial.YMean
+	return nil
 }

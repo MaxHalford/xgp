@@ -5,7 +5,6 @@ type model interface {
 }
 
 type serialModel struct {
-	Task   string `json:"task"`
 	Flavor string `json:"flavor"`
 	Model  model  `json:"model"`
 }
