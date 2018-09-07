@@ -254,6 +254,7 @@ type serialGradientBoosting struct {
 	LearningRate         float64       `json:"learning_rate"`
 	Loss                 string        `json:"loss_metric"`
 	Programs             []xgp.Program `json:"programs"`
+	Steps                []float64     `json:"steps"`
 	ValScores            []float64     `json:"val_scores"`
 	TrainScores          []float64     `json:"train_scores"`
 	YMean                float64       `json:"y_mean"`
@@ -267,6 +268,7 @@ func (gb GradientBoosting) MarshalJSON() ([]byte, error) {
 		LearningRate:         gb.LearningRate,
 		Loss:                 gb.Loss.String(),
 		Programs:             gb.Programs,
+		Steps:                gb.Steps,
 		ValScores:            gb.ValScores,
 		TrainScores:          gb.TrainScores,
 		YMean:                gb.YMean,
@@ -293,6 +295,7 @@ func (gb *GradientBoosting) UnmarshalJSON(bytes []byte) error {
 	gb.LearningRate = serial.LearningRate
 	gb.Loss = dloss
 	gb.Programs = serial.Programs
+	gb.Steps = serial.Steps
 	gb.ValScores = serial.ValScores
 	gb.TrainScores = serial.TrainScores
 	gb.YMean = serial.YMean

@@ -13,6 +13,7 @@ For development you can replace `xgp` with `go run main.go`. For example instead
 ```sh
 >>> python examples/boston/create_datasets.py
 >>> xgp fit examples/boston/train.csv --val examples/boston/test.csv --loss mae --seed 42 --indis 50 --gens 30
+>>> xgp predict examples/boston/test.csv
 ```
 
 ### gplearn polynomial example

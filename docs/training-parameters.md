@@ -4,7 +4,7 @@
 
 The following tables gives an overview of all the parameters that can be used for training XGP. The defaults are the same regardless of where you're using XGP from (please [open an issue](https://github.com/MaxHalford/xgp/issues/new) if you notice any descrepancies). The values indicated for Go are the ones that can be passed to a `GPConfig` struct. For Python some parameters have to be passed in the `fit` method.
 
-### Learning parameters
+### Genetic programming parameters
 
 | Name | CLI | Go | Python | Default value |
 |------|-----|----|--------|---------------|
@@ -12,13 +12,6 @@ The following tables gives an overview of all the parameters that can be used fo
 | Evaluation metric | `eval` | `EvalMetricName` | `eval_metric` (in `fit`) | Same as loss metric |
 | Parsimony coefficient | `parsimony` | `ParsimonyCoefficient` | `parsimony_coeff` | 0.00001 |
 | Polish the best program | `polish` | `PolishBest` | `polish_best` | true |
-
-Because XGP doesn't require the loss metric to be differentiable you can use any loss metric available. If you don't specify an evaluation metric then it will default to using the loss metric.
-
-### Function parameters
-
-| Name | CLI | Go | Python | Default value |
-|------|-----|----|--------|---------------|
 | Authorized functions | `funcs` | `Funcs` | `funcs` | sum,sub,mul,div |
 | Constant minimum | `const_min` | `ConstMin` | `const_min` | -5 |
 | Constant maximum | `const_max` | `ConstMax` | `const_max` | 5 |
@@ -28,7 +21,7 @@ Because XGP doesn't require the loss metric to be differentiable you can use any
 | Minimum height | `min_height` | `MinHeight` | `min_height` | 3 |
 | Maximum height | `max_height` | `MaxHeight` | `max_height` | 5 |
 
-These parameters are used to generate the initial set of programs. They will also be used to generate new programs for subtree mutation. XGP uses ramped half-and-half initialization; the full initialization probability determines the probability of using full initialization and consequently the probability of using grow initialization.
+Because XGP doesn't require the loss metric to be differentiable you can use any loss metric available. If you don't specify an evaluation metric then it will default to using the loss metric. XGP uses ramped half-and-half initialization; the full initialization probability determines the probability of using full initialization and consequently the probability of using grow initialization.
 
 ### Genetic algorithm parameters
 
@@ -45,12 +38,12 @@ These parameters are used to generate the initial set of programs. They will als
 
 ### Ensemble learning parameters
 
-Ensemble learning is done via the [`meta` package](https://github.com/MaxHalford/xgp/tree/master/meta).
+Ensemble learning is done via the [`meta` package](https://github.com/MaxHalford/xgp/tree/master/meta). For
 
 | Name | CLI | Python | Default value |
 |------|-----|--------|---------------|
 | Number of rounds | `rounds` | `n_rounds` | 100 |
-| Number of early stopping rounds | `early_stopping` | `n_early_stopping` | 5 |
+| Number of early stopping rounds | `early_stopping` | `n_early_stopping_rounds` | 5 |
 | Learning rate | `learning_rate` | `learning_rate` | 0.08 |
 | Use line search | `line_search` | `line_search` | ✅ |
 

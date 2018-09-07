@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/gonum/floats"
+	"github.com/kniren/gota/dataframe"
 	"github.com/kniren/gota/series"
 	"github.com/spf13/cobra"
 )
@@ -62,8 +63,11 @@ func (c *predictCmd) run(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	var pred = df.Select(keptCols).Mutate(series.New(yPred, series.Float, c.targetCol))
-	pred.WriteCSV(outFile)
+	if len(c.keepCols) > 0 {
+		df.Select(keptCols).Mutate(series.New(yPred, series.Float, c.targetCol)).WriteCSV(outFile)
+	} else {
+		dataframe.New(series.New(yPred, series.Float, c.targetCol)).WriteCSV(outFile)
+	}
 
 	return nil
 }

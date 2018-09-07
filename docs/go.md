@@ -1,4 +1,4 @@
-# Go
+# Go usage
 
 ## Installation
 

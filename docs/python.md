@@ -1,8 +1,8 @@
-# Python
+# Python usage
 
 ## Installation
 
-Since version 1.5, Go code can be imported from Python as a dynamic-link library (DLL). This is what is done in the [XGP Python package](https://github.com/MaxHalford/xgp-python)
+Since version 1.5, Go code can be imported from Python as a dynamic-link library (DLL). This is what is done in the [XGP Python package](https://github.com/MaxHalford/xgp-python).
 
 ### Using a wheel
 
