@@ -48,3 +48,16 @@ func (mae MAE) NeedsProbabilities() bool {
 func (mae MAE) String() string {
 	return "mae"
 }
+
+// Gradients computes sign(yPred[i] - yTrue[i]).
+func (mae MAE) Gradients(yTrue, yPred []float64) ([]float64, error) {
+	var grad = make([]float64, len(yTrue))
+	for i, y := range yTrue {
+		if yPred[i] > y {
+			grad[i] = 1
+		} else {
+			grad[i] = -1
+		}
+	}
+	return grad, nil
+}

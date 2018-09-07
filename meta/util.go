@@ -2,23 +2,8 @@ package meta
 
 import (
 	"fmt"
-	"math"
 	"time"
 )
-
-func argmin(fs []float64) uint {
-	var (
-		i   int
-		min = math.Inf(1)
-	)
-	for j, f := range fs {
-		if f < min {
-			i = j
-			min = f
-		}
-	}
-	return uint(i)
-}
 
 // mean computes the mean of a float64 slice.
 func mean(x []float64) (m float64) {

@@ -11,8 +11,8 @@ type Metric interface {
 	String() string
 }
 
-// A DiffMetric is a Metric that is differentiable.
+// A DiffMetric is a Metric that can compute element-wise gradients.
 type DiffMetric interface {
 	Metric
-	Gradient(yTrue, yPred []float64) ([]float64, error)
+	Gradients(yTrue, yPred []float64) ([]float64, error)
 }

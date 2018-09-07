@@ -50,11 +50,11 @@ func (mse MSE) String() string {
 	return "mse"
 }
 
-// Gradient computes yPred - yTrue.
-func (mse MSE) Gradient(yTrue, yPred []float64) ([]float64, error) {
+// Gradients computes 2 * (yPred[i] - yTrue[i]).
+func (mse MSE) Gradients(yTrue, yPred []float64) ([]float64, error) {
 	var grad = make([]float64, len(yTrue))
 	for i, y := range yTrue {
-		grad[i] = yPred[i] - y
+		grad[i] = 2 * (yPred[i] - y)
 	}
 	return grad, nil
 }

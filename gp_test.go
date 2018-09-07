@@ -33,6 +33,8 @@ func TestGP(t *testing.T) {
 
 	// Train the GP
 	gp.Fit(X, Y, nil, nil, nil, nil, false)
+	var best, _ = gp.BestProgram()
+	fmt.Println(best)
 
 	// Make predictions
 	var pred, _ = gp.PredictPartial([]float64{4, 7}, false)

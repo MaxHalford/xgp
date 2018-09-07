@@ -55,8 +55,8 @@ func (ll LogLoss) String() string {
 	return "logloss"
 }
 
-// Gradient computes yPred - yTrue.
-func (ll LogLoss) Gradient(yTrue, yPred []float64) ([]float64, error) {
+// Gradients computes yPred[i] - yTrue[i].
+func (ll LogLoss) Gradients(yTrue, yPred []float64) ([]float64, error) {
 	var grad = make([]float64, len(yTrue))
 	for i, y := range yTrue {
 		grad[i] = yPred[i] - y

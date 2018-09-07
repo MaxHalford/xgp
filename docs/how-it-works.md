@@ -83,11 +83,13 @@ type Program struct {
 
 The `GP` gives the `Program` context about what it is it has to learn. The `GP` contains a `LossMetric` field with determines how to score each `Program` and if the task is classification or regression. The `GP` is also the global structure that organizes the programs and handles the learning process. If you want to use XGP with Go then you'll be working with the `GP` struct. However you shouldn't directly instantiate an `GP`; instead you should use the `GPConfig` struct where you can speficify training parameters before calling the `NewGP` method.
 
-The [`metrics` package](https://github.com/MaxHalford/xgp/tree/master/metrics) is a completely independent package that contains implementations of machine learning metrics (such as accuracy and logarithmic loss). In theory it could be traded for another package if something standardized comes up.
+The [`metrics` package](https://github.com/MaxHalford/xgp/tree/master/metrics) is a completely independent package that contains implementations of machine learning metrics (such as accuracy and logarithmic loss). In theory it could be traded for another package if a Go standard appears.
 
-XGP does a few fancy tricks to be competitive:
+The [`meta` package](https://github.com/MaxHalford/xgp/tree/master/meta) can be used to implement meta-learning algorithms such as [gradient boosting](https://www.wikiwand.com/en/Gradient_boosting). This is predominantly what makes XGP competitive.
+
+XGP has a few tricks up its sleeves (and more are coming):
 
 - Tree simplication: because programs are randomly modified it can occur that some parts of the program can be simplified. For example the formula `add(mul(2, 3), 4)` can simply be replaced by `10`. In practice catching these simplifications and avoiding unnecessary computations helps a lot.
-- Regularization: [bloat](http://dces.essex.ac.uk/staff/poli/gp-field-guide/113Bloat.html) is an unavoidable problem in genetic program. As the generations go on the programs will have a tendency to grow in complexity. First of all this increases the running time. It also produces complex programs that tend to overfit. By default XGP uses a **parsimony coefficient** to penalize programs based on the number of operators they possess.
+- Bloat control: [bloat](http://dces.essex.ac.uk/staff/poli/gp-field-guide/113Bloat.html) is an unavoidable problem in genetic program. As the generations go on the programs will have a tendency to grow in complexity. First of all this increases the running time. It also produces complex programs that tend to overfit. By default XGP uses a **parsimony coefficient** to penalize programs based on the number of operators they possess. Controlling bloat can be seen as a form of [regularization](https://www.wikiwand.com/en/Regularization_(mathematics)).
 - Constant optimisation: the constants of the best program are "polished" using [CMA-ES](https://www.wikiwand.com/en/CMA-ES). This usually takes a negligible amount of time and helps a lot in practice.
-- More coming!
+- Line search: the step size used in gradient boosting is tuned via [line search](https://www.wikiwand.com/en/Line_search).

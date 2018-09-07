@@ -16,22 +16,26 @@ type GradientBoosting struct {
 	NRounds              uint
 	NEarlyStoppingRounds uint
 	LearningRate         float64
+	LineSearcher         LineSearcher
 	Loss                 metrics.DiffMetric
 	Programs             []xgp.Program
+	Steps                []float64
 	ValScores            []float64
 	TrainScores          []float64
 	YMean                float64
 }
 
 // NewGradientBoosting returns a GradientBoosting.
-func NewGradientBoosting(conf xgp.GPConfig, n, k uint, lr float64, loss metrics.DiffMetric) (*GradientBoosting, error) {
+func NewGradientBoosting(conf xgp.GPConfig, n, k uint, lr float64, ls LineSearcher, loss metrics.DiffMetric) (*GradientBoosting, error) {
 	return &GradientBoosting{
 		GPConfig:             conf,
 		NRounds:              n,
 		NEarlyStoppingRounds: k,
 		LearningRate:         lr,
+		LineSearcher:         ls,
 		Loss:                 loss,
 		Programs:             make([]xgp.Program, 0),
+		Steps:                make([]float64, 0),
 		ValScores:            make([]float64, 0),
 	}, nil
 }
@@ -88,26 +92,26 @@ func (gb *GradientBoosting) Fit(
 	)
 
 	for i := uint(0); i < gb.NRounds; i++ {
-		// Compute the gradient
+		// Compute the gradients
 		var (
-			grad []float64
-			err  error
+			grads []float64
+			err   error
 		)
 		if gb.Loss.Classification() {
-			grad, err = gb.Loss.Gradient(Y, expit(YPred))
+			grads, err = gb.Loss.Gradients(Y, expit(YPred))
 		} else {
-			grad, err = gb.Loss.Gradient(Y, YPred)
+			grads, err = gb.Loss.Gradients(Y, YPred)
 		}
 		if err != nil {
 			return err
 		}
 
-		// Train a GP on the gradient
+		// Train a GP on the negative gradients
 		gp, err := gb.NewGP()
 		if err != nil {
 			return err
 		}
-		err = gp.Fit(X, grad, W, nil, nil, nil, false)
+		err = gp.Fit(X, grads, W, nil, nil, nil, false)
 		if err != nil {
 			return err
 		}
@@ -124,8 +128,25 @@ func (gb *GradientBoosting) Fit(
 		if err != nil {
 			return err
 		}
+
+		// Find a good step size using line search
+		var step = 1.0
+		if gb.LineSearcher != nil {
+			var yy = make([]float64, len(YPred))
+			step = gb.LineSearcher.Solve(
+				func(step float64) float64 {
+					for i, u := range update {
+						yy[i] -= gb.LearningRate * step * u
+					}
+					var loss, _ = gb.Loss.Apply(Y, yy, nil)
+					return loss
+				},
+			)
+		}
+		gb.Steps = append(gb.Steps, step)
+
 		for i, u := range update {
-			YPred[i] -= gb.LearningRate * u
+			YPred[i] -= gb.LearningRate * step * u
 		}
 
 		// Compute training score
@@ -144,7 +165,7 @@ func (gb *GradientBoosting) Fit(
 		}
 		gb.TrainScores = append(gb.TrainScores, trainScore)
 
-		// If there is no validation set then stop
+		// If there is no validation set then stop and display training progress
 		if XVal == nil || YVal == nil || gb.EvalMetric == nil {
 			if verbose {
 				fmt.Printf(
@@ -169,7 +190,7 @@ func (gb *GradientBoosting) Fit(
 		}
 		gb.ValScores = append(gb.ValScores, valScore)
 
-		// Display progress
+		// Display training and validation progress
 		if verbose {
 			fmt.Printf(
 				"%s -- train %s: %.5f -- val %s: %.5f -- round %d\n",
@@ -196,6 +217,7 @@ func (gb *GradientBoosting) Fit(
 			break
 		}
 	}
+
 	return nil
 }
 
@@ -207,13 +229,13 @@ func (gb GradientBoosting) Predict(X [][]float64, proba bool) ([]float64, error)
 		YPred[i] = gb.YMean
 	}
 	// Accumulate predictions
-	for _, prog := range gb.Programs {
+	for i, prog := range gb.Programs {
 		update, err := prog.Predict(X, false)
 		if err != nil {
 			return nil, err
 		}
-		for i, u := range update {
-			YPred[i] -= gb.LearningRate * u
+		for j, u := range update {
+			YPred[j] -= gb.LearningRate * gb.Steps[i] * u
 		}
 	}
 	// Transform in case of classification

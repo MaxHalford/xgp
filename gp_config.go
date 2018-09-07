@@ -88,7 +88,7 @@ func (c GPConfig) NewGP() (*GP, error) {
 
 	// The convention is to use a fitness metric which has to be minimized
 	if c.LossMetric.BiggerIsBetter() {
-		c.LossMetric = metrics.NegativeMetric{Metric: c.LossMetric}
+		c.LossMetric = metrics.Negative{Metric: c.LossMetric}
 	}
 
 	// Determine the functions to use

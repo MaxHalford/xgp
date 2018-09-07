@@ -43,7 +43,7 @@ func ParseMetric(name string, class int) (Metric, error) {
 		return nil, errUnknownMetric{name}
 	}
 	if neg {
-		metric = NegativeMetric{Metric: metric}
+		metric = Negative{Metric: metric}
 	}
 	return metric, nil
 }

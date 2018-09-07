@@ -43,11 +43,23 @@ These parameters are used to generate the initial set of programs. They will als
 | Point mutation rate | `point_mut_rate` | `PointMutationRate` | `point_mutation_rate` | 0.3 |
 | Subtree crossover probability | `p_sub_cross` | `PSubtreeCrossover` | `p_sub_tree_crossover` | 0.5 |
 
+### Ensemble learning parameters
+
+Ensemble learning is done via the [`meta` package](https://github.com/MaxHalford/xgp/tree/master/meta).
+
+| Name | CLI | Python | Default value |
+|------|-----|--------|---------------|
+| Number of rounds | `rounds` | `n_rounds` | 100 |
+| Number of early stopping rounds | `early_stopping` | `n_early_stopping` | 5 |
+| Learning rate | `learning_rate` | `learning_rate` | 0.08 |
+| Use line search | `line_search` | `line_search` | ✅ |
+
 ### Other parameters
 
 | Name | CLI | Go | Python | Default value |
 |------|-----|----|--------|---------------|
 | Random number seed | `seed` | `Seed` | `seed` | Random |
+| Verbose | `verbose` | `verbose` | `verbose` | ✅ |
 
 ## Loss metrics
 

@@ -41,9 +41,10 @@ type fitCmd struct {
 	pSubtreeCross float64
 
 	// Ensemble learning parameters
-	learningRate         float64
 	nRounds              uint
 	nEarlyStoppingRounds uint
+	learningRate         float64
+	lineSearch           bool
 
 	// Other
 	seed int64
@@ -115,7 +116,9 @@ func (c *fitCmd) run(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(fmt.Sprintf("Training dataset took %v to load", duration))
+	if c.verbose {
+		fmt.Printf("Training dataset took %v to load\n", duration)
+	}
 
 	// Check the target column exists
 	var columns = train.Names()
@@ -152,7 +155,9 @@ func (c *fitCmd) run(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
-		fmt.Println(fmt.Sprintf("Validation dataset took %v to load", duration))
+		if c.verbose {
+			fmt.Printf("Validation dataset took %v to load\n", duration)
+		}
 		XVal = dataFrameToFloat64(val.Select(featureCols))
 		YVal = val.Col(c.targetCol).Float()
 	}
@@ -188,11 +193,20 @@ func (c *fitCmd) run(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("The '%s' metric can't be used for gradient boosting because it is"+
 				" not differentiable", lossMetric.String())
 		}
+		var ls meta.LineSearcher
+		if c.lineSearch {
+			ls = meta.GoldenLineSearch{
+				Min: 0,
+				Max: 10,
+				Tol: 1e-10,
+			}
+		}
 		gb, err := meta.NewGradientBoosting(
 			config,
 			c.nRounds,
 			c.nEarlyStoppingRounds,
 			c.learningRate,
+			ls,
 			loss,
 		)
 		if err != nil {
@@ -243,9 +257,10 @@ func newFitCmd() *fitCmd {
 	c.Flags().Float64VarP(&c.pointMutRate, "point_mut_rate", "", 0.3, "probability of modifying an operator during point mutation")
 	c.Flags().Float64VarP(&c.pSubtreeCross, "p_sub_cross", "", 0.5, "probability of applying subtree crossover")
 
-	c.Flags().UintVarP(&c.nRounds, "rounds", "", 30, "number of programs to use in case of using an ensemble")
-	c.Flags().Float64VarP(&c.learningRate, "learning_rate", "", 0.05, "learning rate used for boosting")
+	c.Flags().UintVarP(&c.nRounds, "rounds", "", 50, "number of programs to use in case of using an ensemble")
 	c.Flags().UintVarP(&c.nEarlyStoppingRounds, "early_stopping", "", 5, "number of rounds after which training stops if the evaluation score worsens")
+	c.Flags().Float64VarP(&c.learningRate, "learning_rate", "", 0.08, "learning rate used for boosting")
+	c.Flags().BoolVarP(&c.lineSearch, "line_search", "", true, "whether to use line-search or not")
 
 	c.Flags().Int64VarP(&c.seed, "seed", "", 0, "seed for random number generation")
 
@@ -253,7 +268,7 @@ func newFitCmd() *fitCmd {
 	c.Flags().StringVarP(&c.outputPath, "output", "", "model.json", "path where to save the JSON representation of the final model")
 	c.Flags().StringVarP(&c.targetCol, "target", "", "y", "name of the target column in the training and validation datasets")
 	c.Flags().StringVarP(&c.valPath, "val", "", "", "path to a validation dataset that can be used to monitor out-of-bag performance")
-	c.Flags().BoolVarP(&c.verbose, "verbose", "", true, "display progress in the shell")
+	c.Flags().BoolVarP(&c.verbose, "verbose", "", true, "whether to display progress in the shell or not")
 
 	return c
 }

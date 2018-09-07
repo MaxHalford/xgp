@@ -51,7 +51,7 @@ There are many parameters you can use; the details and default values and are sp
 >>> xgp fit train.csv --loss mse --val mae --gens 64 --indis 256 --parsimony 0.001
 ```
 
-In addition to these parameters, the following ones are available with the `fit` command.
+The following parameters are available with the `fit` command in addition to training parameters.
 
 | Argument | Description | Default |
 |----------|-------------|---------|
