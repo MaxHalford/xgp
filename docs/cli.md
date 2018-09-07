@@ -59,7 +59,6 @@ The following parameters are available with the `fit` command in addition to tra
 | output | Path where to save the JSON representation of the best program | `program.json` |
 | target | Name of the target column in the training and validation datasets | `y` |
 | val | Path to a validation dataset that can be used to monitor out-of-bag performance | |
-| verbose | Indicates whether or not progress should be displayed | `true` |
 
 If you use the `val` argument then the best model of each generation will be scored against the validation dataset. The resulting score is called the out-of-bag score because it is obtained by making predictions on a dataset that the model hasn't seen.
 

@@ -28,11 +28,11 @@ go run main.go fit examples/boston/train.csv \
     --loss mse \
     --indis 20 \
     --gens 10 \
-    --output examples/boston/ensemble.json \
+    --output examples/boston/model.json \
     --seed 42
 go run main.go predict examples/boston/test.csv \
     --output examples/boston/predictions.csv \
-    --ensemble examples/boston/ensemble.json
+    --model examples/boston/model.json
 
 # Breast cancer bagging
 python examples/breast_cancer/create_datasets.py

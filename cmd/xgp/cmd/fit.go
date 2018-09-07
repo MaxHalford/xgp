@@ -47,14 +47,14 @@ type fitCmd struct {
 	lineSearch           bool
 
 	// Other
-	seed int64
+	seed    int64
+	verbose bool
 
 	// CLI parameters
 	ignoredCols string
 	outputPath  string
 	targetCol   string
 	valPath     string
-	verbose     bool
 
 	*cobra.Command
 }
