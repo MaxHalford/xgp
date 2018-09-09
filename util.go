@@ -24,7 +24,7 @@ func sigmoid(y float64) float64 {
 
 // binary converts a float64 to 0 or 1.
 func binary(y float64) float64 {
-	if y > 0.5 {
+	if y > 0 {
 		return 1
 	}
 	return 0

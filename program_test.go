@@ -102,7 +102,7 @@ func TestProgramPredict(t *testing.T) {
 				GP: &GP{LossMetric: metrics.Accuracy{}},
 			},
 			proba:       false,
-			y:           []float64{0, 0, 1, 1},
+			y:           []float64{0, 1, 1, 1},
 			raisesError: false,
 		},
 		{

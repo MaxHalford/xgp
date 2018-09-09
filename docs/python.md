@@ -10,7 +10,7 @@ If you're using one of the following setups then you are in luck because a wheel
 
 |            | manylinux x86_64 |
 |------------|:----------------:|
-| Python 3.5 |  |
+| Python 3.5 | ✅ |
 | Python 3.6 | ✅ |
 
 You need to have the `wheel` package installed.
@@ -35,6 +35,12 @@ To compile the DLL you will need to have Go and GCC installed. Once this is done
 ```
 
 This uses [setuptools-golang](https://github.com/asottile/setuptools-golang) to pull the needed Go dependencies and compile the DLL.
+
+You can also build the DLL yourself with the following command. This is mostly for development purposes.
+
+```sh
+>>> go build -buildmode=c-shared -o xgp.so xgp/xgp.go
+```
 
 ## Usage
 
