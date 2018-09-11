@@ -4,6 +4,11 @@
 
 The following tables gives an overview of all the parameters that can be used for training XGP. The defaults are the same regardless of where you're using XGP from (please [open an issue](https://github.com/MaxHalford/xgp/issues/new) if you notice any descrepancies). The values indicated for Go are the ones that can be passed to a `GPConfig` struct. For Python some parameters have to be passed in the `fit` method.
 
+The most important parameter is called `flavor`. It determines what kind of model to use. It can take one of the following values:
+
+- `vanilla`: trains a single genetic programming instance.
+- `boosting`: trains a gradient boosting machine that uses genetic programming instances as weak learners.
+
 ### Genetic programming parameters
 
 | Name | CLI | Go | Python | Default value |
@@ -38,14 +43,18 @@ Because XGP doesn't require the loss metric to be differentiable you can use any
 
 ### Ensemble learning parameters
 
-Ensemble learning is done via the [`meta` package](https://github.com/MaxHalford/xgp/tree/master/meta). For
+Ensemble learning is done via the [`meta` package](https://github.com/MaxHalford/xgp/tree/master/meta). For Python and the CLI you can use the `flavor` parameter to switch regime. For Go you have to initialize the desired struct yourself with the appropriate method (for example initialize the `GradientBoosting` struct with the `NewGradientBoosting` method).
 
-| Name | CLI | Python | Default value |
-|------|-----|--------|---------------|
-| Number of rounds | `rounds` | `n_rounds` | 100 |
-| Number of early stopping rounds | `early_stopping` | `n_early_stopping_rounds` | 5 |
-| Learning rate | `learning_rate` | `learning_rate` | 0.08 |
-| Use line search | `line_search` | `line_search` | ✅ |
+| Name | CLI | Go | Python | Default value |
+|------|-----|----|--------|---------------|
+| Number of rounds | `rounds` | `nRounds` | `n_rounds` | 100 |
+| Number of early stopping rounds | `nEarlyStoppingRounds` | `early_stopping` | `n_early_stopping_rounds` | 5 |
+| Learning rate | `learning_rate` | `learningRate` | `learning_rate` | 0.08 |
+| Use line search | `line_search` | `lineSearcher` | `line_search` | ✅ |
+| Row sampling | `row_sampling` | `rowSampling | `row_sampling` | 1 |
+| Column sampling | `col_sampling` | colSampling` | `col_sampling` | 1 |
+| Use best rounds | `use_best` | `useBest` |  `use_best_rounds` | ✅ |
+| Monitoring frequency | `monitor_every` | monitorEvery | `monitor_every` | 1 |
 
 ### Other parameters
 

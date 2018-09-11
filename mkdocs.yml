@@ -31,7 +31,7 @@ extra_css:
 nav:
   - Introduction: index.md
   - How it works: how-it-works.md
-  - Command-line interface (CLI): cli.md
+  - CLI usage: cli.md
   - Go usage: go.md
   - Python usage: python.md
   - Training parameters: training-parameters.md

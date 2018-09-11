@@ -35,9 +35,10 @@ type GradientBoosting struct {
 // NewGradientBoosting returns a GradientBoosting.
 func NewGradientBoosting(
 	conf xgp.GPConfig,
-	n, k uint,
-	lr float64,
-	ls LineSearcher,
+	nRounds uint,
+	nEarlyStoppingRounds uint,
+	learningRate float64,
+	lineSearcher LineSearcher,
 	loss metrics.DiffMetric,
 	rowSampling float64,
 	colSampling float64,

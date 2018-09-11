@@ -65,6 +65,7 @@ X_train, X_test, y_train, y_test = model_selection.train_test_split(
 )
 
 model = xgp.XGPClassifier(
+    flavor='vanilla',
     loss_metric='logloss',
     funcs='sum,sub,mul,div',
     n_individuals=500,
@@ -78,7 +79,6 @@ model.fit(X_train, y_train, eval_set=(X_test, y_test), verbose=True)
 metric = metrics.log_loss
 print('Train log-loss: {:.5f}'.format(metric(y_train, model.predict_proba(X_train))))
 print('Test log-loss: {:.5f}'.format(metric(y_test, model.predict_proba(X_test))))
-print('Best program:', model.program_str_)
 ```
 
 This gives the following output:
@@ -86,7 +86,6 @@ This gives the following output:
 ```
 Train log-loss: 0.217573
 Test log-loss: 0.191963
-Best program: sum(mul(X[0], mul(-4.774751043817239, X[7])), 3.8762056339039415)
 ```
 
 The full list of parameters is available in the [training parameters section](training-parameters.md).
