@@ -48,10 +48,10 @@ func NewGradientBoosting(
 ) (*GradientBoosting, error) {
 	return &GradientBoosting{
 		GPConfig:             conf,
-		NRounds:              n,
-		NEarlyStoppingRounds: k,
-		LearningRate:         lr,
-		LineSearcher:         ls,
+		NRounds:              nRounds,
+		NEarlyStoppingRounds: nEarlyStoppingRounds,
+		LearningRate:         learningRate,
+		LineSearcher:         lineSearcher,
 		Loss:                 loss,
 		RowSampling:          rowSampling,
 		ColSampling:          colSampling,
