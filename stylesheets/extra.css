@@ -1,0 +1,39 @@
+.md-header,.md-footer-nav {
+    background-image: linear-gradient(45deg, #43cea2 0%, #185a9d 100%);
+}
+
+p > img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+}
+
+::selection {
+  color: #fff;
+  background: #43cea2; /* WebKit/Blink Browsers */
+}
+::-moz-selection {
+  color: #fff;
+  background: #43cea2; /* Gecko Browsers */
+}
+
+.md-typeset table:not([class]) th {
+    background-color: #43cea2;
+}
+
+.md-typeset .admonition {
+    font-size: 0.9em;
+}
+
+.md-typeset table:not([class]) {
+    font-size: 0.9em;
+}
+
+.md-typeset code, .md-typeset pre {
+    font-size: 98%;
+}
+
+.md-typeset__scrollwrap {
+    text-align: center;
+}
