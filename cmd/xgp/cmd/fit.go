@@ -45,6 +45,10 @@ type fitCmd struct {
 	nEarlyStoppingRounds uint
 	learningRate         float64
 	lineSearch           bool
+	rowSampling          float64
+	colSampling          float64
+	useBestRounds        bool
+	monitorEvery         uint
 
 	// Other
 	seed    int64
@@ -208,6 +212,11 @@ func (c *fitCmd) run(cmd *cobra.Command, args []string) error {
 			c.learningRate,
 			ls,
 			loss,
+			c.rowSampling,
+			c.colSampling,
+			c.useBestRounds,
+			c.monitorEvery,
+			rng,
 		)
 		if err != nil {
 			return err
@@ -261,6 +270,10 @@ func newFitCmd() *fitCmd {
 	c.Flags().UintVarP(&c.nEarlyStoppingRounds, "early_stopping", "", 5, "number of rounds after which training stops if the evaluation score worsens")
 	c.Flags().Float64VarP(&c.learningRate, "learning_rate", "", 0.08, "learning rate used for boosting")
 	c.Flags().BoolVarP(&c.lineSearch, "line_search", "", true, "whether to use line-search or not")
+	c.Flags().Float64VarP(&c.rowSampling, "row_sampling", "", 1, "ratio of rows to sample for training")
+	c.Flags().Float64VarP(&c.colSampling, "col_sampling", "", 1, "ratio of columns to sample for training")
+	c.Flags().BoolVarP(&c.useBestRounds, "use_best", "", true, "whether to only use the best rounds during boosting or not")
+	c.Flags().UintVarP(&c.monitorEvery, "monitor_every", "", 1, "determines when to monitor the train and validation scores")
 
 	c.Flags().Int64VarP(&c.seed, "seed", "", 0, "seed for random number generation")
 
